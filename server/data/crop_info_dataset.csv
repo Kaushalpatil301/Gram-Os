@@ -1,0 +1,101 @@
+product,product_type,batch_id,farmid,quality_grade,origin,description,image,quantity,date
+Turmeric,Cash Crop,LOT001,FARM101,Premium,Bihar,Turmeric harvested fresh from organic farms.,turmeric.jpg,567,2025-09-01
+Banana,Fruit,LOT002,FARM102,Grade A,Haryana,Banana harvested fresh from organic farms.,banana.jpg,1882,2025-09-02
+Coconut,Grain,LOT003,FARM103,Grade A,Uttar Pradesh,Coconut harvested fresh from organic farms.,coconut.jpg,1924,2025-09-03
+Basmati Rice,Spice,LOT004,FARM104,Grade B,"Guntur, Andhra Pradesh",Basmati Rice harvested fresh from organic farms.,basmati_rice.jpg,1764,2025-09-04
+Green Gram,Fruit,LOT005,FARM105,Premium,"Ratnagiri, Maharashtra",Green Gram harvested fresh from organic farms.,green_gram.jpg,1770,2025-09-05
+Alphonso Mango,Vegetable,LOT006,FARM106,Grade A,Uttar Pradesh,Alphonso Mango harvested fresh from organic farms.,alphonso_mango.jpg,1081,2025-09-06
+Basmati Rice,Oilseed,LOT007,FARM107,Grade A,Karnataka,Basmati Rice harvested fresh from organic farms.,basmati_rice.jpg,1831,2025-09-07
+Red Chilli,Oilseed,LOT008,FARM108,Standard,"Punjab, India",Red Chilli harvested fresh from organic farms.,red_chilli.jpg,107,2025-09-08
+Cotton,Spice,LOT009,FARM109,Grade B,Kerala,Cotton harvested fresh from organic farms.,cotton.jpg,68,2025-09-09
+Sugarcane,Fruit,LOT010,FARM110,Premium,Kerala,Sugarcane harvested fresh from organic farms.,sugarcane.jpg,1461,2025-09-10
+Sugarcane,Cash Crop,LOT011,FARM111,Grade A,Karnataka,Sugarcane harvested fresh from organic farms.,sugarcane.jpg,139,2025-09-11
+Onion,Spice,LOT012,FARM112,Grade B,Madhya Pradesh,Onion harvested fresh from organic farms.,onion.jpg,747,2025-09-12
+Red Chilli,Fruit,LOT013,FARM113,Grade B,Karnataka,Red Chilli harvested fresh from organic farms.,red_chilli.jpg,1685,2025-09-13
+Green Gram,Cash Crop,LOT014,FARM114,Grade B,"Guntur, Andhra Pradesh",Green Gram harvested fresh from organic farms.,green_gram.jpg,514,2025-09-14
+Wheat,Fruit,LOT015,FARM115,Grade B,Kerala,Wheat harvested fresh from organic farms.,wheat.jpg,808,2025-09-15
+Basmati Rice,Grain,LOT016,FARM116,Premium,"Guntur, Andhra Pradesh",Basmati Rice harvested fresh from organic farms.,basmati_rice.jpg,1121,2025-09-16
+Soybean,Spice,LOT017,FARM117,Grade B,Uttar Pradesh,Soybean harvested fresh from organic farms.,soybean.jpg,1246,2025-09-17
+Onion,Fruit,LOT018,FARM118,Standard,Tamil Nadu,Onion harvested fresh from organic farms.,onion.jpg,1753,2025-09-18
+Sugarcane,Fruit,LOT019,FARM119,Grade B,"Guntur, Andhra Pradesh",Sugarcane harvested fresh from organic farms.,sugarcane.jpg,189,2025-09-19
+Mustard Seeds,Cash Crop,LOT020,FARM120,Premium,"Guntur, Andhra Pradesh",Mustard Seeds harvested fresh from organic farms.,mustard_seeds.jpg,1634,2025-09-20
+Tomato,Cash Crop,LOT021,FARM121,Grade B,Haryana,Tomato harvested fresh from organic farms.,tomato.jpg,992,2025-09-21
+Cotton,Oilseed,LOT022,FARM122,Grade B,Bihar,Cotton harvested fresh from organic farms.,cotton.jpg,741,2025-09-22
+Red Chilli,Spice,LOT023,FARM123,Grade B,Madhya Pradesh,Red Chilli harvested fresh from organic farms.,red_chilli.jpg,1467,2025-09-23
+Coconut,Vegetable,LOT024,FARM124,Premium,Bihar,Coconut harvested fresh from organic farms.,coconut.jpg,396,2025-09-24
+Cotton,Fruit,LOT025,FARM125,Standard,Uttar Pradesh,Cotton harvested fresh from organic farms.,cotton.jpg,1464,2025-09-25
+Basmati Rice,Vegetable,LOT026,FARM126,Standard,Uttar Pradesh,Basmati Rice harvested fresh from organic farms.,basmati_rice.jpg,707,2025-09-26
+Soybean,Oilseed,LOT027,FARM127,Grade B,Haryana,Soybean harvested fresh from organic farms.,soybean.jpg,485,2025-09-27
+Potato,Cash Crop,LOT028,FARM128,Grade A,Uttar Pradesh,Potato harvested fresh from organic farms.,potato.jpg,1994,2025-09-28
+Soybean,Oilseed,LOT029,FARM129,Grade B,Kerala,Soybean harvested fresh from organic farms.,soybean.jpg,744,2025-09-29
+Green Gram,Grain,LOT030,FARM130,Grade A,Uttar Pradesh,Green Gram harvested fresh from organic farms.,green_gram.jpg,1276,2025-09-30
+Cotton,Oilseed,LOT031,FARM131,Standard,Tamil Nadu,Cotton harvested fresh from organic farms.,cotton.jpg,215,2025-10-01
+Turmeric,Cash Crop,LOT032,FARM132,Grade A,Kerala,Turmeric harvested fresh from organic farms.,turmeric.jpg,1334,2025-10-02
+Alphonso Mango,Spice,LOT033,FARM133,Grade B,Uttar Pradesh,Alphonso Mango harvested fresh from organic farms.,alphonso_mango.jpg,575,2025-10-03
+Pomegranate,Vegetable,LOT034,FARM134,Standard,Haryana,Pomegranate harvested fresh from organic farms.,pomegranate.jpg,479,2025-10-04
+Green Gram,Oilseed,LOT035,FARM135,Standard,"Ratnagiri, Maharashtra",Green Gram harvested fresh from organic farms.,green_gram.jpg,97,2025-10-05
+Alphonso Mango,Cash Crop,LOT036,FARM136,Grade B,Bihar,Alphonso Mango harvested fresh from organic farms.,alphonso_mango.jpg,110,2025-10-06
+Soybean,Fruit,LOT037,FARM137,Premium,Kerala,Soybean harvested fresh from organic farms.,soybean.jpg,1156,2025-10-07
+Red Chilli,Cash Crop,LOT038,FARM138,Grade A,Haryana,Red Chilli harvested fresh from organic farms.,red_chilli.jpg,517,2025-10-08
+Tomato,Fruit,LOT039,FARM139,Premium,Tamil Nadu,Tomato harvested fresh from organic farms.,tomato.jpg,142,2025-10-09
+Banana,Oilseed,LOT040,FARM140,Grade B,"Ratnagiri, Maharashtra",Banana harvested fresh from organic farms.,banana.jpg,1057,2025-10-10
+Potato,Grain,LOT041,FARM141,Premium,Madhya Pradesh,Potato harvested fresh from organic farms.,potato.jpg,319,2025-10-11
+Groundnut,Oilseed,LOT042,FARM142,Grade A,Haryana,Groundnut harvested fresh from organic farms.,groundnut.jpg,602,2025-10-12
+Papaya,Grain,LOT043,FARM143,Grade B,Kerala,Papaya harvested fresh from organic farms.,papaya.jpg,468,2025-10-13
+Potato,Vegetable,LOT044,FARM144,Grade A,Kerala,Potato harvested fresh from organic farms.,potato.jpg,1299,2025-10-14
+Wheat,Cash Crop,LOT045,FARM145,Premium,Uttar Pradesh,Wheat harvested fresh from organic farms.,wheat.jpg,1325,2025-10-15
+Grapes,Oilseed,LOT046,FARM146,Standard,Uttar Pradesh,Grapes harvested fresh from organic farms.,grapes.jpg,92,2025-10-16
+Mustard Seeds,Vegetable,LOT047,FARM147,Premium,"Punjab, India",Mustard Seeds harvested fresh from organic farms.,mustard_seeds.jpg,1062,2025-10-17
+Wheat,Vegetable,LOT048,FARM148,Premium,Uttar Pradesh,Wheat harvested fresh from organic farms.,wheat.jpg,1025,2025-10-18
+Onion,Oilseed,LOT049,FARM149,Premium,Bihar,Onion harvested fresh from organic farms.,onion.jpg,1374,2025-10-19
+Alphonso Mango,Grain,LOT050,FARM150,Standard,Kerala,Alphonso Mango harvested fresh from organic farms.,alphonso_mango.jpg,1663,2025-10-20
+Banana,Oilseed,LOT051,FARM151,Standard,"Punjab, India",Banana harvested fresh from organic farms.,banana.jpg,363,2025-10-21
+Pomegranate,Vegetable,LOT052,FARM152,Grade B,Kerala,Pomegranate harvested fresh from organic farms.,pomegranate.jpg,510,2025-10-22
+Papaya,Spice,LOT053,FARM153,Grade A,Karnataka,Papaya harvested fresh from organic farms.,papaya.jpg,396,2025-10-23
+Red Chilli,Vegetable,LOT054,FARM154,Grade A,Haryana,Red Chilli harvested fresh from organic farms.,red_chilli.jpg,774,2025-10-24
+Basmati Rice,Cash Crop,LOT055,FARM155,Premium,"Punjab, India",Basmati Rice harvested fresh from organic farms.,basmati_rice.jpg,1144,2025-10-25
+Green Gram,Cash Crop,LOT056,FARM156,Grade A,Karnataka,Green Gram harvested fresh from organic farms.,green_gram.jpg,242,2025-10-26
+Groundnut,Oilseed,LOT057,FARM157,Standard,"Ratnagiri, Maharashtra",Groundnut harvested fresh from organic farms.,groundnut.jpg,765,2025-10-27
+Apple,Cash Crop,LOT058,FARM158,Premium,"Guntur, Andhra Pradesh",Apple harvested fresh from organic farms.,apple.jpg,1086,2025-10-28
+Turmeric,Spice,LOT059,FARM159,Grade A,"Punjab, India",Turmeric harvested fresh from organic farms.,turmeric.jpg,823,2025-10-29
+Red Chilli,Oilseed,LOT060,FARM160,Standard,"Punjab, India",Red Chilli harvested fresh from organic farms.,red_chilli.jpg,1674,2025-10-30
+Tomato,Fruit,LOT061,FARM161,Standard,Uttar Pradesh,Tomato harvested fresh from organic farms.,tomato.jpg,1015,2025-10-31
+Alphonso Mango,Spice,LOT062,FARM162,Grade A,Uttar Pradesh,Alphonso Mango harvested fresh from organic farms.,alphonso_mango.jpg,192,2025-11-01
+Mustard Seeds,Grain,LOT063,FARM163,Premium,"Punjab, India",Mustard Seeds harvested fresh from organic farms.,mustard_seeds.jpg,698,2025-11-02
+Wheat,Grain,LOT064,FARM164,Standard,Kerala,Wheat harvested fresh from organic farms.,wheat.jpg,441,2025-11-03
+Alphonso Mango,Oilseed,LOT065,FARM165,Premium,"Punjab, India",Alphonso Mango harvested fresh from organic farms.,alphonso_mango.jpg,1777,2025-11-04
+Apple,Fruit,LOT066,FARM166,Standard,Bihar,Apple harvested fresh from organic farms.,apple.jpg,1802,2025-11-05
+Banana,Oilseed,LOT067,FARM167,Grade A,Kerala,Banana harvested fresh from organic farms.,banana.jpg,695,2025-11-06
+Groundnut,Grain,LOT068,FARM168,Grade A,Bihar,Groundnut harvested fresh from organic farms.,groundnut.jpg,1207,2025-11-07
+Apple,Fruit,LOT069,FARM169,Standard,"Guntur, Andhra Pradesh",Apple harvested fresh from organic farms.,apple.jpg,1974,2025-11-08
+Grapes,Fruit,LOT070,FARM170,Grade B,Uttar Pradesh,Grapes harvested fresh from organic farms.,grapes.jpg,744,2025-11-09
+Mustard Seeds,Cash Crop,LOT071,FARM171,Grade A,Tamil Nadu,Mustard Seeds harvested fresh from organic farms.,mustard_seeds.jpg,295,2025-11-10
+Mustard Seeds,Cash Crop,LOT072,FARM172,Grade A,Kerala,Mustard Seeds harvested fresh from organic farms.,mustard_seeds.jpg,1261,2025-11-11
+Alphonso Mango,Spice,LOT073,FARM173,Standard,"Ratnagiri, Maharashtra",Alphonso Mango harvested fresh from organic farms.,alphonso_mango.jpg,830,2025-11-12
+Onion,Vegetable,LOT074,FARM174,Grade A,Madhya Pradesh,Onion harvested fresh from organic farms.,onion.jpg,1132,2025-11-13
+Cotton,Oilseed,LOT075,FARM175,Grade A,"Ratnagiri, Maharashtra",Cotton harvested fresh from organic farms.,cotton.jpg,1512,2025-11-14
+Banana,Cash Crop,LOT076,FARM176,Grade A,Karnataka,Banana harvested fresh from organic farms.,banana.jpg,1339,2025-11-15
+Turmeric,Vegetable,LOT077,FARM177,Premium,Madhya Pradesh,Turmeric harvested fresh from organic farms.,turmeric.jpg,1242,2025-11-16
+Basmati Rice,Oilseed,LOT078,FARM178,Grade B,Karnataka,Basmati Rice harvested fresh from organic farms.,basmati_rice.jpg,530,2025-11-17
+Alphonso Mango,Vegetable,LOT079,FARM179,Grade B,Tamil Nadu,Alphonso Mango harvested fresh from organic farms.,alphonso_mango.jpg,320,2025-11-18
+Coconut,Oilseed,LOT080,FARM180,Grade B,"Punjab, India",Coconut harvested fresh from organic farms.,coconut.jpg,998,2025-11-19
+Tomato,Fruit,LOT081,FARM181,Standard,Uttar Pradesh,Tomato harvested fresh from organic farms.,tomato.jpg,323,2025-11-20
+Sugarcane,Cash Crop,LOT082,FARM182,Grade B,Madhya Pradesh,Sugarcane harvested fresh from organic farms.,sugarcane.jpg,281,2025-11-21
+Grapes,Grain,LOT083,FARM183,Premium,"Guntur, Andhra Pradesh",Grapes harvested fresh from organic farms.,grapes.jpg,397,2025-11-22
+Coconut,Grain,LOT084,FARM184,Grade A,Karnataka,Coconut harvested fresh from organic farms.,coconut.jpg,1457,2025-11-23
+Banana,Cash Crop,LOT085,FARM185,Premium,Tamil Nadu,Banana harvested fresh from organic farms.,banana.jpg,1131,2025-11-24
+Banana,Cash Crop,LOT086,FARM186,Grade B,Bihar,Banana harvested fresh from organic farms.,banana.jpg,1816,2025-11-25
+Green Gram,Cash Crop,LOT087,FARM187,Premium,Tamil Nadu,Green Gram harvested fresh from organic farms.,green_gram.jpg,1290,2025-11-26
+Green Gram,Fruit,LOT088,FARM188,Grade B,Karnataka,Green Gram harvested fresh from organic farms.,green_gram.jpg,1006,2025-11-27
+Green Gram,Grain,LOT089,FARM189,Grade B,Haryana,Green Gram harvested fresh from organic farms.,green_gram.jpg,1460,2025-11-28
+Potato,Fruit,LOT090,FARM190,Grade A,Tamil Nadu,Potato harvested fresh from organic farms.,potato.jpg,1169,2025-11-29
+Sugarcane,Oilseed,LOT091,FARM191,Premium,Bihar,Sugarcane harvested fresh from organic farms.,sugarcane.jpg,876,2025-11-30
+Onion,Cash Crop,LOT092,FARM192,Grade B,"Punjab, India",Onion harvested fresh from organic farms.,onion.jpg,200,2025-12-01
+Soybean,Cash Crop,LOT093,FARM193,Premium,Uttar Pradesh,Soybean harvested fresh from organic farms.,soybean.jpg,798,2025-12-02
+Papaya,Spice,LOT094,FARM194,Grade A,Bihar,Papaya harvested fresh from organic farms.,papaya.jpg,1826,2025-12-03
+Coconut,Spice,LOT095,FARM195,Premium,Bihar,Coconut harvested fresh from organic farms.,coconut.jpg,314,2025-12-04
+Coconut,Spice,LOT096,FARM196,Grade A,"Guntur, Andhra Pradesh",Coconut harvested fresh from organic farms.,coconut.jpg,54,2025-12-05
+Red Chilli,Cash Crop,LOT097,FARM197,Grade A,Karnataka,Red Chilli harvested fresh from organic farms.,red_chilli.jpg,1032,2025-12-06
+Mustard Seeds,Cash Crop,LOT098,FARM198,Standard,"Guntur, Andhra Pradesh",Mustard Seeds harvested fresh from organic farms.,mustard_seeds.jpg,1197,2025-12-07
+Pomegranate,Fruit,LOT099,FARM199,Premium,"Punjab, India",Pomegranate harvested fresh from organic farms.,pomegranate.jpg,1240,2025-12-08
+Basmati Rice,Cash Crop,LOT100,FARM200,Premium,"Punjab, India",Basmati Rice harvested fresh from organic farms.,basmati_rice.jpg,734,2025-12-09
