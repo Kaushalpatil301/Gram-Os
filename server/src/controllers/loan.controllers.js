@@ -3,11 +3,13 @@ import { ApiError } from '../utils/api-error.js';
 import { ApiResponse } from '../utils/api-response.js';
 
 const MOCK_BANKS = [
-  { id: "b1", name: "State Bank of India (SBI)", interestRate: 7.0, maxLoanAmount: 500000, logo: "🏦" },
-  { id: "b2", name: "HDFC Bank", interestRate: 8.5, maxLoanAmount: 1000000, logo: "💸" },
-  { id: "b3", name: "ICICI Bank", interestRate: 8.2, maxLoanAmount: 800000, logo: "💳" },
-  { id: "b4", name: "Gramin Bank", interestRate: 6.5, maxLoanAmount: 300000, logo: "🌾" },
-  { id: "b5", name: "NABARD", interestRate: 5.5, maxLoanAmount: 1500000, logo: "🌱" }
+  { id: "b1", name: "State Bank of India (SBI)", interestRate: 7.0, maxLoanAmount: 500000, logo: "🏦", minScore: 500, allowedRoles: ["farmer", "retailer"], type: "growth", description: "Long-term expansion loan for business growth.", applyLink: "https://sbi.co.in/web/agri-rural/agriculture-banking" },
+  { id: "b2", name: "HDFC SmartAgri", interestRate: 8.5, maxLoanAmount: 1000000, logo: "💸", minScore: 650, allowedRoles: ["farmer", "retailer"], type: "growth", description: "Premium machinery and infrastructure financing.", applyLink: "https://www.hdfcbank.com/personal/borrow/popular-loans/rural-loans" },
+  { id: "b3", name: "BharatPe QR Cash", interestRate: 11.2, maxLoanAmount: 200000, logo: "📱", minScore: 550, allowedRoles: ["retailer"], type: "qr", description: "Instant cash advance based on your daily QR transactions.", applyLink: "https://bharatpe.com/loans" },
+  { id: "b4", name: "Gramin Bank", interestRate: 6.5, maxLoanAmount: 300000, logo: "🌾", minScore: 300, allowedRoles: ["farmer", "villager"], type: "standard", description: "Standard community support loan.", applyLink: "https://nationalbank.co.in" },
+  { id: "b5", name: "NABARD Kisan Scheme", interestRate: 5.5, maxLoanAmount: 1500000, logo: "🌱", minScore: 400, allowedRoles: ["farmer"], type: "growth", description: "Govt-subsidized crop and land expansion loan.", applyLink: "https://www.nabard.org/" },
+  { id: "b6", name: "Paytm Merchant Loan", interestRate: 12.0, maxLoanAmount: 500000, logo: "💳", minScore: 450, allowedRoles: ["retailer", "villager"], type: "qr", description: "Daily installment loan based on UPI QR history.", applyLink: "https://paytm.com/business/loans" },
+  { id: "b7", name: "Village Co-op Society", interestRate: 4.5, maxLoanAmount: 50000, logo: "🤝", minScore: 200, allowedRoles: ["villager", "farmer"], type: "standard", description: "Small, trust-based micro-loan for quick needs.", applyLink: "https://sahakarabhavana.gov.in/" },
 ];
 
 export const getBanks = async (req, res, next) => {

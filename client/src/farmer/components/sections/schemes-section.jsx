@@ -8,7 +8,7 @@ import {
   IndianRupee, Clock, Star, Info, ArrowRight
 } from "lucide-react";
 import { matchSchemes, getEstimatedBenefits } from "../../lib/schemesMatcher";
-import { getMockFarmerData as getFarmerData } from "../../lib/creditEngine";
+import { useProfile } from "../../../contexts/useProfile";
 
 // ── Why Matched — explainability pill list ────────────────────────────────────
 function MatchReasons({ reasons }) {
@@ -252,15 +252,16 @@ function SchemeCard({ scheme, isOpen, onToggle }) {
 
 // ── Main Section ──────────────────────────────────────────────────────────────
 export default function SchemesSection() {
-  const farmer = getFarmerData();
-  const schemes = useMemo(() => matchSchemes(farmer), []);
-  const benefits = useMemo(() => getEstimatedBenefits(farmer), []);
+  const { user, profile } = useProfile();
+  const role = user?.role || "farmer";
+  
+  const schemes = useMemo(() => matchSchemes(role, profile || {}), [role, profile]);
+  const benefits = useMemo(() => getEstimatedBenefits(role, profile || {}), [role, profile]);
+  
   const [expandedScheme, setExpandedScheme] = useState(null);
-  const [filter, setFilter] = useState("eligible");
 
   const eligible   = schemes.filter(s => s.isEligible);
-  const ineligible = schemes.filter(s => !s.isEligible);
-  const displayed  = filter === "eligible" ? eligible : filter === "all" ? schemes : ineligible;
+  const displayed  = schemes;
 
   // Top 3 quick-win schemes for the action strip
   const quickWins = eligible.slice(0, 3);
@@ -277,7 +278,7 @@ export default function SchemesSection() {
           Government Scheme Discovery
         </h2>
         <p className="text-gray-500 mt-1 text-sm">
-          Auto-matched based on your farm profile — farmers lose crores in unclaimed entitlements every year.
+          Auto-matched based on your {role} profile — stakeholders lose crores in unclaimed entitlements every year.
         </p>
       </div>
 
@@ -337,37 +338,41 @@ export default function SchemesSection() {
         </div>
       )}
 
-      {/* Filter tabs */}
-      <div className="flex gap-2 bg-gray-100 rounded-xl p-1.5">
-        {[
-          { id: "eligible",   label: `✅ Eligible (${eligible.length})` },
-          { id: "all",        label: `📋 All (${schemes.length})` },
-          { id: "ineligible", label: `❌ Not Eligible (${ineligible.length})` },
-        ].map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setFilter(tab.id)}
-            className={`flex-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-all cursor-pointer ${
-              filter === tab.id ? "bg-white text-indigo-700 shadow-sm" : "text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
 
-      {/* Farmer context — what data was used for matching */}
+      {/* Context — what data was used for matching */}
       <div className="bg-purple-50 border border-purple-100 rounded-2xl p-4">
         <div className="flex items-center gap-2 mb-3">
           <Brain className="w-4 h-4 text-purple-600" />
           <span className="text-xs font-bold text-purple-700 uppercase tracking-wide">AI matched using your profile</span>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-          {[
-            { label: "Land", value: farmer.landHolding || "3.5 acres" },
-            { label: "Category", value: farmer.category || "Small Farmer" },
-            { label: "State", value: farmer.state || "Maharashtra" },
-            { label: "Crop", value: farmer.primaryCrop || "Tomato" },
+          {role === "farmer" && [
+            { label: "Land", value: profile?.landSizeAcres ? `${profile.landSizeAcres} acres` : "Not provided" },
+            { label: "Primary Crop", value: profile?.primaryCrops?.[0] || "Not provided" },
+            { label: "State", value: profile?.state || "Not provided" },
+            { label: "Soil", value: profile?.soilType || "Not provided" },
+          ].map((f, i) => (
+            <div key={i} className="bg-white rounded-xl px-3 py-2 text-center">
+              <div className="text-xs font-bold text-gray-800 truncate">{f.value}</div>
+              <div className="text-[9px] text-gray-400 uppercase font-semibold mt-0.5">{f.label}</div>
+            </div>
+          ))}
+          {role === "retailer" && [
+            { label: "Business Type", value: profile?.businessType || "Retail" },
+            { label: "Years in Biz", value: profile?.yearsInBusiness || "New" },
+            { label: "GST", value: profile?.gstNumber ? "Registered" : "Unregistered" },
+            { label: "State", value: profile?.location || "Not provided" },
+          ].map((f, i) => (
+            <div key={i} className="bg-white rounded-xl px-3 py-2 text-center">
+              <div className="text-xs font-bold text-gray-800 truncate">{f.value}</div>
+              <div className="text-[9px] text-gray-400 uppercase font-semibold mt-0.5">{f.label}</div>
+            </div>
+          ))}
+          {role === "villager" && [
+            { label: "Skills", value: profile?.skills?.[0] || "General" },
+            { label: "Experience", value: profile?.experience || "New" },
+            { label: "Credit Score", value: profile?.creditScore || "N/A" },
+            { label: "Location", value: profile?.location || "Not provided" },
           ].map((f, i) => (
             <div key={i} className="bg-white rounded-xl px-3 py-2 text-center">
               <div className="text-xs font-bold text-gray-800 truncate">{f.value}</div>
