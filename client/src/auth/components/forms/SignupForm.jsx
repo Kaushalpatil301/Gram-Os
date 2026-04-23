@@ -1,11 +1,13 @@
 import { useState } from "react";
+import { User, Mail, Lock, CheckCircle, Store, Wheat, Users, Home } from "lucide-react";
+import { apiFetch } from "../../../lib/api.js";
 import axios from "axios";
 
 const ROLES = [
   { id: "farmer", label: "Farmer", icon: "🌾", description: "Grow and sell produce" },
   { id: "retailer", label: "Retailer", icon: "🏪", description: "Buy and sell products" },
   { id: "consumer", label: "Consumer", icon: "🛒", description: "Track and buy products" },
-  { id: "worker", label: "Villager/Worker", icon: "👷", description: "Find rural gig work" },
+  { id: "villager", label: "Villager", icon: "🏡", description: "Find rural gig work" },
 ];
 
 export default function SignupForm({ onSuccess }) {
@@ -67,21 +69,21 @@ export default function SignupForm({ onSuccess }) {
     setApiError("");
 
     try {
-      const response = await axios.post(
-        "http://localhost:8000/api/v1/auth/register",
-        {
+      const response = await apiFetch("/auth/register", {
+        method: "POST",
+        body: JSON.stringify({
           email: form.email,
           username: form.email.split("@")[0],
           password: form.password,
           role: form.role,
-        }
-      );
+        })
+      });
 
       // Success - notify parent with role
-      onSuccess({ ...response.data.data.user, role: form.role });
+      onSuccess({ ...response.data.user, role: form.role });
     } catch (error) {
       console.error("Signup failed:", error);
-      const errorMessage = error.response?.data?.message || error.message || "Signup failed. Please try again.";
+      const errorMessage = error.message || "Signup failed. Please try again.";
       setApiError(errorMessage);
     } finally {
       setIsSubmitting(false);

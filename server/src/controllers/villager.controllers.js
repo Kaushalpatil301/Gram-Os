@@ -15,7 +15,7 @@ const INITIAL_SCHEMES = [
   },
   {
     schemeId: "s2",
-    applicableRoles: ["farmer", "worker", "villager"],
+    applicableRoles: ["farmer", "villager"],
     translations: {
       english: { name: "Rural Livelihood Mission", docs: ["Aadhaar Card", "Residence Proof", "2 Passport Photos"] },
       hindi: { name: "ग्रामीण आजीविका मिशन", docs: ["आधार कार्ड", "निवास प्रमाण", "2 पासपोर्ट फोटो"] },
@@ -42,7 +42,7 @@ const INITIAL_SCHEMES = [
   },
   {
     schemeId: "s5",
-    applicableRoles: ["worker", "villager"],
+    applicableRoles: ["villager"],
     translations: {
       english: { name: "Mahatma Gandhi NREGA", docs: ["Aadhaar Card", "Job Card", "Bank Passbook"] },
       hindi: { name: "महात्मा गांधी नरेगा", docs: ["आधार कार्ड", "जॉब कार्ड", "बैंक पासबुक"] },
@@ -64,7 +64,7 @@ const INITIAL_MODULES = [
   { moduleId: "m1", title: "Advanced Harvest Techniques", estimatedMinutes: 40, unlocksJobTier: "Tier 2 jobs (₹650/day+)", baseProgressPercent: 60 },
   { moduleId: "m2", title: "Safe Pesticide Handling", estimatedMinutes: 25, unlocksJobTier: "Certified Sprayer (₹700/day+)", baseProgressPercent: 100 },
   { moduleId: "m3", title: "Irrigation Setup Basics", estimatedMinutes: 30, unlocksJobTier: "Irrigation Assistant", baseProgressPercent: 35 },
-  { moduleId: "m4", title: "Post-Harvest Quality Check", estimatedMinutes: 20, unlocksJobTier: "QC Verified Worker (₹720/day+)", baseProgressPercent: 0 },
+  { moduleId: "m4", title: "Post-Harvest Quality Check", estimatedMinutes: 20, unlocksJobTier: "QC Verified Villager (₹720/day+)", baseProgressPercent: 0 },
 ];
 
 // Seed function called lazily

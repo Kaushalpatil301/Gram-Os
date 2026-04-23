@@ -4,6 +4,7 @@ import authRouter from "./routes/auth.routes.js";
 import productRouter from "./routes/product.routes.js";
 import inventoryRouter from "./routes/inventory.routes.js";
 import loanRouter from "./routes/loan.routes.js";
+import profileRouter from "./routes/profile.routes.js";
 import cookieParser from "cookie-parser";
 
 const app = express();
@@ -26,6 +27,7 @@ app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/products", productRouter);
 app.use("/api/v1/inventory", inventoryRouter);
 app.use("/api/v1/loans", loanRouter);
+app.use("/api/v1/profile", profileRouter);
 
 import twilio from "twilio";
 

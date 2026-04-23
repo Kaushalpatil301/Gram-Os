@@ -8,8 +8,8 @@
  *      amount={1200}
  *      purpose="Input Purchase"
  *      description="Fertilizer × 2 bags — AgroMart"
- *      buyerName={workerProfile.name}
- *      buyerContact={workerProfile.phone}
+ *      buyerName={villagerProfile.name}
+ *      buyerContact={villagerProfile.phone}
  *      onSuccess={(paymentId) => handleInputPurchase(paymentId)}
  *    />
  *
@@ -18,8 +18,8 @@
  *      amount={99}
  *      purpose="Course Unlock"
  *      description="Drip Irrigation Module — Academy"
- *      buyerName={workerProfile.name}
- *      buyerContact={workerProfile.phone}
+ *      buyerName={villagerProfile.name}
+ *      buyerContact={villagerProfile.phone}
  *      onSuccess={(paymentId) => unlockModule(moduleId, paymentId)}
  *      variant="compact"
  *    />
@@ -29,8 +29,8 @@
  *      amount={500}
  *      purpose="NPTEL Enrollment"
  *      description="Sustainable Agriculture — NPTEL"
- *      buyerName={workerProfile.name}
- *      buyerContact={workerProfile.phone}
+ *      buyerName={villagerProfile.name}
+ *      buyerContact={villagerProfile.phone}
  *      onSuccess={(paymentId) => enrollCourse(courseId, paymentId)}
  *      variant="inline"
  *    />
