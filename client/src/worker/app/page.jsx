@@ -10,10 +10,12 @@ import ProfileModal from "../components/ProfileModal.jsx";
 
 // Section components (Farmer specific sections as requested)
 import SchemesSection from "../../farmer/components/sections/schemes-section.jsx";
+import CreditSection from "../../farmer/components/sections/credit-section.jsx";
+import LoanSection from "../../farmer/components/sections/loan-section.jsx";
+import WorkforceSection from "../../farmer/components/sections/workforce-section.jsx";
 
 // Villager specific sections
 import AlertSection from "../components/sections/AlertSection.jsx";
-import JobsSection from "../components/sections/JobsSection.jsx";
 import AcademySection from "../components/sections/AcademySection.jsx";
 import NptelSection from "../components/sections/NptelSection.jsx";
 import EarningsSection from "../components/sections/EarningsSection.jsx";
@@ -33,17 +35,16 @@ import {
 import {
   Shield, Briefcase, BookOpen, GraduationCap,
   IndianRupee, QrCode, Landmark, Bell,
-  LogOut, User, Menu, Sprout, HardHat, Award
+  LogOut, User, Menu, Sprout, HardHat, Award, DollarSign
 } from "lucide-react";
 
 const NAV_ITEMS = [
-  { id: "profile",  label: "My Identity", icon: Shield, color: "text-emerald-600" },
-  { id: "alert",    label: "Alerts",      icon: Bell, color: "text-red-600" },
   { id: "jobs",     label: "Jobs Market", icon: Briefcase, color: "text-emerald-600" },
   { id: "academy",  label: "Skills Academy", icon: BookOpen, color: "text-blue-600" },
   { id: "nptel",    label: "NPTEL Courses", icon: GraduationCap, color: "text-indigo-600" },
-  { id: "earnings", label: "Earnings",    icon: IndianRupee, color: "text-amber-600" },
-  { id: "scanner",  label: "QR Scanner",  icon: QrCode, color: "text-emerald-600" },
+  { id: "earnings", label: "Earnings", icon: IndianRupee, color: "text-amber-600" },
+  { id: "credit",   label: "Trust Score", icon: Award, color: "text-amber-600" },
+  { id: "loans",    label: "Bank Loans", icon: DollarSign, color: "text-blue-600" },
   { id: "schemes",  label: "Govt Schemes", icon: Landmark, color: "text-emerald-700" },
 ];
 
@@ -53,6 +54,7 @@ function VillagerContent() {
   const [activeSection, setActiveSection] = useState("jobs");
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
   const navigate = useNavigate();
 
   // ── localStorage-backed state ──
@@ -243,24 +245,8 @@ function VillagerContent() {
 
   const renderSection = () => {
     switch (activeSection) {
-      case "alert":
-        return <AlertSection urgentJob={urgentJob} onApply={showNotification} />;
-
       case "jobs":
-        return (
-          <JobsSection
-            jobs={jobs}
-            cropFilter={cropFilter}
-            setCropFilter={setCropFilter}
-            maxDistance={maxDistance}
-            setMaxDistance={setMaxDistance}
-            voiceQuery={voiceQuery}
-            setVoiceQuery={setVoiceQuery}
-            isListening={isListening}
-            toggleVoice={toggleVoice}
-            showNotification={showNotification}
-          />
-        );
+        return <WorkforceSection />;
 
       case "academy":
         return <AcademySection modules={modules} onAdvance={advanceModule} />;
@@ -276,21 +262,14 @@ function VillagerContent() {
       case "schemes":
         return <SchemesSection />;
 
+      case "credit":
+        return <CreditSection />;
+
+      case "loans":
+        return <LoanSection />;
+
       default:
-        return (
-          <JobsSection
-            jobs={jobs}
-            cropFilter={cropFilter}
-            setCropFilter={setCropFilter}
-            maxDistance={maxDistance}
-            setMaxDistance={setMaxDistance}
-            voiceQuery={voiceQuery}
-            setVoiceQuery={setVoiceQuery}
-            isListening={isListening}
-            toggleVoice={toggleVoice}
-            showNotification={showNotification}
-          />
-        );
+        return <WorkforceSection />;
     }
   };
 
@@ -377,14 +356,41 @@ function VillagerContent() {
           </button>
 
           <h2 className="text-xl font-bold text-gray-800">
-            {activeSection === "alert" ? "Alerts" : NAV_ITEMS.find(n => n.id === activeSection)?.label}
+            {NAV_ITEMS.find(n => n.id === activeSection)?.label || "Dashboard"}
           </h2>
 
           <div className="flex items-center gap-3">
-            <button onClick={() => goTo("alert")} className="relative p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-600">
-              <Bell className="w-7 h-7" />
-              {urgentJob && <span className="absolute top-1.5 right-1.5 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></span>}
-            </button>
+            <div className="relative">
+              <button 
+                onClick={() => setShowNotifications(!showNotifications)} 
+                className="relative p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-600 focus:outline-none"
+              >
+                <Bell className="w-7 h-7" />
+                {urgentJob && <span className="absolute top-1.5 right-1.5 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></span>}
+              </button>
+
+              {showNotifications && (
+                <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] border border-gray-100 overflow-hidden z-50">
+                  <div className="p-4 border-b border-gray-50 flex justify-between items-center bg-gray-50/50">
+                    <h3 className="font-bold text-gray-900">Alerts</h3>
+                    {urgentJob && <span className="bg-red-100 text-red-600 text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full">1 New</span>}
+                  </div>
+                  <div className="max-h-96 overflow-y-auto">
+                    {!urgentJob ? (
+                      <div className="p-6 text-center text-gray-500 text-sm font-medium">No active alerts</div>
+                    ) : (
+                      <div className="p-4 border-b border-gray-50 hover:bg-amber-50/50 transition-colors">
+                        <AlertSection urgentJob={urgentJob} onApply={(msg) => {
+                          showNotification(msg);
+                          setShowNotifications(false);
+                        }} />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+            
             <div className="flex items-center gap-2 bg-amber-50 px-3 py-1.5 rounded-xl border border-amber-100">
               <Award className="w-5 h-5 text-amber-600" />
               <span className="text-base font-bold text-amber-700">{villagerProfile.gigScore || "720"}</span>

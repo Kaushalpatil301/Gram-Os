@@ -8,10 +8,15 @@ import QRScanner from "./components/QRScanner";
 import ProfileModal from "./components/ProfileModal";
 import Chatbot from "../consumer/app/Chatbot.jsx";
 import ChatSection from "./components/ChatSection.jsx";
+import SchemesSection from "../farmer/components/sections/schemes-section.jsx";
+import CreditSection from "../farmer/components/sections/credit-section.jsx";
+import LoanSection from "../farmer/components/sections/loan-section.jsx";
+import WorkforceSection from "../farmer/components/sections/workforce-section.jsx";
 import { useNavigate } from "react-router-dom";
 
 import {
   Package,
+  Landmark,
   BarChart3,
   Users,
   FileText,
@@ -22,14 +27,19 @@ import {
   Sprout,
   Award,
   Bell,
-  MessageSquare
+  MessageSquare,
+  DollarSign
 } from "lucide-react";
 
 const NAV_ITEMS = [
   { id: "browse", label: "Product Sourcing", icon: Package, color: "text-emerald-600" },
   { id: "analytics", label: "Analytics", icon: BarChart3, color: "text-blue-600" },
   { id: "network", label: "Farmer Network", icon: Users, color: "text-orange-600" },
+  { id: "workforce", label: "Workforce Hub", icon: Users, color: "text-orange-600" },
   { id: "contracts", label: "Contracts", icon: FileText, color: "text-purple-600" },
+  { id: "credit", label: "Trust Score", icon: Award, color: "text-amber-600" },
+  { id: "loans", label: "Bank Loans", icon: DollarSign, color: "text-blue-600" },
+  { id: "schemes", label: "Govt Schemes", icon: Landmark, color: "text-indigo-600" },
   { id: "qr", label: "QR Scanner", icon: QrCode, color: "text-emerald-600" },
 ];
 
@@ -115,20 +125,17 @@ export default function RetailerDashboard() {
 
   const renderSection = () => {
     switch (activeSection) {
-      case "browse":
-        return <BrowseProducts />;
-      case "analytics":
-        return <Analytics />;
-      case "network":
-        return <FarmerNetwork />;
-      case "contracts":
-        return <Contracts />;
-      case "qr":
-        return <QRScanner />;
-      case "chat":
-        return <ChatSection activeChats={activeChats} />;
-      default:
-        return <BrowseProducts />;
+      case "browse":     return <BrowseProducts />;
+      case "analytics":  return <Analytics />;
+      case "network":    return <FarmerNetwork />;
+      case "workforce":  return <WorkforceSection />;
+      case "contracts":  return <Contracts />;
+      case "credit":     return <CreditSection />;
+      case "loans":      return <LoanSection />;
+      case "schemes":    return <SchemesSection />;
+      case "qr":         return <QRScanner />;
+      case "chat":       return <ChatSection activeChats={activeChats} />;
+      default:           return <BrowseProducts />;
     }
   };
 

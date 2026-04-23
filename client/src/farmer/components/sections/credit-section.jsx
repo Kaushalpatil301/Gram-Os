@@ -1,14 +1,38 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, Award, Target, ArrowUp, ArrowDown, Info } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from "recharts";
-import { calculateCreditScore, generateCreditHistory, getMockFarmerData } from "../../lib/creditEngine";
+import { calculateCreditScore, generateCreditHistory, fetchAICreditScore } from "../../lib/creditEngine";
+import { useProfile } from "../../../contexts/useProfile";
+import { Loader2 } from "lucide-react";
 
 export default function CreditSection() {
-  const farmer = getMockFarmerData();
-  const credit = useMemo(() => calculateCreditScore(farmer), []);
+  const { user, profile } = useProfile();
+  const [credit, setCredit] = useState(null);
+  const [loading, setLoading] = useState(true);
+  
   const history = useMemo(() => generateCreditHistory(), []);
+
+  useEffect(() => {
+    async function getScore() {
+      setLoading(true);
+      const role = user?.role || "farmer";
+      const data = await fetchAICreditScore(role, profile || {});
+      setCredit(data);
+      setLoading(false);
+    }
+    getScore();
+  }, [user, profile]);
+
+  if (loading || !credit) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-indigo-600">
+        <Loader2 className="w-10 h-10 animate-spin mb-4" />
+        <p className="font-semibold animate-pulse">GramOS AI is analyzing your profile...</p>
+      </div>
+    );
+  }
 
   const scoreAngle = (credit.score / 900) * 270 - 135; // map 0-900 to -135 to 135 degrees
   const circumference = 2 * Math.PI * 80;
@@ -19,9 +43,9 @@ export default function CreditSection() {
       <div>
         <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
           <div className="p-2 bg-amber-100 rounded-xl"><Award className="w-5 h-5 text-amber-700" /></div>
-          Rural Credit Score
+          Trust & Reliability Score
         </h2>
-        <p className="text-gray-500 mt-1">Your financial identity built from platform activity — every transaction strengthens it.</p>
+        <p className="text-gray-500 mt-1">Your AI-analyzed trust identity — built from past experience, deliverables, and transactions.</p>
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6">
@@ -99,9 +123,9 @@ export default function CreditSection() {
       {/* Tips */}
       <Card className="border-0 shadow-md bg-gradient-to-r from-amber-50 to-yellow-50">
         <CardContent className="p-5">
-          <h3 className="font-bold text-gray-900 mb-3">💡 Tips to Improve Your Score</h3>
+          <h3 className="font-bold text-gray-900 mb-3">💡 Tips to Improve Your Trust Score</h3>
           <div className="grid md:grid-cols-2 gap-3">
-            {["Complete more transactions on the platform", "Maintain consistent crop quality ratings above 4.0", "Diversify crops across seasons (currently 4 types)", "Ensure on-time deliveries to buyers", "Stay active every month — log produce and sales", "Link and verify your bank/UPI for payment tracking"].map((tip, i) => (
+            {(credit.tips || ["Complete more verified transactions on the platform", "Maintain high quality in all deliverables"]).map((tip, i) => (
               <div key={i} className="flex items-start gap-2 text-sm text-gray-700"><span className="text-emerald-500 mt-0.5">✓</span>{tip}</div>
             ))}
           </div>
