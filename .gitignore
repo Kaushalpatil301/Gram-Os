@@ -1,2 +1,4 @@
 server/keys/
 .env 
+client/.env
+server/.env
