@@ -1,5 +1,6 @@
 import { useState } from "react";
-import axios from "axios";
+import { Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
+import { apiFetch } from "../../../lib/api.js";
 import { getUserLocation } from "../../../lib/locationService";
 
 export default function LoginForm({ onSuccess }) {
@@ -64,24 +65,21 @@ export default function LoginForm({ onSuccess }) {
       }
 
       // Proceed with login
-      const response = await axios.post(
-        "http://localhost:8000/api/v1/auth/login",
-        {
+      const response = await apiFetch("/auth/login", {
+        method: "POST",
+        body: JSON.stringify({
           email: form.email,
           password: form.password,
           location: locationData // Send location data if available
-        },
-        {
-          withCredentials: true, // Include cookies
-        }
-      );
+        })
+      });
 
       // Success - pass user data to parent
       setLocationStatus("");
-      onSuccess(response.data.data.user);
+      onSuccess(response.data.user);
     } catch (error) {
       console.error(error);
-      const errorMessage = error.response?.data?.message || error.message || "Login failed. Please check your credentials.";
+      const errorMessage = error.message || "Login failed. Please check your credentials.";
       setApiError(errorMessage);
       setLocationStatus("");
     } finally {

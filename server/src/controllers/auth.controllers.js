@@ -1,4 +1,10 @@
 import { User } from "../models/user.models.js";
+import {
+  FarmerProfile,
+  RetailerProfile,
+  ConsumerProfile,
+  VillagerProfile,
+} from "../models/profile.models.js";
 import { ApiResponse } from "../utils/api-response.js";
 import { ApiError } from "../utils/api-error.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -9,6 +15,30 @@ import {
 } from "../utils/mail.js";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
+
+// ─── Profile model selector (mirrors profile.controllers.js) ──────────────────
+const getProfileModel = (role) => {
+  switch (role) {
+    case 'farmer':   return FarmerProfile;
+    case 'retailer': return RetailerProfile;
+    case 'consumer': return ConsumerProfile;
+    case 'villager': return VillagerProfile;
+    default:         return null;
+  }
+};
+
+// Auto-create a blank profile seeded with auth data
+const seedProfile = async (user) => {
+  const Model = getProfileModel(user.role);
+  if (!Model) return;
+  const exists = await Model.findOne({ userId: user._id });
+  if (exists) return;
+  await Model.create({
+    userId: user._id,
+    name:   user.username || '',
+    email:  user.email    || '',
+  });
+};
 
 const generateAccessAndRefreshToken = async (userId) => {
   try {
@@ -76,12 +106,23 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(500, "Something went wrong while registering the user");
   }
 
+  // ─── Auto-create a role-specific profile seeded with signup data ─────────────
+  try { await seedProfile(user); } catch (e) {
+    console.warn("[auth] profile seed failed (non-fatal):", e.message);
+  }
+
+  // ─── Auto-login: generate tokens and set cookies so the session is live ─────
+  const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id);
+  const cookieOptions = { httpOnly: true, secure: true };
+
   return res
     .status(201)
+    .cookie("accessToken",  accessToken,  cookieOptions)
+    .cookie("refreshToken", refreshToken, cookieOptions)
     .json(
       new ApiResponse(
-        200,
-        { user: createdUser },
+        201,
+        { user: createdUser, accessToken },
         "User registered successfully. Please check your email to verify your account.",
       ),
     );

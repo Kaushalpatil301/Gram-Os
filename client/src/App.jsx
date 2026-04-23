@@ -13,7 +13,7 @@ import RetailerPage from "./retailer/app/page.jsx";
 import CropDetector from "./cnn/page.jsx";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import WorkerPage from "./worker/app/page.jsx";
+import VillagerPage from "./worker/app/page.jsx";
 import PhoneSimulation from "./phone/app/page.jsx";
 
 function App() {
@@ -28,8 +28,8 @@ function App() {
           <Route path="/dashboard/farmer" element={<FarmerPage />} />
           <Route path="/dashboard/retailer" element={<RetailerPage />} />
           <Route path="/dashboard/consumer" element={<ConsumerHomePage />} />
-          <Route path="/dashboard/worker" element={<WorkerPage />} />
-          <Route path="/dashboard/villager" element={<WorkerPage />} />
+          <Route path="/dashboard/worker" element={<VillagerPage />} />
+          <Route path="/dashboard/villager" element={<VillagerPage />} />
 
           {/* User-Specific Product Routes */}
           <Route

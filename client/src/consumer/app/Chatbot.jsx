@@ -148,7 +148,7 @@ CORE CAPABILITIES:
 - Document checklists in simple language
 
 7. WORKFORCE
-- Post harvest jobs to nearby workers
+- Post harvest jobs to nearby villagers
 - Fair wage benchmarks by region and crop type
 
 PERSONALITY: Direct, practical, confident — like a mentor who has farmed his whole life but understands markets too. No jargon. Always actionable.
@@ -210,17 +210,17 @@ CORE CAPABILITIES:
 PERSONALITY: Business-focused, data-driven, efficient. Lead with the most actionable insight.
 RESPONSE LENGTH: Under 150 words. Use numbered lists for multi-step processes.`,
 
-  worker: (
+  villager: (
     langInstruction,
   ) => `You are AgriBot — the livelihood assistant of GramOS, India's rural economic operating system.
 
 ⚠️ ABSOLUTE LANGUAGE RULE: ${langInstruction} This rule overrides everything else. Never switch languages.
 
-YOUR ROLE: You serve RURAL WORKERS. You are their job finder, skill coach, and income guide.
+YOUR ROLE: You serve RURAL VILLAGERS. You are their job finder, skill coach, and income guide.
 
 MISSING CONTEXT PROTOCOL — CRITICAL:
 When the user does NOT mention location, skill level, crop type, or availability, you MUST NOT ask upfront or say you cannot help. Instead:
-1. Give a USEFUL answer assuming a general rural Indian worker — unskilled to semi-skilled, available for field work, located in a major agricultural state (UP, Maharashtra, Punjab, MP, or AP).
+1. Give a USEFUL answer assuming a general rural Indian villager — unskilled to semi-skilled, available for field work, located in a major agricultural state (UP, Maharashtra, Punjab, MP, or AP).
 2. At the END, add one soft follow-up: "Tell me your village/district — I can find jobs closest to you."
 3. NEVER say "I need your location." Always give actionable info first.
 4. If skill is missing: answer for general harvest labour (most common need).
@@ -244,7 +244,7 @@ CORE CAPABILITIES:
 
 3. VERIFIED WORK HISTORY (GIG PROFILE)
 - How QR check-ins at farms build verified work history
-- Worker with 20+ verified harvests earns "Trusted Worker" badge
+- Villager with 20+ verified harvests earns "Trusted Villager" badge
 - Why this profile matters for future jobs on and off platform
 
 4. INCOME & PAYMENT TRACKING
@@ -264,7 +264,7 @@ CORE CAPABILITIES:
 - PMJJBY life insurance and PMSBY accident insurance
 - MGNREGS wage support during off-season
 
-PERSONALITY: Supportive, encouraging, clear. Speak simply like a trusted elder who wants workers to succeed. Never condescending.
+PERSONALITY: Supportive, encouraging, clear. Speak simply like a trusted elder who wants villagers to succeed. Never condescending.
 RESPONSE LENGTH: Under 120 words. Use numbered steps. Avoid complex vocabulary.`,
 
   consumer: (
@@ -342,9 +342,9 @@ const ROLE_META = {
     greet:
       'Your procurement intelligence engine is live 📊\n\nTry asking:\n• "Find tomato suppliers near Mumbai"\n• "When will onion prices peak?"\n• "How do I verify QR product passport?"',
   },
-  worker: {
-    label: "Worker",
-    emoji: "👷",
+  villager: {
+    label: "Villager",
+    emoji: "🏡",
     color: "#92400e",
     bg: "#fef3c7",
     greet:
@@ -574,7 +574,7 @@ export default function Chatbot() {
                         target: {
                           type: "string",
                           description:
-                            "The parameter for the action. For 'navigate_section', MUST be one of: 'marketplace', 'produce', 'workforce', 'scanner', 'map', 'credit', 'schemes' (for Farmers), OR 'jobs', 'academy', 'nptel', 'earnings', 'alert' (for Workers), OR 'browse', 'analytics', 'network', 'contracts', 'qr' (for Retailers). For 'navigate_url', provide a path (e.g. '/dashboard/farmer', '/dashboard/worker', '/dashboard/consumer', '/dashboard/retailer'). For 'open_modal', MUST be one of: 'profile', 'scan', 'add_produce'.",
+                            "The parameter for the action. For 'navigate_section', MUST be one of: 'marketplace', 'produce', 'workforce', 'scanner', 'map', 'credit', 'schemes' (for Farmers), OR 'jobs', 'academy', 'nptel', 'earnings', 'alert' (for Villagers), OR 'browse', 'analytics', 'network', 'contracts', 'qr' (for Retailers). For 'navigate_url', provide a path (e.g. '/dashboard/farmer', '/dashboard/villager', '/dashboard/consumer', '/dashboard/retailer'). For 'open_modal', MUST be one of: 'profile', 'scan', 'add_produce'.",
                         },
                       },
                       required: ["actionType"],
@@ -628,7 +628,7 @@ export default function Chatbot() {
                   function: {
                     name: "update_user_profile",
                     description:
-                      "Automatically update the user's profile settings (Farmer or Worker). Use this when the user asks to change their location, name, phone, bio, crops, or language.",
+                      "Automatically update the user's profile settings (Farmer or Villager). Use this when the user asks to change their location, name, phone, bio, crops, or language.",
                     parameters: {
                       type: "object",
                       properties: {
@@ -875,7 +875,7 @@ export default function Chatbot() {
       "Price trend alert",
       "Verify QR passport",
     ],
-    worker: ["Harvest jobs near me", "Earn skill badges", "My income history"],
+    villager: ["Harvest jobs near me", "Earn skill badges", "My income history"],
     consumer: [
       "Seasonal veggies now",
       "Find local farmers",

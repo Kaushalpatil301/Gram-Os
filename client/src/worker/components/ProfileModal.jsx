@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { X, User, Mail, Phone, MapPin, Camera, Save, Edit2, Award, Briefcase, BadgeCheck, Star } from "lucide-react";
+import { X, User, Mail, Phone, MapPin, Camera, Save, Edit2, Award, Briefcase, BadgeCheck, Star, Loader2, CheckCircle, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DEFAULT_PROFILE } from "../lib/data.js";
+import { useProfile } from "../../contexts/useProfile.js";
 
 const SKILL_OPTIONS = ["Harvesting", "Pesticide Use", "Irrigation Setup", "Drip Line", "Sorting & Grading", "Transplanting", "Land Preparation", "Spraying"];
 const LANGUAGE_OPTIONS = ["Marathi", "Hindi", "English", "Kannada", "Telugu"];
@@ -11,42 +12,46 @@ function loadLS(key, fallback) {
   try { return JSON.parse(localStorage.getItem(key) || "null") ?? fallback; } catch { return fallback; }
 }
 
-export default function WorkerProfileModal({ isOpen, onClose }) {
-  const userRaw = loadLS("user", {});
+export default function VillagerProfileModal({ isOpen, onClose }) {
+  const { profile: dbProfile, user: dbUser, loading, saving, saveProfile } = useProfile();
+
+  const userRaw      = dbUser || loadLS("user", {});
   const savedBasic   = loadLS("userProfile", null);
-  const savedWorker  = loadLS("workerProfile", null);
-  const workerBase   = savedWorker ? { ...DEFAULT_PROFILE, ...savedWorker } : DEFAULT_PROFILE;
+  const savedVillager = loadLS("villagerProfile", null);
+  const villagerBase  = savedVillager || {};
+
+  const makeShared = (db, ls, vb, raw) => ({
+    name:     raw?.username || raw?.name  || db?.name     || ls?.name     || vb?.name     || "",
+    phone:    db?.phone     || ls?.phone  || raw?.phone   || "",
+    location: db?.location  || ls?.location || vb?.location || raw?.location?.address || "",
+  });
+  const makeBasic = (db, ls, raw) => ({
+    email:          raw?.email          || db?.email          || ls?.email          || "",
+    specialization: db?.specialization  || ls?.specialization || "",
+    experience:     db?.experience      || ls?.experience     || "",
+    bio:            db?.bio             || ls?.bio            || "",
+  });
+  const makeVillager = (db, vb) => ({
+    aadhaarNumber:  db?.aadhaarNumber  || vb?.aadhaarNumber  || "",
+    language:       db?.language       || vb?.language       || "Marathi",
+    gigScore:       db?.gigScore       || vb?.gigScore       || 0,
+    gigsCompleted:  db?.gigsCompleted  || vb?.gigsCompleted  || 0,
+    seasonEarnings: db?.seasonEarnings || vb?.seasonEarnings || 0,
+    creditScore:    db?.creditScore    || vb?.creditScore    || 0,
+    loanEligible:   db?.loanEligible   ?? vb?.loanEligible   ?? false,
+    badges:         db?.badges?.length ? db.badges : (vb?.badges || []),
+    skills:         db?.skills?.length ? db.skills : (vb?.skills || []),
+  });
 
   // Shared state — synced between both tabs
-  const [shared, setShared] = useState({
-    name:     savedBasic?.name     || workerBase.name     || userRaw.name  || "Sunita Pawar",
-    phone:    savedBasic?.phone    || userRaw.phone        || "+91 98765 43210",
-    location: savedBasic?.location || workerBase.location || "Satara, Maharashtra",
-  });
+  const [shared, setShared]   = useState(() => makeShared(null, savedBasic, villagerBase, userRaw));
+  const [basic,  setBasic]    = useState(() => makeBasic(null, savedBasic, userRaw));
+  const [villager, setVillager] = useState(() => makeVillager(null, villagerBase));
 
-  // Basic Info only fields
-  const [basic, setBasic] = useState({
-    email:          savedBasic?.email          || userRaw.email || "worker@gramos.in",
-    specialization: savedBasic?.specialization || "Harvest, Irrigation",
-    experience:     savedBasic?.experience     || "5+ years",
-    bio:            savedBasic?.bio            || "Experienced rural worker specializing in harvest and irrigation setups.",
-  });
-
-  // Worker Profile (LinkedIn-style) only fields
-  const [worker, setWorker] = useState({
-    aadhaarNumber: workerBase.aadhaarNumber || "XXXX XXXX 4567",
-    language:      workerBase.language      || "Marathi",
-    gigScore:      workerBase.gigScore      || 87,
-    gigsCompleted: workerBase.gigsCompleted || 126,
-    seasonEarnings:workerBase.seasonEarnings|| 72000,
-    creditScore:   workerBase.creditScore   || 718,
-    badges:        workerBase.badges        || DEFAULT_PROFILE.badges,
-    skills:        workerBase.skills        || ["Harvesting", "Irrigation Setup", "Pesticide Use"],
-  });
-
-  const [isEditing, setIsEditing] = useState(false);
-  const [activeTab, setActiveTab] = useState("settings");
+  const [isEditing, setIsEditing]   = useState(false);
+  const [activeTab, setActiveTab]   = useState("settings");
   const [profileImage, setProfileImage] = useState(null);
+  const [saveStatus, setSaveStatus] = useState(null);
 
   useEffect(() => {
     const onKey = (e) => { if (e.key === "Escape" && isOpen) onClose(); };
@@ -57,22 +62,23 @@ export default function WorkerProfileModal({ isOpen, onClose }) {
        
        let updatedShared = { ...shared };
        let updatedBasic = { ...basic };
-       let updatedWorker = { ...worker };
+       let updatedVillager = { ...villager };
        
        Object.entries(updates).forEach(([k, v]) => {
           if (["name", "phone", "location"].includes(k)) updatedShared[k] = v;
           else if (["email", "specialization", "experience", "bio"].includes(k)) updatedBasic[k] = v;
-          else updatedWorker[k] = v;
+          else updatedVillager[k] = v;
        });
 
        setShared(updatedShared);
        setBasic(updatedBasic);
-       setWorker(updatedWorker);
+       setVillager(updatedVillager);
        
        const mergedBasic  = { ...updatedShared, ...updatedBasic };
-       const mergedWorker = { ...updatedShared, ...updatedWorker };
-       localStorage.setItem("userProfile",   JSON.stringify(mergedBasic));
-       localStorage.setItem("workerProfile", JSON.stringify(mergedWorker));
+       const mergedVillager = { ...updatedShared, ...updatedVillager };
+       localStorage.setItem("userProfile",     JSON.stringify(mergedBasic));
+       localStorage.setItem("villagerProfile", JSON.stringify(mergedVillager));
+       saveProfile({ ...mergedBasic, ...mergedVillager }).catch(() => {});
     };
 
     document.addEventListener("keydown", onKey);
@@ -82,29 +88,47 @@ export default function WorkerProfileModal({ isOpen, onClose }) {
        document.removeEventListener("keydown", onKey);
        window.removeEventListener("AGRIBOT_UPDATE_PROFILE", handleProfileUpdate);
     };
-  }, [isOpen, onClose, shared, basic, worker]);
+  }, [isOpen, onClose, shared, basic, villager]);
 
   useEffect(() => {
     document.body.style.overflow = isOpen ? "hidden" : "unset";
     return () => { document.body.style.overflow = "unset"; };
   }, [isOpen]);
 
+  // Sync from DB when it loads
+  useEffect(() => {
+    if (!loading) {
+      setShared(makeShared(dbProfile, savedBasic, villagerBase, userRaw));
+      setBasic(makeBasic(dbProfile, savedBasic, userRaw));
+      setVillager(makeVillager(dbProfile, villagerBase));
+    }
+  }, [loading, dbProfile, dbUser]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const upShared = (key, val) => setShared(p => ({ ...p, [key]: val }));
   const upBasic  = (key, val) => setBasic(p  => ({ ...p, [key]: val }));
-  const upWorker = (key, val) => setWorker(p => ({ ...p, [key]: val }));
+  const upWorker = (key, val) => setVillager(p => ({ ...p, [key]: val }));
 
   const toggleSkill = (skill) =>
-    setWorker(p => ({
+    setVillager(p => ({
       ...p,
       skills: p.skills.includes(skill) ? p.skills.filter(s => s !== skill) : [...p.skills, skill],
     }));
 
-  const handleSave = () => {
-    const mergedBasic  = { ...shared, ...basic };
-    const mergedWorker = { ...shared, ...worker };
-    localStorage.setItem("userProfile",   JSON.stringify(mergedBasic));
-    localStorage.setItem("workerProfile", JSON.stringify(mergedWorker));
+  const handleSave = async () => {
+    const mergedBasic   = { ...shared, ...basic };
+    const mergedVillager = { ...shared, ...villager };
+    const fullProfile    = { ...mergedBasic, ...mergedVillager };
+    localStorage.setItem("userProfile",     JSON.stringify(mergedBasic));
+    localStorage.setItem("villagerProfile", JSON.stringify(mergedVillager));
+    setSaveStatus(null);
+    try {
+      await saveProfile(fullProfile);
+      setSaveStatus("success");
+    } catch {
+      setSaveStatus("error");
+    }
     setIsEditing(false);
+    setTimeout(() => setSaveStatus(null), 3000);
   };
 
   const handleImageUpload = (e) => {
@@ -132,13 +156,16 @@ export default function WorkerProfileModal({ isOpen, onClose }) {
         {/* Header */}
         <div className="bg-gradient-to-r from-emerald-600 to-green-700 text-white px-6 py-4 shrink-0">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold">Profile Settings</h2>
+            <div className="flex items-center gap-3">
+              <h2 className="text-xl font-bold">Profile Settings</h2>
+              {loading && <Loader2 className="w-4 h-4 animate-spin opacity-70" />}
+            </div>
             <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-lg transition-colors" aria-label="Close">
               <X className="w-5 h-5" />
             </button>
           </div>
           <div className="flex gap-1 mt-4">
-            {[{ id: "settings", label: "Basic Info" }, { id: "worker", label: "Worker Profile" }].map(tab => (
+            {[{ id: "settings", label: "Basic Info" }, { id: "villager", label: "Villager Profile" }].map(tab => (
               <button key={tab.id} onClick={() => { setActiveTab(tab.id); setIsEditing(false); }}
                 className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${activeTab === tab.id ? "bg-white text-emerald-700" : "text-white/70 hover:text-white hover:bg-white/10"}`}>
                 {tab.label}
@@ -146,6 +173,15 @@ export default function WorkerProfileModal({ isOpen, onClose }) {
             ))}
           </div>
         </div>
+
+        {/* Save status banner */}
+        {saveStatus && (
+          <div className={`px-6 py-2 text-sm font-medium flex items-center gap-2 shrink-0 ${saveStatus === "success" ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"}`}>
+            {saveStatus === "success"
+              ? <><CheckCircle className="w-4 h-4" /> Profile saved to database!</>
+              : <><AlertCircle className="w-4 h-4" /> Saved locally — database sync failed.</>}
+          </div>
+        )}
 
         {/* Scrollable body */}
         <div className="overflow-y-auto flex-1 p-6 space-y-6">
@@ -208,8 +244,8 @@ export default function WorkerProfileModal({ isOpen, onClose }) {
             </>
           )}
 
-          {/* ══ Worker Profile (LinkedIn-style) ══ */}
-          {activeTab === "worker" && (
+          {/* ══ Villager Profile (LinkedIn-style) ══ */}
+          {activeTab === "villager" && (
             <>
               {/* LinkedIn-style banner */}
               <div className="rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-700 text-white p-5 relative overflow-hidden">
@@ -222,7 +258,7 @@ export default function WorkerProfileModal({ isOpen, onClose }) {
                         ? <img src={profileImage} alt="" className="w-full h-full object-cover" />
                         : <span className="text-emerald-100">{initials}</span>}
                     </div>
-                    {worker.verified && (
+                    {villager.verified && (
                       <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-0.5">
                         <BadgeCheck className="w-4 h-4 text-emerald-600" />
                       </div>
@@ -239,10 +275,10 @@ export default function WorkerProfileModal({ isOpen, onClose }) {
                   {/* Stats */}
                   <div className="grid grid-cols-2 gap-2 shrink-0">
                     {[
-                      { label: "Gig Score",  value: worker.gigScore },
-                      { label: "Gigs Done",  value: worker.gigsCompleted },
-                      { label: "Credit",     value: worker.creditScore },
-                      { label: "Earnings",   value: `₹${(worker.seasonEarnings/1000).toFixed(0)}K` },
+                      { label: "Gig Score",  value: villager.gigScore },
+                      { label: "Gigs Done",  value: villager.gigsCompleted },
+                      { label: "Credit",     value: villager.creditScore },
+                      { label: "Earnings",   value: `₹${(villager.seasonEarnings/1000).toFixed(0)}K` },
                     ].map((s, i) => (
                       <div key={i} className="bg-white/10 rounded-xl px-3 py-2 text-center">
                         <div className="text-base font-bold">{s.value}</div>
@@ -259,7 +295,7 @@ export default function WorkerProfileModal({ isOpen, onClose }) {
                   <Award className="w-4 h-4 text-emerald-600" /> Earned Badges
                 </h4>
                 <div className="flex flex-wrap gap-2">
-                  {worker.badges.map(b => (
+                  {villager.badges.map(b => (
                     <div key={b.id} className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 rounded-full px-3 py-1.5">
                       <Star className="w-3 h-3 text-emerald-600 fill-emerald-400" />
                       <span className="text-xs font-semibold text-emerald-700">{b.title}</span>
@@ -278,7 +314,7 @@ export default function WorkerProfileModal({ isOpen, onClose }) {
                   {SKILL_OPTIONS.map(skill => (
                     <button key={skill} onClick={() => isEditing && toggleSkill(skill)}
                       className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${
-                        (worker.skills || []).includes(skill)
+                        (villager.skills || []).includes(skill)
                           ? "bg-emerald-600 text-white border-emerald-600 shadow"
                           : isEditing
                             ? "bg-white border-gray-300 text-gray-600 hover:border-emerald-400 cursor-pointer"
@@ -302,9 +338,9 @@ export default function WorkerProfileModal({ isOpen, onClose }) {
                   <div><label className={labelCls}>Location</label>
                     <input value={shared.location} onChange={e => upShared("location", e.target.value)} disabled={!isEditing} className={inputCls} /></div>
                   <div><label className={labelCls}>Aadhaar Number</label>
-                    <input value={worker.aadhaarNumber} onChange={e => upWorker("aadhaarNumber", e.target.value)} disabled={!isEditing} className={inputCls} /></div>
+                    <input value={villager.aadhaarNumber} onChange={e => upWorker("aadhaarNumber", e.target.value)} disabled={!isEditing} className={inputCls} /></div>
                   <div><label className={labelCls}>Language Preference</label>
-                    <select value={worker.language} onChange={e => upWorker("language", e.target.value)} disabled={!isEditing} className={inputCls}>
+                    <select value={villager.language} onChange={e => upWorker("language", e.target.value)} disabled={!isEditing} className={inputCls}>
                       {LANGUAGE_OPTIONS.map(l => <option key={l} value={l.toLowerCase()}>{l}</option>)}
                     </select>
                   </div>
@@ -318,11 +354,11 @@ export default function WorkerProfileModal({ isOpen, onClose }) {
                   <div><label className={labelCls}>Experience</label>
                     <input value={basic.experience} onChange={e => upBasic("experience", e.target.value)} disabled={!isEditing} className={inputCls} /></div>
                   <div><label className={labelCls}>Gig Score</label>
-                    <input type="number" value={worker.gigScore} onChange={e => upWorker("gigScore", Number(e.target.value))} disabled={!isEditing} className={inputCls} /></div>
+                    <input type="number" value={villager.gigScore} onChange={e => upWorker("gigScore", Number(e.target.value))} disabled={!isEditing} className={inputCls} /></div>
                   <div><label className={labelCls}>Loan Eligible</label>
-                    <div className={`mt-1 flex items-center gap-2 px-3 py-2 rounded-lg border text-sm ${worker.loanEligible ? "bg-green-50 border-green-200 text-green-700" : "bg-gray-50 border-gray-200 text-gray-500"}`}>
-                      <BadgeCheck className={`w-4 h-4 ${worker.loanEligible ? "text-green-600" : "text-gray-400"}`} />
-                      {worker.loanEligible ? "Eligible for rural micro-loan" : "Not yet eligible"}
+                    <div className={`mt-1 flex items-center gap-2 px-3 py-2 rounded-lg border text-sm ${villager.loanEligible ? "bg-green-50 border-green-200 text-green-700" : "bg-gray-50 border-gray-200 text-gray-500"}`}>
+                      <BadgeCheck className={`w-4 h-4 ${villager.loanEligible ? "text-green-600" : "text-gray-400"}`} />
+                      {villager.loanEligible ? "Eligible for rural micro-loan" : "Not yet eligible"}
                     </div>
                   </div>
                   <div><label className={labelCls}>About Me</label>
@@ -339,8 +375,9 @@ export default function WorkerProfileModal({ isOpen, onClose }) {
         <div className="shrink-0 bg-gray-50 px-6 py-4 border-t border-gray-200 rounded-b-2xl flex justify-between items-center">
           {isEditing ? (
             <div className="flex gap-3">
-              <Button onClick={handleSave} className="bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-2">
-                <Save className="w-4 h-4" /> Save Changes
+              <Button onClick={handleSave} disabled={saving} className="bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-2">
+                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                {saving ? "Saving…" : "Save Changes"}
               </Button>
               <Button onClick={() => setIsEditing(false)} variant="outline" className="border-gray-300 text-gray-700">Cancel</Button>
             </div>
