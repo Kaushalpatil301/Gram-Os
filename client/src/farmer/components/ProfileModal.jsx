@@ -1,13 +1,14 @@
-import { useState, useEffect } from "react";
-import { X, User, Mail, Phone, MapPin, Camera, Save, Edit2, Shield, Wheat, ChevronRight } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { X, User, Mail, Phone, MapPin, Camera, Save, Edit2, Shield, Wheat, ChevronRight, Loader2, CheckCircle, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useProfile } from "../../contexts/useProfile.js";
 
 const SOIL_TYPES = ["Black Cotton", "Red Soil", "Alluvial", "Laterite", "Sandy", "Clay", "Loamy"];
 const IRRIGATION_TYPES = ["Drip", "Sprinkler", "Canal", "Well", "Rainfed", "Borewell"];
 const CROP_OPTIONS = ["Tomato", "Onion", "Wheat", "Rice", "Sugarcane", "Cotton", "Soybean", "Banana", "Mango", "Potato", "Chilli", "Maize"];
 
-const CROP_HISTORY = [
+const CROP_HISTORY_FALLBACK = [
   { season: "Kharif 2025",  crop: "Tomato",    yield: "32 qtl",  soldTo: "APMC Pune",       revenue: "₹96,000",   rating: 4.5 },
   { season: "Rabi 2024-25", crop: "Wheat",     yield: "45 qtl",  soldTo: "ITC e-Choupal",   revenue: "₹1,12,500", rating: 4.2 },
   { season: "Kharif 2024",  crop: "Onion",     yield: "28 qtl",  soldTo: "APMC Nashik",     revenue: "₹56,000",   rating: 3.8 },
@@ -19,77 +20,82 @@ function loadLS(key, fallback) {
 }
 
 export default function ProfileModal({ isOpen, onClose }) {
-  const userRaw = loadLS("user", {});
+  const { profile: dbProfile, user: dbUser, loading, saving, saveProfile } = useProfile();
 
-  // ── Shared state (synced between both tabs) ──
+  // dbUser is the authoritative User document from MongoDB (or localStorage fallback)
+  const userRaw    = dbUser  || loadLS("user", {});
   const savedBasic = loadLS("userProfile", null);
   const savedFarm  = loadLS("farmerProfile", null);
 
-  const [shared, setShared] = useState({
-    name:  savedBasic?.name  || savedFarm?.name  || userRaw.name  || "Rajesh Sharma",
-    phone: savedBasic?.phone || savedFarm?.phone || userRaw.phone || "+91 98765 43210",
-    location: savedBasic?.location || "Pune, Maharashtra",
+  // Merge priority: DB profile > localStorage > User doc > hardcoded fallback
+  const makeShared = (db, ls1, ls2, raw) => ({
+    name:     db?.name     || ls1?.name     || ls2?.name     || raw?.username || raw?.name  || "",
+    phone:    db?.phone    || ls1?.phone    || ls2?.phone    || raw?.phone    || "",
+    location: db?.location || ls1?.location || ls2?.location || raw?.location?.address || "",
+  });
+  const makeBasic = (db, ls, raw) => ({
+    // email always from User doc first (most authoritative), then DB profile, then localStorage
+    email:    raw?.email   || db?.email    || ls?.email    || "",
+    farmSize: db?.farmSize || (db?.landSizeAcres ? `${db.landSizeAcres} Acres` : "") || ls?.farmSize || "",
+    crops:    db?.crops    || (db?.primaryCrops?.length ? db.primaryCrops.join(", ") : "") || ls?.crops    || "",
+    bio:      db?.bio      || ls?.bio      || "",
+  });
+  const makeFarm = (db, ls) => ({
+    village:        db?.village        || ls?.village        || "",
+    district:       db?.district       || ls?.district       || "",
+    state:          db?.state          || ls?.state          || "",
+    aadhaarLast4:   db?.aadhaarLast4   || ls?.aadhaarLast4   || "",
+    landSizeAcres:  db?.landSizeAcres  ?? ls?.landSizeAcres  ?? 0,
+    soilType:       db?.soilType       || ls?.soilType       || "Black Cotton",
+    irrigationType: db?.irrigationType || ls?.irrigationType || "Drip",
+    primaryCrops:   db?.primaryCrops?.length ? db.primaryCrops : (ls?.primaryCrops || []),
+    upiId:          db?.upiId          || ls?.upiId          || "",
   });
 
-  // Basic Info only fields
-  const [basic, setBasic] = useState({
-    email:    savedBasic?.email    || userRaw.email || "farmer@gramos.in",
-    farmSize: savedBasic?.farmSize || "5 acres",
-    crops:    savedBasic?.crops    || "Rice, Wheat, Sugarcane",
-    bio:      savedBasic?.bio      || "Experienced farmer with 15+ years in sustainable agriculture",
-  });
+  const [shared, setShared] = useState(() => makeShared(dbProfile, savedBasic, savedFarm, userRaw));
+  const [basic,  setBasic]  = useState(() => makeBasic(dbProfile, savedBasic, userRaw));
+  const [farm,   setFarm]   = useState(() => makeFarm(dbProfile, savedFarm));
+  const [selectedCrops, setSelectedCrops] = useState(() => makeFarm(dbProfile, savedFarm).primaryCrops);
 
-  // Farm Identity only fields
-  const [farm, setFarm] = useState({
-    village:       savedFarm?.village       || "Koregaon",
-    district:      savedFarm?.district      || "Pune",
-    state:         savedFarm?.state         || "Maharashtra",
-    aadhaarLast4:  savedFarm?.aadhaarLast4  || "4521",
-    landSizeAcres: savedFarm?.landSizeAcres || 5,
-    soilType:      savedFarm?.soilType      || "Black Cotton",
-    irrigationType:savedFarm?.irrigationType|| "Drip",
-    primaryCrops:  savedFarm?.primaryCrops  || ["Tomato", "Onion", "Wheat"],
-    upiId:         savedFarm?.upiId         || "rajesh@upi",
-  });
-
-  const [selectedCrops, setSelectedCrops] = useState(farm.primaryCrops);
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState("settings");
   const [profileImage, setProfileImage] = useState(null);
+  const [saveStatus, setSaveStatus] = useState(null); // "success" | "error" | null
 
+  // Sync state when DB profile loads
+  useEffect(() => {
+    if (!loading) {
+      setShared(makeShared(dbProfile, savedBasic, savedFarm, userRaw));
+      setBasic(makeBasic(dbProfile, savedBasic, userRaw));
+      const newFarm = makeFarm(dbProfile, savedFarm);
+      setFarm(newFarm);
+      setSelectedCrops(newFarm.primaryCrops);
+    }
+  }, [loading, dbProfile, dbUser]);
+
+  // Escape key + AGRIBOT events
   useEffect(() => {
     const onKey = (e) => { if (e.key === "Escape" && isOpen) onClose(); };
-    
     const handleProfileUpdate = (e) => {
-       const updates = e.detail || {};
-       if (!updates) return;
-       
-       let updatedShared = { ...shared };
-       let updatedBasic = { ...basic };
-       let updatedFarm = { ...farm };
-       
-       Object.entries(updates).forEach(([k, v]) => {
-          if (["name", "phone", "location"].includes(k)) updatedShared[k] = v;
-          else if (["email", "farmSize", "crops", "bio"].includes(k)) updatedBasic[k] = v;
-          else updatedFarm[k] = v;
-       });
-
-       setShared(updatedShared);
-       setBasic(updatedBasic);
-       setFarm(updatedFarm);
-       
-       const mergedBasic = { ...updatedShared, ...updatedBasic };
-       const mergedFarm  = { ...updatedShared, ...updatedFarm, primaryCrops: selectedCrops };
-       localStorage.setItem("userProfile",   JSON.stringify(mergedBasic));
-       localStorage.setItem("farmerProfile", JSON.stringify(mergedFarm));
+      const updates = e.detail || {};
+      if (!updates) return;
+      let us = { ...shared }, ub = { ...basic }, uf = { ...farm };
+      Object.entries(updates).forEach(([k, v]) => {
+        if (["name","phone","location"].includes(k)) us[k] = v;
+        else if (["email","farmSize","crops","bio"].includes(k)) ub[k] = v;
+        else uf[k] = v;
+      });
+      setShared(us); setBasic(ub); setFarm(uf);
+      const merged = { ...us, ...ub, ...uf, primaryCrops: selectedCrops };
+      localStorage.setItem("userProfile",   JSON.stringify({ ...us, ...ub }));
+      localStorage.setItem("farmerProfile", JSON.stringify({ ...us, ...uf, primaryCrops: selectedCrops }));
+      saveProfile(merged).catch(() => {});
     };
-
     document.addEventListener("keydown", onKey);
     window.addEventListener("AGRIBOT_UPDATE_PROFILE", handleProfileUpdate);
-    
     return () => {
-       document.removeEventListener("keydown", onKey);
-       window.removeEventListener("AGRIBOT_UPDATE_PROFILE", handleProfileUpdate);
+      document.removeEventListener("keydown", onKey);
+      window.removeEventListener("AGRIBOT_UPDATE_PROFILE", handleProfileUpdate);
     };
   }, [isOpen, onClose, shared, basic, farm, selectedCrops]);
 
@@ -104,12 +110,24 @@ export default function ProfileModal({ isOpen, onClose }) {
   const toggleCrop = (crop) =>
     setSelectedCrops(p => p.includes(crop) ? p.filter(c => c !== crop) : [...p, crop]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const mergedBasic = { ...shared, ...basic };
     const mergedFarm  = { ...shared, ...farm, primaryCrops: selectedCrops };
+    const fullProfile = { ...mergedBasic, ...mergedFarm };
+
+    // Always save to localStorage as a reliable offline fallback
     localStorage.setItem("userProfile",   JSON.stringify(mergedBasic));
     localStorage.setItem("farmerProfile", JSON.stringify(mergedFarm));
+
+    setSaveStatus(null);
+    try {
+      await saveProfile(fullProfile);
+      setSaveStatus("success");
+    } catch {
+      setSaveStatus("error");  // localStorage already saved; DB save failed
+    }
     setIsEditing(false);
+    setTimeout(() => setSaveStatus(null), 3000);
   };
 
   const handleImageUpload = (e) => {
@@ -125,6 +143,7 @@ export default function ProfileModal({ isOpen, onClose }) {
 
   const inputCls = "w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-700 disabled:border-0 disabled:font-medium";
   const labelCls = "text-xs font-medium text-gray-500 uppercase tracking-wider block mb-1";
+  const cropHistory = dbProfile?.cropHistory?.length ? dbProfile.cropHistory : CROP_HISTORY_FALLBACK;
 
   const stats = [
     { label: "Transactions", value: 18 },
@@ -142,7 +161,10 @@ export default function ProfileModal({ isOpen, onClose }) {
         {/* Header */}
         <div className="bg-gradient-to-r from-emerald-600 to-green-700 text-white px-6 py-4 shrink-0">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold">Profile Settings</h2>
+            <div className="flex items-center gap-3">
+              <h2 className="text-xl font-bold">Profile Settings</h2>
+              {loading && <Loader2 className="w-4 h-4 animate-spin opacity-70" />}
+            </div>
             <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-lg transition-colors" aria-label="Close">
               <X className="w-5 h-5" />
             </button>
@@ -156,6 +178,15 @@ export default function ProfileModal({ isOpen, onClose }) {
             ))}
           </div>
         </div>
+
+        {/* Save status banner */}
+        {saveStatus && (
+          <div className={`px-6 py-2 text-sm font-medium flex items-center gap-2 shrink-0 ${saveStatus === "success" ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"}`}>
+            {saveStatus === "success"
+              ? <><CheckCircle className="w-4 h-4" /> Profile saved to database successfully!</>
+              : <><AlertCircle className="w-4 h-4" /> Saved locally — database sync failed. Changes are preserved.</>}
+          </div>
+        )}
 
         {/* Scrollable body */}
         <div className="overflow-y-auto flex-1 p-6 space-y-6">
@@ -179,7 +210,6 @@ export default function ProfileModal({ isOpen, onClose }) {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                {/* Shared fields */}
                 <div className="space-y-1">
                   <label className="text-sm font-medium text-gray-700 flex items-center gap-2"><User className="w-4 h-4" />Full Name</label>
                   <input value={shared.name} onChange={e => upShared("name", e.target.value)} disabled={!isEditing} className={inputCls} />
@@ -216,7 +246,6 @@ export default function ProfileModal({ isOpen, onClose }) {
           {/* ══ Farm Identity ══ */}
           {activeTab === "identity" && (
             <>
-              {/* Banner — uses shared name/location */}
               <div className="bg-gradient-to-r from-emerald-600 via-emerald-700 to-green-800 text-white rounded-2xl p-5 relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
                 <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -253,15 +282,12 @@ export default function ProfileModal({ isOpen, onClose }) {
               </div>
 
               <div className="grid lg:grid-cols-2 gap-5">
-                {/* Personal Info — name & phone synced */}
                 <div className="bg-gray-50 rounded-2xl p-5 space-y-4">
                   <h4 className="text-sm font-bold text-gray-700 flex items-center gap-2"><User className="w-4 h-4 text-emerald-600" />Personal Information</h4>
-
                   <div><label className={labelCls}>Full Name</label>
                     <input value={shared.name} onChange={e => upShared("name", e.target.value)} disabled={!isEditing} className={inputCls} /></div>
                   <div><label className={labelCls}>Phone Number</label>
                     <input value={shared.phone} onChange={e => upShared("phone", e.target.value)} disabled={!isEditing} className={inputCls} /></div>
-
                   {[
                     { label: "Village",          key: "village" },
                     { label: "District",         key: "district" },
@@ -273,7 +299,6 @@ export default function ProfileModal({ isOpen, onClose }) {
                   ))}
                 </div>
 
-                {/* Farm Details */}
                 <div className="bg-gray-50 rounded-2xl p-5 space-y-4">
                   <h4 className="text-sm font-bold text-gray-700 flex items-center gap-2"><Wheat className="w-4 h-4 text-emerald-600" />Farm Details</h4>
                   <div><label className={labelCls}>Land Size (Acres)</label>
@@ -305,7 +330,7 @@ export default function ProfileModal({ isOpen, onClose }) {
                   <table className="w-full text-sm">
                     <thead><tr className="border-b text-left text-gray-500">{["Season","Crop","Yield","Sold To","Revenue","Rating"].map(h => <th key={h} className="pb-2 font-medium pr-4 whitespace-nowrap">{h}</th>)}</tr></thead>
                     <tbody className="text-gray-700">
-                      {CROP_HISTORY.map((row, i) => (
+                      {cropHistory.map((row, i) => (
                         <tr key={i} className="border-b last:border-0 hover:bg-emerald-50/50 transition-colors">
                           <td className="py-2 pr-4 font-medium whitespace-nowrap">{row.season}</td>
                           <td className="py-2 pr-4">{row.crop}</td><td className="py-2 pr-4">{row.yield}</td>
@@ -326,8 +351,9 @@ export default function ProfileModal({ isOpen, onClose }) {
         <div className="shrink-0 bg-gray-50 px-6 py-4 border-t border-gray-200 rounded-b-2xl flex justify-between items-center">
           {isEditing ? (
             <div className="flex gap-3">
-              <Button onClick={handleSave} className="bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-2">
-                <Save className="w-4 h-4" /> Save Changes
+              <Button onClick={handleSave} disabled={saving} className="bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-2">
+                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                {saving ? "Saving…" : "Save Changes"}
               </Button>
               <Button onClick={() => setIsEditing(false)} variant="outline" className="border-gray-300 text-gray-700">Cancel</Button>
             </div>

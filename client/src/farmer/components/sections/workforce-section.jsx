@@ -9,7 +9,7 @@ const MOCK_WORKERS = [
   { id: 1, name: "Suresh Jadhav", skills: ["Harvesting", "Pesticide Spraying"], rating: 4.6, gigs: 23, distance: "3 km", badge: "Expert Harvester", available: true },
   { id: 2, name: "Mangesh Patil", skills: ["Harvesting", "Irrigation"], rating: 4.3, gigs: 15, distance: "5 km", badge: "Irrigation Specialist", available: true },
   { id: 3, name: "Lata Bai", skills: ["Sorting", "Packing", "Grading"], rating: 4.8, gigs: 42, distance: "2 km", badge: "Quality Expert", available: true },
-  { id: 4, name: "Anil Kumar", skills: ["Heavy Lifting", "Transport"], rating: 4.1, gigs: 8, distance: "7 km", badge: "New Worker", available: false },
+  { id: 4, name: "Anil Kumar", skills: ["Heavy Lifting", "Transport"], rating: 4.1, gigs: 8, distance: "7 km", badge: "New Villager", available: false },
 ];
 
 const INITIALS = (name) => name.split(" ").map(n => n[0]).join("").toUpperCase();
@@ -46,7 +46,7 @@ export default function WorkforceSection() {
             </div>
             Harvest Workforce Engine
           </h2>
-          <p className="text-gray-500 mt-1 text-sm">Post harvest jobs and connect with skilled workers nearby.</p>
+          <p className="text-gray-500 mt-1 text-sm">Post harvest jobs and connect with skilled villagers nearby.</p>
         </div>
         <Button
           onClick={() => { setShowForm(!showForm); setActiveTab("post"); }}
@@ -61,7 +61,7 @@ export default function WorkforceSection() {
         {[
           { label: "Total Jobs", value: jobs.length, color: "text-gray-800" },
           { label: "Open", value: openJobs, color: "text-emerald-600" },
-          { label: "Workers Nearby", value: availableWorkers, color: "text-orange-600" },
+          { label: "Villagers Nearby", value: availableWorkers, color: "text-orange-600" },
         ].map(stat => (
           <div key={stat.label} className="bg-white border border-gray-100 rounded-2xl p-4 text-center shadow-sm">
             <div className={`text-2xl font-bold ${stat.color}`}>{stat.value}</div>
@@ -74,7 +74,7 @@ export default function WorkforceSection() {
       <div className="flex gap-2 bg-gray-100 rounded-xl p-1.5">
         {[
           { id: "post", label: "📋 My Job Posts" },
-          { id: "workers", label: "👷 Available Workers" },
+          { id: "workers", label: "👷 Available Villagers" },
         ].map(tab => (
           <button
             key={tab.id}
@@ -139,7 +139,7 @@ export default function WorkforceSection() {
                   </div>
 
                   <div>
-                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Workers Needed</label>
+                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Villagers Needed</label>
                     <Input
                       type="number"
                       className="mt-1 bg-white"
@@ -209,7 +209,7 @@ export default function WorkforceSection() {
         </div>
       )}
 
-      {/* Workers Tab */}
+      {/* Villagers Tab */}
       {activeTab === "workers" && (
         <div className="grid gap-4">
           {MOCK_WORKERS.map((w, idx) => (

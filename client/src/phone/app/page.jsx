@@ -16,7 +16,7 @@ export default function PhoneSimulation() {
   const roles = [
     { id: "farmer", name: "Farmer Hotline", number: "+91 99999-FARM", color: "bg-emerald-500" },
     { id: "retailer", name: "Retailer Helpline", number: "+91 88888-SHOP", color: "bg-blue-500" },
-    { id: "worker", name: "Labour Assistance", number: "+91 77777-WORK", color: "bg-amber-500" },
+    { id: "villager", name: "Villager Assistance", number: "+91 77777-WORK", color: "bg-amber-500" },
     { id: "consumer", name: "Consumer Support", number: "+91 66666-FOOD", color: "bg-purple-500" }
   ];
   
@@ -260,7 +260,7 @@ export default function PhoneSimulation() {
         <h3 className="text-emerald-400 font-bold mb-4 text-xl">How to test</h3>
         <ol className="space-y-4 list-decimal pl-4">
             <li>Open this phone page in one browser window/monitor.</li>
-            <li>Open the Farmer/Worker dashboard in another window.</li>
+            <li>Open the Farmer/Villager dashboard in another window.</li>
             <li>Click the Green phone button to start the test call.</li>
             <li>Type or say commands like <span className="text-white italic">"Add 50kg tomatoes from Pune for 100 rupees"</span> or <span className="text-white italic">"Navigate to workforce section"</span>.</li>
             <li>Watch the dashboard beautifully execute the task while your phone listens for the final feedback!</li>

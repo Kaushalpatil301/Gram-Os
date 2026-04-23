@@ -82,9 +82,9 @@ export default function Navigation({
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("workerProfile");
-    localStorage.removeItem("workerScanHistory");
-    localStorage.removeItem("workerModuleProgress");
+    localStorage.removeItem("villagerProfile");
+    localStorage.removeItem("villagerScanHistory");
+    localStorage.removeItem("villagerModuleProgress");
     localStorage.removeItem("userSession");
     setShowUserMenu(false);
     setTimeout(() => {
@@ -169,7 +169,7 @@ export default function Navigation({
                         Villager Dashboard
                       </p>
                       <p className="text-xs text-gray-500 truncate">
-                        worker@gramos.in
+                        villager@gramos.in
                       </p>
                     </div>
                     <button

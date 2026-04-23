@@ -1,4 +1,4 @@
-// Static worker/villager page data — extracted from the monolithic page.jsx
+// Static villager page data — extracted from the monolithic page.jsx
 // to match the data-file pattern used by farmer (lib/data.js) and retailer (lib/data.js)
 
 // ── Navigation items ──
@@ -13,7 +13,7 @@ export const navItems = [
   { id: "schemes",  label: "Schemes",  icon: "FileText"   },
 ];
 
-// ── Default worker profile ──
+// ── Default villager profile ──
 export const DEFAULT_PROFILE = {
   id: "w001",
   name: "Sunita Pawar",
@@ -46,7 +46,7 @@ export const INTERNAL_MODULES = [
   { id: "m1", title: "Advanced Harvest Techniques", progressPercent: 60,  estimatedMinutes: 40, unlocksJobTier: "Tier 2 jobs (₹650/day+)",        badgeEarned: false },
   { id: "m2", title: "Safe Pesticide Handling",     progressPercent: 100, estimatedMinutes: 25, unlocksJobTier: "Certified Sprayer (₹700/day+)",   badgeEarned: true  },
   { id: "m3", title: "Irrigation Setup Basics",     progressPercent: 35,  estimatedMinutes: 30, unlocksJobTier: "Irrigation Assistant",            badgeEarned: false },
-  { id: "m4", title: "Post-Harvest Quality Check",  progressPercent: 0,   estimatedMinutes: 20, unlocksJobTier: "QC Verified Worker (₹720/day+)", badgeEarned: false },
+  { id: "m4", title: "Post-Harvest Quality Check",  progressPercent: 0,   estimatedMinutes: 20, unlocksJobTier: "QC Verified Villager (₹720/day+)", badgeEarned: false },
 ];
 
 // ── NPTEL courses ──

@@ -38,8 +38,8 @@ export default function RoleSelection({ onBack, onRoleSelect }) {
       stats: { users: "100K+", growth: "45%", rating: "4.9" }
     },
     {
-      id: "worker",
-      title: "Villager/Worker",
+      id: "villager",
+      title: "Villager",
       description: "Find rural gig work and learn new skills",
       icon: Briefcase,
       color: "emerald",

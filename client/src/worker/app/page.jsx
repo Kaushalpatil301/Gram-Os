@@ -11,7 +11,7 @@ import ProfileModal from "../components/ProfileModal.jsx";
 // Section components (Farmer specific sections as requested)
 import SchemesSection from "../../farmer/components/sections/schemes-section.jsx";
 
-// Worker specific sections
+// Villager specific sections
 import AlertSection from "../components/sections/AlertSection.jsx";
 import JobsSection from "../components/sections/JobsSection.jsx";
 import AcademySection from "../components/sections/AcademySection.jsx";
@@ -47,7 +47,7 @@ const NAV_ITEMS = [
   { id: "schemes",  label: "Govt Schemes", icon: Landmark, color: "text-emerald-700" },
 ];
 
-function WorkerContent() {
+function VillagerContent() {
   const { currentLanguage } = useTranslation();
   const [notification, setNotification] = useState("");
   const [activeSection, setActiveSection] = useState("jobs");
@@ -56,9 +56,9 @@ function WorkerContent() {
   const navigate = useNavigate();
 
   // ── localStorage-backed state ──
-  const [workerProfile, setWorkerProfile] = useState(() => {
+  const [villagerProfile, setVillagerProfile] = useState(() => {
     try {
-      const saved = localStorage.getItem("workerProfile");
+      const saved = localStorage.getItem("villagerProfile");
       return saved ? { ...DEFAULT_PROFILE, ...JSON.parse(saved) } : DEFAULT_PROFILE;
     } catch {
       return DEFAULT_PROFILE;
@@ -69,7 +69,7 @@ function WorkerContent() {
 
   const [moduleProgress, setModuleProgress] = useState(() => {
     try {
-      return JSON.parse(localStorage.getItem("workerModuleProgress") ?? "{}");
+      return JSON.parse(localStorage.getItem("villagerModuleProgress") ?? "{}");
     } catch {
       return {};
     }
@@ -83,23 +83,23 @@ function WorkerContent() {
   // ── Persist to localStorage ──
   useEffect(() => {
     try {
-      localStorage.setItem("workerProfile", JSON.stringify(workerProfile));
+      localStorage.setItem("villagerProfile", JSON.stringify(villagerProfile));
     } catch {}
-  }, [workerProfile]);
+  }, [villagerProfile]);
 
 
 
   useEffect(() => {
     try {
-      localStorage.setItem("workerModuleProgress", JSON.stringify(moduleProgress));
+      localStorage.setItem("villagerModuleProgress", JSON.stringify(moduleProgress));
     } catch {}
   }, [moduleProgress]);
 
   // ── Language sync ──
   useEffect(() => {
     const mapped = LANG_MAP[currentLanguage];
-    if (mapped && mapped !== workerProfile.language) {
-      setWorkerProfile((prev) => ({ ...prev, language: mapped }));
+    if (mapped && mapped !== villagerProfile.language) {
+      setVillagerProfile((prev) => ({ ...prev, language: mapped }));
       showNotification("Language updated");
     }
   }, [currentLanguage]);
@@ -108,7 +108,7 @@ function WorkerContent() {
   const jobs = useMemo(() => {
     return RAW_JOBS.map((j) => ({
       ...j,
-      skillMatchPercent: computeMatch(workerProfile.badges, j.requiredBadges),
+      skillMatchPercent: computeMatch(villagerProfile.badges, j.requiredBadges),
     })).filter((j) => {
       const distOk = j.distanceKm <= maxDistance;
       const cropOk =
@@ -120,7 +120,7 @@ function WorkerContent() {
         j.location.toLowerCase().includes(voiceQuery.toLowerCase());
       return distOk && cropOk && voiceOk;
     });
-  }, [workerProfile.badges, maxDistance, cropFilter, voiceQuery]);
+  }, [villagerProfile.badges, maxDistance, cropFilter, voiceQuery]);
 
   const urgentJob = useMemo(
     () =>
@@ -137,13 +137,13 @@ function WorkerContent() {
   const earnings = useMemo(
     () => ({
       weekly: 4 * 600,
-      seasonTotal: workerProfile.seasonEarnings,
+      seasonTotal: villagerProfile.seasonEarnings,
       avgDaily: 600,
       districtAvg: 560,
-      creditScore: workerProfile.creditScore,
-      loanEligible: workerProfile.loanEligible,
+      creditScore: villagerProfile.creditScore,
+      loanEligible: villagerProfile.loanEligible,
     }),
-    [workerProfile]
+    [villagerProfile]
   );
 
   const modules = useMemo(
@@ -188,9 +188,9 @@ function WorkerContent() {
 
     const rec = new SR();
     rec.lang =
-      workerProfile.language === "marathi"
+      villagerProfile.language === "marathi"
         ? "mr-IN"
-        : workerProfile.language === "hindi"
+        : villagerProfile.language === "hindi"
         ? "hi-IN"
         : "en-IN";
     rec.onstart = () => setIsListening(true);
@@ -317,7 +317,7 @@ function WorkerContent() {
             <div>
               <h1 className="text-xl font-black text-gray-900">GramOS</h1>
               <p className="text-[10px] text-gray-400 uppercase font-semibold">
-                Workforce Dashboard
+                Villager Dashboard
               </p>
             </div>
           </div>
@@ -355,7 +355,7 @@ function WorkerContent() {
             className="w-full flex items-center gap-4 px-4 py-3 rounded-2xl text-base font-medium text-gray-700 hover:bg-gray-50 transition-all"
           >
             <User className="w-6 h-6 text-gray-500" />
-            <span className="truncate">{workerProfile.name || "Worker"}</span>
+            <span className="truncate">{villagerProfile.name || "Villager"}</span>
           </button>
 
           <button
@@ -387,7 +387,7 @@ function WorkerContent() {
             </button>
             <div className="flex items-center gap-2 bg-amber-50 px-3 py-1.5 rounded-xl border border-amber-100">
               <Award className="w-5 h-5 text-amber-600" />
-              <span className="text-base font-bold text-amber-700">{workerProfile.gigScore || "720"}</span>
+              <span className="text-base font-bold text-amber-700">{villagerProfile.gigScore || "720"}</span>
             </div>
           </div>
         </header>
@@ -397,7 +397,7 @@ function WorkerContent() {
           {renderSection()}
         </div>
 
-        {/* Re-using worker specific helpers */}
+        {/* Re-using villager specific helpers */}
         <Chatbot />
         <Notification message={notification} />
       </main>
@@ -411,10 +411,10 @@ function WorkerContent() {
   );
 }
 
-export default function WorkerPage() {
+export default function VillagerPage() {
   return (
     <LanguageProvider>
-      <WorkerContent />
+      <VillagerContent />
     </LanguageProvider>
   );
 }
