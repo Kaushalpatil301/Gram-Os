@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
 import { Share2, Shield, AlertTriangle, Check, RefreshCw } from "lucide-react";
+import { loadRazorpay } from "../../lib/razorpay";
 
 export default function Actions({ productId, product }) {
   const [copied, setCopied] = useState(false);
@@ -84,9 +84,7 @@ export default function Actions({ productId, product }) {
     console.log("For token ID:", tokenId);
     console.log("Amount of tokens:", amountToken);
     console.log("From buyer:", account);
-    const res = await loadRazorpayScript(
-      "https://checkout.razorpay.com/v1/checkout.js"
-    );
+    const res = await loadRazorpay();
     let amt = price;
 
     try {
@@ -169,26 +167,8 @@ export default function Actions({ productId, product }) {
       console.log("An error occurred while processing the payment.", "error");
     }
   };
-  function loadRazorpayScript(src) {
-    return new Promise((resolve) => {
-      const existing = document.querySelector(`script[src="${src}"]`);
-      if (existing) {
-        resolve(true);
-        return;
-      }
+  // Razorpay loader is now handled via shared utility
 
-      const script = document.createElement("script");
-      script.src = src;
-      script.async = true;
-      script.onload = () => {
-        resolve(true);
-      };
-      script.onerror = () => {
-        resolve(false);
-      };
-      document.body.appendChild(script);
-    });
-  }
 
   const handleRequest = () => {
     socket.emit("buy_request", {

@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { loadRazorpay } from "../../lib/razorpay";
 import Header from "../../product/components/Header.jsx";
 import Footer from "../../product/components/Footer.jsx";
 import Notification from "../../product/components/Notification.jsx";
@@ -11,17 +12,8 @@ import Chatbot from "../../consumer/app/Chatbot.jsx";
 const API_URL = "http://localhost:8000/api/v1/products";
 const ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
 
-// ─── Razorpay loader ───────────────────────────────────────────────────────
-function loadRazorpayScript() {
-  return new Promise((resolve) => {
-    if (window.Razorpay) return resolve(true);
-    const script = document.createElement("script");
-    script.src = "https://checkout.razorpay.com/v1/checkout.js";
-    script.onload = () => resolve(true);
-    script.onerror = () => resolve(false);
-    document.body.appendChild(script);
-  });
-}
+// Razorpay loader is now handled via shared utility
+
 
 // ─── Fallback mock product (when API is offline) ──────────────────────────
 const MOCK_PRODUCT = {
@@ -184,7 +176,7 @@ export default function RetailerProductPage({ onLogout }) {
   // ─── Razorpay Payment ──────────────────────────────────────────────────
   const handleRazorpayPayment = async () => {
     setPaymentLoading(true);
-    const loaded = await loadRazorpayScript();
+    const loaded = await loadRazorpay();
     if (!loaded) {
       setNotification("❌ Razorpay failed to load. Check your connection.");
       setPaymentLoading(false);

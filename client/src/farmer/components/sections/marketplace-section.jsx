@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { loadRazorpay } from "@/lib/razorpay";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -95,17 +96,8 @@ const AI_RECOMMENDATIONS = [
   },
 ];
 
-function useRazorpay() {
-  const [loaded, setLoaded] = useState(false);
-  useEffect(() => {
-    if (window.Razorpay) { setLoaded(true); return; }
-    const script = document.createElement("script");
-    script.src = "https://checkout.razorpay.com/v1/checkout.js";
-    script.onload = () => setLoaded(true);
-    document.body.appendChild(script);
-  }, []);
-  return loaded;
-}
+// Razorpay loading utility is now handled via @/lib/razorpay
+
 
 function initiateRazorpay({ amount, cartItems, onSuccess, onFailure }) {
   if (!window.Razorpay) { alert("Payment SDK not loaded."); return; }
@@ -336,7 +328,13 @@ export default function MarketplaceSection() {
   const [paying, setPaying] = useState(false);
   const [paymentModal, setPaymentModal] = useState(null);
 
-  const razorpayLoaded = useRazorpay();
+  const [razorpayLoaded, setRazorpayLoaded] = useState(!!window.Razorpay);
+
+  useEffect(() => {
+    if (window.Razorpay) {
+      setRazorpayLoaded(true);
+    }
+  }, []);
 
   const filteredVendors = MOCK_VENDORS.filter(v => {
     const matchSearch = v.name.toLowerCase().includes(searchTerm.toLowerCase()) || v.products.some(p => p.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -363,6 +361,15 @@ export default function MarketplaceSection() {
   const handlePay = async (amount) => {
     setPaying(true);
     try {
+      // Ensure Razorpay is loaded
+      const isLoaded = await loadRazorpay();
+      if (!isLoaded) {
+        setPaying(false);
+        setPaymentModal({ status: "failure", error: "Failed to load payment gateway" });
+        return;
+      }
+      setRazorpayLoaded(true);
+
       const orderRes = await axios.post("http://localhost:8000/api/v1/marketplace/create-order", { amount });
       const order = orderRes.data.data;
 

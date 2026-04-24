@@ -5,13 +5,15 @@ import { Badge } from "@/components/ui/badge";
 import { fmtMoney } from "../../lib/data";
 
 export default function ProfileSection({ villagerProfile }) {
+  const displayName = "Profile";
+
   return (
     <Card className="border-0 shadow-sm bg-white">
       <CardContent className="p-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="flex items-start gap-4">
             <div className="w-16 h-16 rounded-2xl bg-emerald-100 flex items-center justify-center text-2xl font-bold text-emerald-700 shrink-0">
-              {villagerProfile.name
+              {displayName
                 .split(" ")
                 .map((n) => n[0])
                 .join("")}
@@ -19,7 +21,7 @@ export default function ProfileSection({ villagerProfile }) {
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <h2 className="text-2xl font-semibold text-gray-900">
-                  {villagerProfile.name}
+                  {displayName}
                 </h2>
                 {villagerProfile.verified && (
                   <BadgeCheck className="w-5 h-5 text-green-600" />
