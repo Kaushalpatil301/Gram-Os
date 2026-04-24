@@ -1,6 +1,9 @@
 "use client";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { LanguageProvider, useTranslation } from "../../consumer/i18n/config.jsx";
+import {
+  LanguageProvider,
+  useTranslation,
+} from "../../consumer/i18n/config.jsx";
 import Notification from "../../product/components/Notification.jsx";
 import Chatbot from "../../consumer/app/Chatbot.jsx";
 import { useNavigate } from "react-router-dom";
@@ -20,7 +23,6 @@ import AcademySection from "../components/sections/AcademySection.jsx";
 import NptelSection from "../components/sections/NptelSection.jsx";
 import EarningsSection from "../components/sections/EarningsSection.jsx";
 
-
 // Data & helpers
 import {
   DEFAULT_PROFILE,
@@ -33,19 +35,62 @@ import {
 } from "../lib/data.js";
 
 import {
-  Shield, Briefcase, BookOpen, GraduationCap,
-  IndianRupee, QrCode, Landmark, Bell,
-  LogOut, User, Menu, Sprout, HardHat, Award, DollarSign
+  Shield,
+  Briefcase,
+  BookOpen,
+  GraduationCap,
+  IndianRupee,
+  QrCode,
+  Landmark,
+  Bell,
+  LogOut,
+  User,
+  Menu,
+  Sprout,
+  HardHat,
+  Award,
+  DollarSign,
 } from "lucide-react";
+import LanguageDropdown from "../../consumer/components/LanguageDropdown.jsx";
 
 const NAV_ITEMS = [
-  { id: "jobs",     label: "Jobs Market", icon: Briefcase, color: "text-emerald-600" },
-  { id: "academy",  label: "Skills Academy", icon: BookOpen, color: "text-blue-600" },
-  { id: "nptel",    label: "NPTEL Courses", icon: GraduationCap, color: "text-indigo-600" },
-  { id: "earnings", label: "Earnings", icon: IndianRupee, color: "text-amber-600" },
-  { id: "credit",   label: "Trust Score", icon: Award, color: "text-amber-600" },
-  { id: "loans",    label: "Bank Loans", icon: DollarSign, color: "text-blue-600" },
-  { id: "schemes",  label: "Govt Schemes", icon: Landmark, color: "text-emerald-700" },
+  {
+    id: "jobs",
+    label: "Jobs Market",
+    icon: Briefcase,
+    color: "text-emerald-600",
+  },
+  {
+    id: "academy",
+    label: "Skills Academy",
+    icon: BookOpen,
+    color: "text-blue-600",
+  },
+  {
+    id: "nptel",
+    label: "NPTEL Courses",
+    icon: GraduationCap,
+    color: "text-indigo-600",
+  },
+  {
+    id: "earnings",
+    label: "Earnings",
+    icon: IndianRupee,
+    color: "text-amber-600",
+  },
+  { id: "credit", label: "Trust Score", icon: Award, color: "text-amber-600" },
+  {
+    id: "loans",
+    label: "Bank Loans",
+    icon: DollarSign,
+    color: "text-blue-600",
+  },
+  {
+    id: "schemes",
+    label: "Govt Schemes",
+    icon: Landmark,
+    color: "text-emerald-700",
+  },
 ];
 
 function VillagerContent() {
@@ -61,15 +106,15 @@ function VillagerContent() {
       type: "new_job",
       title: "New Job: Tractor Driver",
       farmerName: "Patil Farms",
-      location: "Phaltan"
+      location: "Phaltan",
     },
     {
       id: 2,
       type: "job_status",
       title: "Application Accepted",
       farmerName: "Deshmukh Agro",
-      location: "Lonand"
-    }
+      location: "Lonand",
+    },
   ]);
   const navigate = useNavigate();
 
@@ -77,13 +122,13 @@ function VillagerContent() {
   const [villagerProfile, setVillagerProfile] = useState(() => {
     try {
       const saved = localStorage.getItem("villagerProfile");
-      return saved ? { ...DEFAULT_PROFILE, ...JSON.parse(saved) } : DEFAULT_PROFILE;
+      return saved
+        ? { ...DEFAULT_PROFILE, ...JSON.parse(saved) }
+        : DEFAULT_PROFILE;
     } catch {
       return DEFAULT_PROFILE;
     }
   });
-
-
 
   const [moduleProgress, setModuleProgress] = useState(() => {
     try {
@@ -105,11 +150,12 @@ function VillagerContent() {
     } catch {}
   }, [villagerProfile]);
 
-
-
   useEffect(() => {
     try {
-      localStorage.setItem("villagerModuleProgress", JSON.stringify(moduleProgress));
+      localStorage.setItem(
+        "villagerModuleProgress",
+        JSON.stringify(moduleProgress),
+      );
     } catch {}
   }, [moduleProgress]);
 
@@ -146,10 +192,10 @@ function VillagerContent() {
         ? [...jobs].sort(
             (a, b) =>
               toHours(a.expiresIn) - toHours(b.expiresIn) ||
-              a.distanceKm - b.distanceKm
+              a.distanceKm - b.distanceKm,
           )[0]
         : null,
-    [jobs]
+    [jobs],
   );
 
   const earnings = useMemo(
@@ -161,7 +207,7 @@ function VillagerContent() {
       creditScore: villagerProfile.creditScore,
       loanEligible: villagerProfile.loanEligible,
     }),
-    [villagerProfile]
+    [villagerProfile],
   );
 
   const modules = useMemo(
@@ -170,7 +216,7 @@ function VillagerContent() {
         ...m,
         progressPercent: moduleProgress[m.id] ?? m.progressPercent,
       })),
-    [moduleProgress]
+    [moduleProgress],
   );
 
   // ── Helpers ──
@@ -179,15 +225,16 @@ function VillagerContent() {
     setTimeout(() => setNotification(""), 2500);
   }
 
-
-
   function advanceModule(id) {
     setModuleProgress((prev) => {
-      const base = INTERNAL_MODULES.find((m) => m.id === id)?.progressPercent ?? 0;
+      const base =
+        INTERNAL_MODULES.find((m) => m.id === id)?.progressPercent ?? 0;
       const current = prev[id] ?? base;
       const next = Math.min(100, current + 20);
       showNotification(
-        next === 100 ? "Module complete! Badge earned." : `Progress saved: ${next}%`
+        next === 100
+          ? "Module complete! Badge earned."
+          : `Progress saved: ${next}%`,
       );
       return { ...prev, [id]: next };
     });
@@ -209,8 +256,8 @@ function VillagerContent() {
       villagerProfile.language === "marathi"
         ? "mr-IN"
         : villagerProfile.language === "hindi"
-        ? "hi-IN"
-        : "en-IN";
+          ? "hi-IN"
+          : "en-IN";
     rec.onstart = () => setIsListening(true);
     rec.onend = () => setIsListening(false);
     rec.onerror = () => {
@@ -268,12 +315,15 @@ function VillagerContent() {
         return <AcademySection modules={modules} onAdvance={advanceModule} />;
 
       case "nptel":
-        return <NptelSection courses={NPTEL_COURSES} showNotification={showNotification} />;
+        return (
+          <NptelSection
+            courses={NPTEL_COURSES}
+            showNotification={showNotification}
+          />
+        );
 
       case "earnings":
         return <EarningsSection earnings={earnings} />;
-
-
 
       case "schemes":
         return <SchemesSection />;
@@ -300,9 +350,11 @@ function VillagerContent() {
       )}
 
       {/* Sidebar — Exact same structure as Farmer */}
-      <aside className={`fixed lg:sticky top-0 left-0 h-screen w-72 bg-white border-r border-gray-200 z-50 flex flex-col transition-transform duration-300 ${
-        sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-      }`}>
+      <aside
+        className={`fixed lg:sticky top-0 left-0 h-screen w-72 bg-white border-r border-gray-200 z-50 flex flex-col transition-transform duration-300 ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+        }`}
+      >
         {/* Logo */}
         <div className="p-5 border-b border-gray-100">
           <div className="flex items-center gap-3">
@@ -335,7 +387,9 @@ function VillagerContent() {
                       : "text-gray-700 hover:bg-emerald-50 font-medium"
                   }`}
                 >
-                  <Icon className={`w-6 h-6 ${isActive ? 'text-white' : item.color || 'text-gray-500'}`} />
+                  <Icon
+                    className={`w-6 h-6 ${isActive ? "text-white" : item.color || "text-gray-500"}`}
+                  />
                   <span className="truncate">{item.label}</span>
                 </button>
               );
@@ -350,7 +404,7 @@ function VillagerContent() {
             className="w-full flex items-center gap-4 px-4 py-3 rounded-2xl text-base font-medium text-gray-700 hover:bg-gray-50 transition-all"
           >
             <User className="w-6 h-6 text-gray-500" />
-            <span className="truncate">{villagerProfile.name || "Villager"}</span>
+            <span className="truncate">Profile</span>
           </button>
 
           <button
@@ -367,56 +421,105 @@ function VillagerContent() {
       <main className="flex-1">
         {/* Top bar — Exact same structure as Farmer */}
         <header className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center z-30 shadow-sm">
-          <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-2 -ml-2 rounded-xl hover:bg-gray-100 transition-colors">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="lg:hidden p-2 -ml-2 rounded-xl hover:bg-gray-100 transition-colors"
+          >
             <Menu className="w-6 h-6 text-gray-700" />
           </button>
 
           <h2 className="text-xl font-bold text-gray-800">
-            {NAV_ITEMS.find(n => n.id === activeSection)?.label || "Dashboard"}
+            {NAV_ITEMS.find((n) => n.id === activeSection)?.label ||
+              "Dashboard"}
           </h2>
 
           <div className="flex items-center gap-3">
+            <LanguageDropdown
+              buttonClassName="relative flex items-center gap-2 p-2 hover:bg-gray-100 rounded-xl transition-colors text-gray-600 focus:outline-none"
+              iconClassName="w-5 h-5"
+              chevronClassName="w-4 h-4 transition-transform"
+              menuClassName="absolute right-0 mt-2 w-44 bg-white rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] border border-gray-100 overflow-hidden z-50"
+            />
+
             <div className="relative">
-              <button 
-                onClick={() => setShowNotifications(!showNotifications)} 
+              <button
+                onClick={() => setShowNotifications(!showNotifications)}
                 className="relative p-2 hover:bg-gray-100 rounded-xl transition-colors text-gray-600 focus:outline-none"
               >
                 <Bell className="w-6 h-6" />
-                {notifications.length > 0 && <span className="absolute top-2 right-2.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>}
+                {notifications.length > 0 && (
+                  <span className="absolute top-2 right-2.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
+                )}
               </button>
 
               {showNotifications && (
                 <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] border border-gray-100 overflow-hidden z-50">
                   <div className="p-4 border-b border-gray-50 flex justify-between items-center bg-gray-50/50">
                     <h3 className="font-bold text-gray-900">Notifications</h3>
-                    {notifications.length > 0 && <span className="bg-red-100 text-red-600 text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full">{notifications.length} New</span>}
+                    {notifications.length > 0 && (
+                      <span className="bg-red-100 text-red-600 text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full">
+                        {notifications.length} New
+                      </span>
+                    )}
                   </div>
                   <div className="max-h-96 overflow-y-auto">
                     {notifications.length === 0 ? (
-                      <div className="p-6 text-center text-gray-500 text-sm font-medium">No new notifications</div>
+                      <div className="p-6 text-center text-gray-500 text-sm font-medium">
+                        No new notifications
+                      </div>
                     ) : (
-                      notifications.map(notif => (
-                        <div key={notif.id} className={`p-4 border-b border-gray-50 transition-colors cursor-pointer ${notif.type === 'new_job' ? 'hover:bg-amber-50/50' : 'hover:bg-emerald-50/50'}`}>
+                      notifications.map((notif) => (
+                        <div
+                          key={notif.id}
+                          className={`p-4 border-b border-gray-50 transition-colors cursor-pointer ${notif.type === "new_job" ? "hover:bg-amber-50/50" : "hover:bg-emerald-50/50"}`}
+                        >
                           <div className="flex gap-3">
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${notif.type === 'new_job' ? 'bg-amber-100' : 'bg-emerald-100'}`}>
-                              <Briefcase className={`w-5 h-5 ${notif.type === 'new_job' ? 'text-amber-600' : 'text-emerald-600'}`} />
+                            <div
+                              className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${notif.type === "new_job" ? "bg-amber-100" : "bg-emerald-100"}`}
+                            >
+                              <Briefcase
+                                className={`w-5 h-5 ${notif.type === "new_job" ? "text-amber-600" : "text-emerald-600"}`}
+                              />
                             </div>
                             <div>
                               <p className="text-sm font-medium text-gray-900">
-                                {notif.type === 'new_job' ? (
-                                  <>Urgent: <span className="font-bold text-amber-700">{notif.title}</span></>
+                                {notif.type === "new_job" ? (
+                                  <>
+                                    Urgent:{" "}
+                                    <span className="font-bold text-amber-700">
+                                      {notif.title}
+                                    </span>
+                                  </>
                                 ) : (
-                                  <>Status: <span className="font-bold text-emerald-700">{notif.title}</span></>
+                                  <>
+                                    Status:{" "}
+                                    <span className="font-bold text-emerald-700">
+                                      {notif.title}
+                                    </span>
+                                  </>
                                 )}
                               </p>
-                              <p className="text-xs text-gray-500 mt-1">{notif.farmerName} • {notif.location}</p>
+                              <p className="text-xs text-gray-500 mt-1">
+                                {notif.farmerName} • {notif.location}
+                              </p>
                               <div className="flex gap-2 mt-3">
-                                <button onClick={() => {
-                                  showNotification(notif.type === 'new_job' ? "Applied to job!" : "Status reviewed");
-                                  setNotifications(prev => prev.filter(n => n.id !== notif.id));
-                                  if (notif.type === 'new_job') goTo("jobs");
-                                }} className={`text-xs text-white px-4 py-1.5 rounded-lg shadow-sm font-semibold transition-colors cursor-pointer ${notif.type === 'new_job' ? 'bg-amber-600 hover:bg-amber-700' : 'bg-emerald-600 hover:bg-emerald-700'}`}>
-                                  {notif.type === 'new_job' ? 'Apply Now' : 'View Status'}
+                                <button
+                                  onClick={() => {
+                                    showNotification(
+                                      notif.type === "new_job"
+                                        ? "Applied to job!"
+                                        : "Status reviewed",
+                                    );
+                                    setNotifications((prev) =>
+                                      prev.filter((n) => n.id !== notif.id),
+                                    );
+                                    if (notif.type === "new_job") goTo("jobs");
+                                  }}
+                                  className={`text-xs text-white px-4 py-1.5 rounded-lg shadow-sm font-semibold transition-colors cursor-pointer ${notif.type === "new_job" ? "bg-amber-600 hover:bg-amber-700" : "bg-emerald-600 hover:bg-emerald-700"}`}
+                                >
+                                  {notif.type === "new_job"
+                                    ? "Apply Now"
+                                    : "View Status"}
                                 </button>
                               </div>
                             </div>
@@ -428,15 +531,11 @@ function VillagerContent() {
                 </div>
               )}
             </div>
-            
-
           </div>
         </header>
 
         {/* Dynamic Section Content */}
-        <div className="p-6">
-          {renderSection()}
-        </div>
+        <div className="p-6">{renderSection()}</div>
 
         {/* Re-using villager specific helpers */}
         <Chatbot />
