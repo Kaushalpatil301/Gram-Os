@@ -16,7 +16,7 @@ export const navItems = [
 // ── Default villager profile ──
 export const DEFAULT_PROFILE = {
   id: "w001",
-  name: "Sunita Pawar",
+  name: "Profile",
   location: "Satara, Maharashtra",
   verified: true,
   gigScore: 87,
