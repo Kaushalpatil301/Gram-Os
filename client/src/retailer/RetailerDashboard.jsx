@@ -6,6 +6,7 @@ import FarmerNetwork from "./components/FarmerNetwork";
 import Contracts from "./components/Contracts";
 import QRScanner from "./components/QRScanner";
 import ProfileModal from "./components/ProfileModal";
+import Notification from "../product/components/Notification.jsx";
 import Chatbot from "../consumer/app/Chatbot.jsx";
 import ChatSection from "./components/ChatSection.jsx";
 import SchemesSection from "../farmer/components/sections/schemes-section.jsx";
@@ -86,6 +87,7 @@ export default function RetailerDashboard() {
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeChats, setActiveChats] = useState([]);
+  const [notification, setNotification] = useState("");
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState([
     {
@@ -102,6 +104,11 @@ export default function RetailerDashboard() {
     },
   ]);
 
+  const showNotificationToast = (msg) => {
+    setNotification(msg);
+    setTimeout(() => setNotification(""), 3000);
+  };
+
   const handleAcceptConnect = (notif) => {
     if (!activeChats.find((chat) => chat.id === notif.id)) {
       setActiveChats((prev) => [
@@ -111,6 +118,7 @@ export default function RetailerDashboard() {
     }
     setNotifications((prev) => prev.filter((n) => n.id !== notif.id));
     setShowNotifications(false);
+    showNotificationToast("Connected!");
     goTo("chat");
   };
 
@@ -388,6 +396,8 @@ export default function RetailerDashboard() {
           {/* Dynamic Section Content */}
           <div className="p-6">{renderSection()}</div>
 
+          {/* Chatbot & Notification */}
+          <Notification message={notification} />
           <Chatbot />
         </main>
 

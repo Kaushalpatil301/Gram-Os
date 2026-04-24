@@ -3,16 +3,18 @@ import { useNavigate } from "react-router-dom";
 import LoginForm from "../components/forms/LoginForm";
 import SignupForm from "../components/forms/SignupForm";
 import ProfileSetupWizard from "../components/ProfileSetupWizard";
+import { prefetchTrustLoanData } from "../../lib/trustLoanCache";
 
 export default function AuthPage({ onAuthSuccess }) {
-  const [tab,        setTab]        = useState("login");
-  const [setupUser,  setSetupUser]  = useState(null); // non-null triggers wizard
+  const [tab, setTab] = useState("login");
+  const [setupUser, setSetupUser] = useState(null); // non-null triggers wizard
   const navigate = useNavigate();
 
   // ── Called after login (skip wizard — profile already exists) ─────────────
-  const handleLoginSuccess = (data) => {
+  const handleLoginSuccess = async (data) => {
     localStorage.setItem("user", JSON.stringify(data));
     if (onAuthSuccess) onAuthSuccess(data);
+    await prefetchTrustLoanData({ user: data });
     navigate(`/dashboard/${data.role || "consumer"}`);
   };
 
@@ -20,11 +22,12 @@ export default function AuthPage({ onAuthSuccess }) {
   const handleSignupSuccess = (data) => {
     localStorage.setItem("user", JSON.stringify(data));
     if (onAuthSuccess) onAuthSuccess(data);
-    setSetupUser(data);   // opens the wizard (doesn't navigate yet)
+    setSetupUser(data); // opens the wizard (doesn't navigate yet)
   };
 
   // ── Called when wizard finishes (or is skipped) ───────────────────────────
-  const handleWizardComplete = (user) => {
+  const handleWizardComplete = async (user) => {
+    await prefetchTrustLoanData({ user });
     setSetupUser(null);
     navigate(`/dashboard/${user?.role || "consumer"}`);
   };
@@ -33,7 +36,10 @@ export default function AuthPage({ onAuthSuccess }) {
     <>
       {/* ── Wizard overlay (shown after signup) ─────────────────────────── */}
       {setupUser && (
-        <ProfileSetupWizard user={setupUser} onComplete={handleWizardComplete} />
+        <ProfileSetupWizard
+          user={setupUser}
+          onComplete={handleWizardComplete}
+        />
       )}
 
       {/* ── Auth card ────────────────────────────────────────────────────── */}
