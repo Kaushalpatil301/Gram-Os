@@ -11,6 +11,7 @@ import {
   Thermometer, Wind, AlertCircle, ChevronDown, ChevronUp, Info
 } from "lucide-react";
 import { useTranslation } from "../../../consumer/i18n/config.jsx";
+import translationService from "../../../consumer/i18n/translationService.js";
 
 const RAZORPAY_KEY_ID = "rzp_test_SbpLusWieguIBI";
 
@@ -45,11 +46,11 @@ const AI_RECOMMENDATIONS = [
     inputCost: "~₹28,000/acre",
     netProfit: "~₹67,000/acre",
     signals: [
-      { icon: "🌍", label: "Soil Match", value: "Black cotton retains moisture — ideal for tomato root development", positive: true },
-      { icon: "💧", label: "Irrigation Fit", value: "Drip irrigation reduces fungal risk by 40% vs flood", positive: true },
-      { icon: "📈", label: "Mandi Demand", value: "Pune APMC showing 18% YoY price rise for hybrid tomatoes", positive: true },
-      { icon: "🌦️", label: "Rainfall", value: "650mm avg is within optimal 500–800mm range", positive: true },
-      { icon: "⚠️", label: "Risk", value: "Leaf curl virus risk in Aug–Sep. Use virus-resistant variety.", positive: false },
+      { icon: "🌍", label: "Soil Match", labelKey: "soilMatch", value: "Black cotton retains moisture — ideal for tomato root development", positive: true },
+      { icon: "💧", label: "Irrigation Fit", labelKey: "irrigationFit", value: "Drip irrigation reduces fungal risk by 40% vs flood", positive: true },
+      { icon: "📈", label: "Mandi Demand", labelKey: "mandiDemand", value: "Pune APMC showing 18% YoY price rise for hybrid tomatoes", positive: true },
+      { icon: "🌦️", label: "Rainfall", labelKey: "rainfall", value: "650mm avg is within optimal 500–800mm range", positive: true },
+      { icon: "⚠️", label: "Risk", labelKey: "risk", value: "Leaf curl virus risk in Aug–Sep. Use virus-resistant variety.", positive: false },
     ],
     whyNotOthers: "Wheat ruled out — low MSP ROI for your land size. Cotton skipped — drip not cost-effective for cotton at 3.5 acres.",
   },
@@ -66,11 +67,11 @@ const AI_RECOMMENDATIONS = [
     inputCost: "~₹18,000/acre",
     netProfit: "~₹40,000/acre",
     signals: [
-      { icon: "🌍", label: "Soil Match", value: "Vertisol with good drainage — prevents bulb rot", positive: true },
-      { icon: "📦", label: "Export Demand", value: "Strong Middle East export window opens Q3 2026", positive: true },
-      { icon: "💧", label: "Water Efficiency", value: "Low water needs suits your drip setup in dry Rabi months", positive: true },
-      { icon: "🔄", label: "Crop Rotation", value: "After soybean — good N replenishment for onion growth", positive: true },
-      { icon: "⚠️", label: "Risk", value: "Price volatility high. Store 30% yield for better offseason rates.", positive: false },
+      { icon: "🌍", label: "Soil Match", labelKey: "soilMatch", value: "Vertisol with good drainage — prevents bulb rot", positive: true },
+      { icon: "📦", label: "Export Demand", labelKey: "exportDemand", value: "Strong Middle East export window opens Q3 2026", positive: true },
+      { icon: "💧", label: "Water Efficiency", labelKey: "waterEfficiency", value: "Low water needs suits your drip setup in dry Rabi months", positive: true },
+      { icon: "🔄", label: "Crop Rotation", labelKey: "cropRotation", value: "After soybean — good N replenishment for onion growth", positive: true },
+      { icon: "⚠️", label: "Risk", labelKey: "risk", value: "Price volatility high. Store 30% yield for better offseason rates.", positive: false },
     ],
     whyNotOthers: "Grapes skipped — requires 5+ years setup. Sugarcane skipped — water intensive, not suited to drip at this scale.",
   },
@@ -87,11 +88,11 @@ const AI_RECOMMENDATIONS = [
     inputCost: "~₹10,000/acre",
     netProfit: "~₹35,000/acre",
     signals: [
-      { icon: "🏛️", label: "MSP Safety Net", value: "Govt MSP at ₹4,892/qtl — guaranteed floor price", positive: true },
-      { icon: "🌿", label: "Soil Health", value: "Nitrogen fixation improves soil for next Rabi season", positive: true },
-      { icon: "💰", label: "Low Input Cost", value: "Lowest input cost of all 3 recommendations", positive: true },
-      { icon: "📉", label: "Market Price", value: "Current mandi rate ₹200 below MSP — sell to govt procurement", positive: false },
-      { icon: "⚠️", label: "Risk", value: "Moderate yield on black cotton without proper drainage management", positive: false },
+      { icon: "🏛️", label: "MSP Safety Net", labelKey: "mspSafetyNet", value: "Govt MSP at ₹4,892/qtl — guaranteed floor price", positive: true },
+      { icon: "🌿", label: "Soil Health", labelKey: "soilHealth", value: "Nitrogen fixation improves soil for next Rabi season", positive: true },
+      { icon: "💰", label: "Low Input Cost", labelKey: "lowInputCost", value: "Lowest input cost of all 3 recommendations", positive: true },
+      { icon: "📉", label: "Market Price", labelKey: "marketPrice", value: "Current mandi rate ₹200 below MSP — sell to govt procurement", positive: false },
+      { icon: "⚠️", label: "Risk", labelKey: "risk", value: "Moderate yield on black cotton without proper drainage management", positive: false },
     ],
     whyNotOthers: "Ranked 3rd due to lower profit margin vs tomato despite lower risk profile.",
   },
@@ -212,6 +213,7 @@ function OrderSummary({ cartItems, onRemove, onPay, paying, razorpayLoaded }) {
 // ── AI Explainability Card ────────────────────────────────────────────────────
 function CropRecommendationCard({ rec, index, onBrowseInputs, onBuyBundle }) {
   const [expanded, setExpanded] = useState(index === 0);
+  const { t } = useTranslation();
 
   const rankColors = ["border-l-emerald-500", "border-l-blue-400", "border-l-amber-400"];
   const rankBg = ["bg-emerald-600", "bg-blue-500", "bg-amber-500"];
@@ -235,9 +237,9 @@ function CropRecommendationCard({ rec, index, onBrowseInputs, onBuyBundle }) {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <h4 className="font-bold text-gray-900 text-base">{rec.crop}</h4>
-                  {index === 0 && <Badge className="bg-emerald-100 text-emerald-700 border-0 text-xs">Top Pick</Badge>}
+                  {index === 0 && <Badge className="bg-emerald-100 text-emerald-700 border-0 text-xs">{t("marketplace.topPick")}</Badge>}
                 </div>
-                <p className="text-xs text-gray-400 mt-0.5">Variety: {rec.variety}</p>
+                <p className="text-xs text-gray-400 mt-0.5">{t("marketplace.varietyTitle")}: {rec.variety}</p>
                 {/* Quick stats row */}
                 <div className="flex items-center gap-3 mt-2 flex-wrap">
                   <span className="text-sm font-bold text-emerald-700">{rec.mandiPrice}</span>
@@ -252,14 +254,14 @@ function CropRecommendationCard({ rec, index, onBrowseInputs, onBuyBundle }) {
             {/* Confidence Meter */}
             <div className={`${confidenceBg} rounded-2xl px-3 py-2 text-center shrink-0`}>
               <div className={`text-2xl font-black ${confidenceColor}`}>{rec.confidence}%</div>
-              <div className="text-[9px] text-gray-400 uppercase font-bold tracking-wide">AI Score</div>
+              <div className="text-[9px] text-gray-400 uppercase font-bold tracking-wide">{t("marketplace.aiScore")}</div>
             </div>
           </div>
 
           {/* Expand toggle */}
           <div className="flex items-center gap-1 mt-3 text-xs text-gray-400 font-medium">
             {expanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-            {expanded ? "Hide details" : "Why did AI recommend this?"}
+            {expanded ? t("marketplace.hideDetails") : t("marketplace.expandDetails")}
           </div>
         </div>
 
@@ -270,9 +272,9 @@ function CropRecommendationCard({ rec, index, onBrowseInputs, onBuyBundle }) {
             {/* Profit Snapshot */}
             <div className="grid grid-cols-3 gap-2">
               {[
-                { label: "Expected Yield", value: rec.expectedYield, color: "text-gray-800" },
-                { label: "Input Cost", value: rec.inputCost, color: "text-red-600" },
-                { label: "Est. Profit", value: rec.netProfit, color: "text-emerald-700" },
+                { label: t("marketplace.profitSnapshot.expectedYield"), value: rec.expectedYield, color: "text-gray-800" },
+                { label: t("marketplace.profitSnapshot.inputCost"), value: rec.inputCost, color: "text-red-600" },
+                { label: t("marketplace.profitSnapshot.estProfit"), value: rec.netProfit, color: "text-emerald-700" },
               ].map((s, i) => (
                 <div key={i} className="bg-gray-50 rounded-xl p-3 text-center">
                   <div className={`text-sm font-bold ${s.color}`}>{s.value}</div>
@@ -285,14 +287,14 @@ function CropRecommendationCard({ rec, index, onBrowseInputs, onBuyBundle }) {
             <div>
               <div className="flex items-center gap-1.5 mb-2.5">
                 <Brain className="w-4 h-4 text-purple-500" />
-                <span className="text-xs font-bold text-gray-700 uppercase tracking-wide">Why AI chose this</span>
+                <span className="text-xs font-bold text-gray-700 uppercase tracking-wide">{t("marketplace.whyAiChoseThis")}</span>
               </div>
               <div className="space-y-2">
                 {rec.signals.map((signal, i) => (
                   <div key={i} className={`flex items-start gap-3 rounded-xl p-3 ${signal.positive ? "bg-emerald-50/60" : "bg-red-50/60"}`}>
                     <span className="text-base shrink-0 mt-0.5">{signal.icon}</span>
                     <div className="flex-1 min-w-0">
-                      <span className={`text-xs font-bold ${signal.positive ? "text-emerald-700" : "text-red-600"}`}>{signal.label} &nbsp;</span>
+                      <span className={`text-xs font-bold ${signal.positive ? "text-emerald-700" : "text-red-600"}`}>{t("marketplace.aiSignalLabels." + signal.labelKey)} &nbsp;</span>
                       <span className="text-xs text-gray-600">{signal.value}</span>
                     </div>
                     <span className="shrink-0 mt-0.5">{signal.positive ? "✓" : "!"}</span>
@@ -305,15 +307,15 @@ function CropRecommendationCard({ rec, index, onBrowseInputs, onBuyBundle }) {
             <div className="bg-gray-50 rounded-xl p-3 flex items-start gap-2">
               <Info className="w-4 h-4 text-gray-400 shrink-0 mt-0.5" />
               <div>
-                <p className="text-xs font-bold text-gray-500 uppercase mb-1">Why other crops were ranked lower</p>
+                <p className="text-xs font-bold text-gray-500 uppercase mb-1">{t("marketplace.whyNotOthers")}</p>
                 <p className="text-xs text-gray-600">{rec.whyNotOthers}</p>
               </div>
             </div>
 
             {/* CTA */}
             <div className="flex gap-2">
-              <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 cursor-pointer" onClick={onBuyBundle}>Buy Full Bundle</Button>
-              <Button size="sm" variant="outline" className="cursor-pointer" onClick={onBrowseInputs}>Browse Inputs →</Button>
+              <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 cursor-pointer" onClick={onBuyBundle}>{t("marketplace.cta.buyBundle")}</Button>
+              <Button size="sm" variant="outline" className="cursor-pointer" onClick={onBrowseInputs}>{t("marketplace.cta.browseInputs")}</Button>
             </div>
           </div>
         )}
@@ -324,21 +326,50 @@ function CropRecommendationCard({ rec, index, onBrowseInputs, onBuyBundle }) {
 
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function MarketplaceSection() {
-  const { t } = useTranslation();
+  const { t, currentLanguage } = useTranslation();
   const [activeTab, setActiveTab] = useState("recommend");
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [cartItems, setCartItems] = useState([]);
   const [paying, setPaying] = useState(false);
   const [paymentModal, setPaymentModal] = useState(null);
-
   const [razorpayLoaded, setRazorpayLoaded] = useState(!!window.Razorpay);
+  const [translatedRecs, setTranslatedRecs] = useState(AI_RECOMMENDATIONS);
 
   useEffect(() => {
     if (window.Razorpay) {
       setRazorpayLoaded(true);
     }
   }, []);
+
+  // Dynamic translation for AI recommendations
+  useEffect(() => {
+    if (currentLanguage === "en") {
+      setTranslatedRecs(AI_RECOMMENDATIONS);
+      return;
+    }
+    const payload = {};
+    AI_RECOMMENDATIONS.forEach((rec, i) => {
+      rec.signals.forEach((sig, j) => {
+        payload[`rec${i}_sig${j}_value`] = sig.value;
+      });
+      payload[`rec${i}_why`] = rec.whyNotOthers;
+    });
+    translationService.batchTranslate(payload, currentLanguage, "google").then(translated => {
+      const newRecs = AI_RECOMMENDATIONS.map((rec, i) => {
+        const newSignals = rec.signals.map((sig, j) => ({
+          ...sig,
+          value: translated[`rec${i}_sig${j}_value`] || sig.value,
+        }));
+        return {
+          ...rec,
+          signals: newSignals,
+          whyNotOthers: translated[`rec${i}_why`] || rec.whyNotOthers,
+        };
+      });
+      setTranslatedRecs(newRecs);
+    });
+  }, [currentLanguage]);
 
   const filteredVendors = MOCK_VENDORS.filter(v => {
     const matchSearch = v.name.toLowerCase().includes(searchTerm.toLowerCase()) || v.products.some(p => p.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -471,12 +502,12 @@ export default function MarketplaceSection() {
             </div>
             <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
               {[
-                { label: "Soil", value: "Black Cotton" },
-                { label: "Irrigation", value: FARMER_CONTEXT.irrigation },
-                { label: "Location", value: FARMER_CONTEXT.location },
-                { label: "Land", value: FARMER_CONTEXT.landSize },
-                { label: "Rainfall", value: FARMER_CONTEXT.rainfall },
-                { label: "Prev Crop", value: FARMER_CONTEXT.prevCrop },
+                { label: t("marketplace.farmerContext.soil"), value: "Black Cotton" },
+                { label: t("marketplace.farmerContext.irrigation"), value: FARMER_CONTEXT.irrigation },
+                { label: t("marketplace.farmerContext.location"), value: FARMER_CONTEXT.location },
+                { label: t("marketplace.farmerContext.land"), value: FARMER_CONTEXT.landSize },
+                { label: t("marketplace.farmerContext.rainfall"), value: FARMER_CONTEXT.rainfall },
+                { label: t("marketplace.farmerContext.prevCrop"), value: FARMER_CONTEXT.prevCrop },
               ].map((f, i) => (
                 <div key={i} className="bg-white/70 rounded-xl p-2 text-center">
                   <div className="text-xs font-bold text-gray-700 truncate">{f.value}</div>
@@ -487,7 +518,7 @@ export default function MarketplaceSection() {
           </div>
 
           {/* Recommendation Cards */}
-          {AI_RECOMMENDATIONS.map((rec, i) => (
+          {translatedRecs.map((rec, i) => (
             <CropRecommendationCard
               key={i}
               rec={rec}
@@ -528,11 +559,11 @@ export default function MarketplaceSection() {
                         <h4 className="font-bold text-gray-900">{vendor.name}</h4>
                         {vendor.verified && <CheckCircle className="w-4 h-4 text-emerald-500" />}
                       </div>
-                      <div className="flex items-center gap-3 mt-1 text-sm text-gray-500">
-                        <span className="flex items-center gap-1"><Star className="w-3 h-3 text-amber-400 fill-amber-400" /> {vendor.rating}</span>
-                        <span>{vendor.distance}</span>
-                        <Badge variant="outline" className="text-xs">{vendor.type}</Badge>
-                      </div>
+                       <div className="flex items-center gap-3 mt-1 text-sm text-gray-500">
+                         <span className="flex items-center gap-1"><Star className="w-3 h-3 text-amber-400 fill-amber-400" /> {vendor.rating}</span>
+                         <span>{vendor.distance}</span>
+                         <Badge variant="outline" className="text-xs">{t("marketplace.vendor.type." + vendor.type.toLowerCase())}</Badge>
+                       </div>
                     </div>
                   </div>
                   {vendor.fairPrice && <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-xs shrink-0">{t("marketplace.fairPrice")}</Badge>}

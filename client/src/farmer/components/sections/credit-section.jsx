@@ -125,7 +125,7 @@ export default function CreditSection() {
       <div>
         <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
           <div className="p-2 bg-amber-100 rounded-xl"><Award className="w-5 h-5 text-amber-700" /></div>
-          {t("retailer.nav.credit")}
+          {t("farmer.nav.credit")}
         </h2>
         <p className="text-gray-500 mt-1">{t("retailer.section.credit.subtitle")}</p>
       </div>

@@ -74,12 +74,12 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
     setEditing(null);
     
     // Safely extract a string locality from the user object
-    let userLocality = "Local";
+    let userLocality = t("produce.form.defaultLocality");
     if (user.location) {
       if (typeof user.location === "string") {
         userLocality = user.location;
       } else if (typeof user.location === "object") {
-        userLocality = user.location.city || user.location.address || user.location.state || "Local";
+        userLocality = user.location.city || user.location.address || user.location.state || t("produce.form.defaultLocality");
       }
     } else if (user.village) {
       userLocality = user.village;
@@ -229,14 +229,14 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
       formData.append("quantity", Number(form.quantity));
       formData.append("basePrice", Number(form.basePrice));
       
-      let locStr = "Local";
-      if (typeof form.locality === "string") {
-        locStr = form.locality;
-      } else if (form.locality && typeof form.locality === "object") {
-        locStr = form.locality.city || form.locality.address || form.locality.state || "Local";
-      } else if (form.locality) {
-        locStr = String(form.locality);
-      }
+       let locStr = t("produce.form.defaultLocality");
+       if (typeof form.locality === "string") {
+         locStr = form.locality;
+       } else if (form.locality && typeof form.locality === "object") {
+         locStr = form.locality.city || form.locality.address || form.locality.state || t("produce.form.defaultLocality");
+       } else if (form.locality) {
+         locStr = String(form.locality);
+       }
       formData.append("locality", locStr.trim());
       formData.append("farmerEmail", user.email);
       // Note: Don't send farmerId - backend looks it up from email
@@ -302,7 +302,7 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
     } catch (error) {
       console.error("Delete error:", error);
       toast.error(
-        `Delete failed: ${error.response?.data?.message || error.message}`,
+        `${t("produce.toast.deleteFailed")} ${error.response?.data?.message || error.message}`,
       );
     }
   };
@@ -377,11 +377,10 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
                     <div className="space-y-1 text-sm">
                       <div>
                         <span className="font-medium">{t("produce.field.quantity")}:</span>{" "}
-                        {p.quantity} kg
+                        {p.quantity} {t("common.units.kg")}
                       </div>
                       <div>
-                        <span className="font-medium">{t("produce.field.price")}:</span> ₹
-                        {p.basePrice}/kg
+                        <span className="font-medium">{t("produce.field.price")}:</span> {t("common.currency.rupee")}{p.basePrice}/{t("common.units.kg")}
                       </div>
                       <div>
                         <span className="font-medium">{t("produce.field.locality")}:</span>{" "}
@@ -456,9 +455,9 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
                   products.map((p) => (
                     <TableRow key={p._id}>
                       <TableCell>{p.name}</TableCell>
-                      <TableCell>{p.type}</TableCell>
-                      <TableCell>{p.quantity} kg</TableCell>
-                      <TableCell>₹{p.basePrice}/kg</TableCell>
+                       <TableCell>{p.type}</TableCell>
+                       <TableCell>{p.quantity} {t("common.units.kg")}</TableCell>
+                       <TableCell>{t("common.currency.rupee")}{p.basePrice}/{t("common.units.kg")}</TableCell>
                       <TableCell>{p.locality}</TableCell>
                       <TableCell className="font-mono text-xs">
                         {p.farmId}
@@ -518,13 +517,13 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
                   alt={p.name}
                   className="w-full h-32 object-cover rounded-lg border mb-3 grayscale-[20%]"
                 />
-                <div className="space-y-1 text-sm text-gray-500">
-                  <div>
-                    <span className="font-medium text-gray-600">{t("produce.past.totalYield")}:</span> {p.quantity} kg
-                  </div>
-                  <div>
-                    <span className="font-medium text-gray-600">{t("produce.past.avgPrice")}:</span> ₹{p.basePrice}/kg
-                  </div>
+                 <div className="space-y-1 text-sm text-gray-500">
+                   <div>
+                     <span className="font-medium text-gray-600">{t("produce.past.totalYield")}:</span> {p.quantity} {t("common.units.kg")}
+                   </div>
+                   <div>
+                     <span className="font-medium text-gray-600">{t("produce.past.avgPrice")}:</span> {t("common.currency.rupee")}{p.basePrice}/{t("common.units.kg")}
+                   </div>
                   <div>
                     <span className="font-medium text-gray-600">{t("produce.past.harvested")}:</span> {p.harvestDate}
                   </div>
@@ -587,22 +586,22 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
               />
             </LabeledInput>
             <LabeledInput label={t("produce.field.cropCategoryRequired")}>
-              <select
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                value={form.type}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, type: e.target.value }))
-                }
-              >
-                <option value="">{t("produce.placeholder.selectCategory")}</option>
-                {produceTypes.map((t) => (
-                  <option key={t} value={t}>
-                    {t}
-                  </option>
-                ))}
-              </select>
+                <select
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  value={form.type}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, type: e.target.value }))
+                  }
+                >
+                  <option value="">{t("produce.placeholder.selectCategory")}</option>
+                  {produceTypes.map((type) => (
+                    <option key={type} value={type}>
+                      {t("produce.types." + type.toLowerCase().replace(/\s+/g, ""))}
+                    </option>
+                  ))}
+                </select>
             </LabeledInput>
-            <LabeledInput label="Quantity (kg) *">
+            <LabeledInput label={t("produce.field.quantityLabel")}>
               <Input
                 type="number"
                 value={form.quantity || ""}
@@ -612,7 +611,7 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
               />
             </LabeledInput>
 
-            <LabeledInput label="Produce Image">
+            <LabeledInput label={t("produce.label.produceImage")}>
               <Input type="file" accept="image/*" onChange={handleFileChange} />
             </LabeledInput>
 
@@ -624,11 +623,11 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
                   className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold transition-all shadow-md"
                 >
                   <Sparkles className="w-4 h-4 mr-2" />
-                  {isAiPredictingAdd ? "AI is Analyzing Market..." : "Predict Optimal Price"}
+                  {isAiPredictingAdd ? t("produce.button.aiAnalyzing") : t("produce.button.predictPrice")}
                 </Button>
               </div>
             ) : (
-              <LabeledInput label="Base Price (₹/kg) * (AI Suggested)">
+              <LabeledInput label={t("produce.field.basePriceLabel")}>
                 <Input
                   type="number"
                   value={form.basePrice || ""}
@@ -643,7 +642,7 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
           {hasPredictedPrice && (
             <div className="cursor-pointer mt-4 flex justify-end gap-2">
               <Button variant="outline" onClick={() => setOpen(false)}>
-                Cancel
+                {t("common.cancel")}
               </Button>
               <Button
                 className="bg-emerald-600 text-white cursor-pointer"
@@ -651,10 +650,10 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
                 disabled={isUploading}
               >
                 {isUploading
-                  ? "Saving..."
+                  ? t("common.button.saving")
                   : editing
-                    ? "Save Changes"
-                    : "Add Product"}
+                    ? t("common.button.saveChanges")
+                    : t("produce.button.addProduct")}
               </Button>
             </div>
           )}

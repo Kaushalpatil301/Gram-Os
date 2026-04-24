@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
+import { useTranslation } from "../../../consumer/i18n/config.jsx";
 
 // Recharts
 import { Line, LineChart, XAxis, YAxis, CartesianGrid, ResponsiveContainer, BarChart, Bar } from "recharts"
@@ -51,9 +52,10 @@ function mean(nums) {
 }
 
 export default function ProduceReports() {
-  const [produce, setProduce] = useState("Tomato")
-  const [localities, setLocalities] = useState("ALL")
-  const reportRef = useRef(null)
+   const { t } = useTranslation();
+   const [produce, setProduce] = useState("Tomato")
+   const [localities, setLocalities] = useState("ALL")
+   const reportRef = useRef(null)
 
   const produceOptions = useMemo(() => unique(MOCK_DATA.map((d) => d.produce)), [])
 
@@ -123,18 +125,18 @@ export default function ProduceReports() {
     <div className="space-y-6">
       <Card>
         <CardHeader className="gap-2">
-          <CardTitle className="text-2xl">Select Produce</CardTitle>
-          <CardDescription>Choose the produce you want to analyze</CardDescription>
+          <CardTitle className="text-2xl">{t("farmer.reports.title")}</CardTitle>
+          <CardDescription>{t("farmer.reports.description")}</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           {/* Produce selector */}
           <div className="flex items-center gap-3">
             <label htmlFor="produce" className="text-sm text-muted-foreground">
-              Produce
+              {t("farmer.reports.produceLabel")}
             </label>
             <Select value={produce} onValueChange={setProduce}>
               <SelectTrigger id="produce" className="w-48">
-                <SelectValue placeholder="Select produce" />
+                <SelectValue placeholder={t("farmer.reports.producePlaceholder")} />
               </SelectTrigger>
               <SelectContent>
                 {produceOptions.map((p) => (
@@ -148,7 +150,7 @@ export default function ProduceReports() {
 
           {/* Localities filter */}
           <div className="flex items-center gap-3">
-            <label className="text-sm text-muted-foreground">Localities</label>
+            <label className="text-sm text-muted-foreground">{t("farmer.reports.localitiesLabel")}</label>
             <div className="flex flex-wrap items-center gap-2">
               <Button
                 type="button"
@@ -157,7 +159,7 @@ export default function ProduceReports() {
                 onClick={() => setLocalities("ALL")}
                 aria-pressed={localities === "ALL"}
               >
-                All
+                {t("farmer.reports.allLocalities")}
               </Button>
               {allLocalities.map((l) => {
                 const active = localities !== "ALL" && localities.includes(l)
@@ -192,7 +194,7 @@ export default function ProduceReports() {
           {/* Export */}
           <div className="ml-auto">
             <Button onClick={handleExport} variant="secondary">
-              Export Report (PDF)
+              {t("farmer.reports.exportReport")}
             </Button>
           </div>
         </CardContent>
@@ -202,17 +204,16 @@ export default function ProduceReports() {
         {/* Price Trend */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-xl">Price Trend</CardTitle>
+            <CardTitle className="text-xl">{t("farmer.reports.priceTrend")}</CardTitle>
             <CardDescription>
-              Average daily price for {produce}
-              {localities === "ALL" ? " (all localities)" : ` (${localities.join(", ")})`}
+              {t("farmer.reports.priceTrendDesc", { produce: produce, localityInfo: localities === "ALL" ? " (all localities)" : ` (${localities.join(", ")})` })}
             </CardDescription>
           </CardHeader>
           <CardContent className="h-[320px]">
             <ChartContainer
               config={{
-                price: { label: "Price", color: "hsl(var(--chart-1))" },
-                cost: { label: "Cost", color: "hsl(var(--chart-2))" },
+                price: { label: t("farmer.reports.price"), color: "hsl(var(--chart-1))" },
+                cost: { label: t("farmer.reports.cost"), color: "hsl(var(--chart-2))" },
               }}
               className="h-full"
             >
@@ -222,8 +223,8 @@ export default function ProduceReports() {
                   <XAxis dataKey="date" tickFormatter={(d) => format(new Date(d), "MM-dd")} />
                   <YAxis />
                   <ChartTooltip content={<ChartTooltipContent />} />
-                  <Line type="monotone" dataKey="price" stroke="var(--color-price)" dot={false} name="Avg Price" />
-                  <Line type="monotone" dataKey="cost" stroke="var(--color-cost)" dot={false} name="Avg Cost" />
+                  <Line type="monotone" dataKey="price" stroke="var(--color-price)" dot={false} name={t("farmer.reports.price")} />
+                  <Line type="monotone" dataKey="cost" stroke="var(--color-cost)" dot={false} name={t("farmer.reports.cost")} />
                 </LineChart>
               </ResponsiveContainer>
             </ChartContainer>
@@ -233,13 +234,13 @@ export default function ProduceReports() {
         {/* Locality Comparison */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-xl">Locality Comparison</CardTitle>
-            <CardDescription>Average price by locality for {produce}</CardDescription>
+            <CardTitle className="text-xl">{t("farmer.reports.localityComparison")}</CardTitle>
+            <CardDescription>{t("farmer.reports.localityComparisonDesc", { produce })}</CardDescription>
           </CardHeader>
           <CardContent className="h-[320px]">
             <ChartContainer
               config={{
-                price: { label: "Price", color: "hsl(var(--chart-3))" },
+                price: { label: t("farmer.reports.price"), color: "hsl(var(--chart-3))" },
               }}
               className="h-full"
             >
@@ -249,7 +250,7 @@ export default function ProduceReports() {
                   <XAxis dataKey="locality" />
                   <YAxis />
                   <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey="price" fill="var(--color-price)" name="Avg Price" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="price" fill="var(--color-price)" name={t("farmer.reports.price")} radius={[6, 6, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </ChartContainer>
@@ -259,20 +260,19 @@ export default function ProduceReports() {
         {/* Margin Summary */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-xl">Margin Summary</CardTitle>
-            <CardDescription>Average price vs. cost and margin for {produce}</CardDescription>
+            <CardTitle className="text-xl">{t("farmer.reports.marginSummary")}</CardTitle>
+            <CardDescription>{t("farmer.reports.marginSummaryDesc", { produce })}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-              <Metric label="Avg Price" value={`₹ ${marginSummary.avgPrice.toFixed(2)}/kg`} />
-              <Metric label="Avg Cost" value={`₹ ${marginSummary.avgCost.toFixed(2)}/kg`} />
-              <Metric label="Avg Margin" value={`₹ ${marginSummary.margin.toFixed(2)}/kg`} />
-              <Metric label="Margin %" value={`${marginSummary.marginPct.toFixed(1)}%`} />
+              <Metric label={t("farmer.reports.avgPrice")} value={`₹ ${marginSummary.avgPrice.toFixed(2)}/kg`} />
+              <Metric label={t("farmer.reports.avgCost")} value={`₹ ${marginSummary.avgCost.toFixed(2)}/kg`} />
+              <Metric label={t("farmer.reports.avgMargin")} value={`₹ ${marginSummary.margin.toFixed(2)}/kg`} />
+              <Metric label={t("farmer.reports.marginPct")} value={`${marginSummary.marginPct.toFixed(1)}%`} />
             </div>
             <Separator className="my-4" />
             <p className="text-xs text-muted-foreground">
-              Notes: Prices are averaged by day across selected localities. Costs are illustrative; connect your real
-              input costs for accurate margin analysis.
+              {t("farmer.reports.notes")}
             </p>
           </CardContent>
         </Card>

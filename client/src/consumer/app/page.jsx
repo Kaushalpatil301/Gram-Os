@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { LanguageProvider, useTranslation } from "../i18n/config";
+import LanguageDropdown from "../components/LanguageDropdown";
 import ScanModal from "../components/ScanModal";
 import LoadingOverlay from "../components/LoadingOverlay";
 import Notification from "../components/Notification";
@@ -16,19 +17,29 @@ import {
   User,
   Menu,
   Shield,
-  Sprout
+  Sprout,
 } from "lucide-react";
 
 import ScanSection from "../components/ScanSection";
 import InfoSection from "../components/InfoSection";
 
 const NAV_ITEMS = [
-  { id: "scan", labelKey: "consumer.nav.scanner", icon: QrCode, color: "text-emerald-600" },
-  { id: "info", labelKey: "consumer.nav.information", icon: Shield,     color: "text-blue-600" },
+  {
+    id: "scan",
+    labelKey: "consumer.nav.scanner",
+    icon: QrCode,
+    color: "text-emerald-600",
+  },
+  {
+    id: "info",
+    labelKey: "consumer.nav.information",
+    icon: Shield,
+    color: "text-blue-600",
+  },
 ];
 
 function ConsumerContent() {
-  const { t, currentLanguage } = useTranslation();
+  const { t } = useTranslation();
   const [activeSection, setActiveSection] = useState("scan");
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -37,7 +48,7 @@ function ConsumerContent() {
   const [scanHistory, setScanHistory] = useState([]);
   const [isScanning, setIsScanning] = useState(false);
   const [notification, setNotification] = useState("");
-  
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -52,14 +63,15 @@ function ConsumerContent() {
 
   useEffect(() => {
     const handleModal = (e) => {
-      if (e.detail?.modal === "scan" || e.detail?.modal === "qr") setShowScanModal(true);
+      if (e.detail?.modal === "scan" || e.detail?.modal === "qr")
+        setShowScanModal(true);
     };
     const handleAction = (e) => {
-       if (e.detail?.action === "logout") {
-          localStorage.removeItem("user");
-          localStorage.removeItem("userSession");
-          window.location.href = "/";
-       }
+      if (e.detail?.action === "logout") {
+        localStorage.removeItem("user");
+        localStorage.removeItem("userSession");
+        window.location.href = "/";
+      }
     };
     const handleNavigate = (e) => {
       if (e.detail?.section) goTo(e.detail.section);
@@ -105,16 +117,16 @@ function ConsumerContent() {
       case "scan":
         return (
           <div className="max-w-2xl mx-auto py-8">
-             <ScanSection 
-                scanHistory={scanHistory}
-                onScanClick={() => setShowScanModal(true)}
-             />
+            <ScanSection
+              scanHistory={scanHistory}
+              onScanClick={() => setShowScanModal(true)}
+            />
           </div>
         );
       case "info":
         return (
           <div className="max-w-2xl mx-auto py-8 space-y-6">
-              <InfoSection onNotification={showNotification} />
+            <InfoSection onNotification={showNotification} />
           </div>
         );
       default:
@@ -133,9 +145,11 @@ function ConsumerContent() {
       )}
 
       {/* Sidebar */}
-      <aside className={`fixed lg:sticky top-0 left-0 h-screen w-72 bg-white border-r border-gray-200 z-50 flex flex-col transition-transform duration-300 ${
-        sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-      }`}>
+      <aside
+        className={`fixed lg:sticky top-0 left-0 h-screen w-72 bg-white border-r border-gray-200 z-50 flex flex-col transition-transform duration-300 ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+        }`}
+      >
         {/* Logo */}
         <div className="p-5 border-b border-gray-100">
           <div className="flex items-center gap-3">
@@ -168,7 +182,9 @@ function ConsumerContent() {
                       : "text-gray-700 hover:bg-emerald-50 font-medium"
                   }`}
                 >
-                  <Icon className={`w-6 h-6 ${isActive ? 'text-white' : item.color || 'text-gray-500'}`} />
+                  <Icon
+                    className={`w-6 h-6 ${isActive ? "text-white" : item.color || "text-gray-500"}`}
+                  />
                   <span className="truncate">{t(item.labelKey)}</span>
                 </button>
               );
@@ -179,10 +195,10 @@ function ConsumerContent() {
         {/* User profile button */}
         <div className="border-t border-gray-100 p-4">
           <div className="w-full flex items-center gap-4 px-4 py-3 rounded-2xl text-base font-medium text-gray-600 mb-2">
-             <User className="w-6 h-6 text-gray-400" />
-             <span className="truncate">{t("consumer.user.guest")}</span>
+            <User className="w-6 h-6 text-gray-400" />
+            <span className="truncate">{t("consumer.user.guest")}</span>
           </div>
-          
+
           <button
             onClick={handleLogout}
             className="w-full flex items-center gap-4 px-4 py-3 mt-2 rounded-2xl text-base font-medium text-red-600 hover:bg-red-50 transition-all"
@@ -197,26 +213,36 @@ function ConsumerContent() {
       <main className="flex-1 h-screen overflow-y-auto">
         {/* Top bar */}
         <header className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center z-30 shadow-sm">
-          <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-2 -ml-2 rounded-xl hover:bg-gray-100 transition-colors">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="lg:hidden p-2 -ml-2 rounded-xl hover:bg-gray-100 transition-colors"
+          >
             <Menu className="w-6 h-6 text-gray-700" />
           </button>
 
           <h2 className="text-xl font-bold text-gray-800">
-            {t(NAV_ITEMS.find(n => n.id === activeSection)?.labelKey)}
+            {t(NAV_ITEMS.find((n) => n.id === activeSection)?.labelKey)}
           </h2>
 
-          <div className="flex items-center gap-2 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-100">
-            <History className="w-5 h-5 text-emerald-600" />
-            <span className="text-base font-bold text-emerald-700">
-              {t("consumer.scans.count", { count: scanHistory.length })}
-            </span>
+          <div className="flex items-center gap-2">
+            <LanguageDropdown
+              buttonClassName="relative flex items-center gap-2 px-3 py-2 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors text-gray-700"
+              iconClassName="w-4 h-4"
+              chevronClassName="w-4 h-4 transition-transform"
+              menuClassName="absolute right-0 mt-2 w-44 bg-white rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] border border-gray-100 overflow-hidden z-50"
+            />
+
+            <div className="flex items-center gap-2 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-100">
+              <History className="w-5 h-5 text-emerald-600" />
+              <span className="text-base font-bold text-emerald-700">
+                {t("consumer.scans.count", { count: scanHistory.length })}
+              </span>
+            </div>
           </div>
         </header>
 
         {/* Dynamic Section Content */}
-        <div className="p-6">
-          {renderSection()}
-        </div>
+        <div className="p-6">{renderSection()}</div>
       </main>
 
       {/* Utilities */}

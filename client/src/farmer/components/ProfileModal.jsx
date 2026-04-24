@@ -305,47 +305,58 @@ export default function ProfileModal({ isOpen, onClose }) {
                   <h4 className="text-sm font-bold text-gray-700 flex items-center gap-2"><Wheat className="w-4 h-4 text-emerald-600" />Farm Details</h4>
                   <div><label className={labelCls}>Land Size (Acres)</label>
                     <input type="number" value={farm.landSizeAcres || ""} onChange={e => upFarm("landSizeAcres", Number(e.target.value))} disabled={!isEditing} className={inputCls} /></div>
-                  <div><label className={labelCls}>Soil Type</label>
-                    <select value={farm.soilType} onChange={e => upFarm("soilType", e.target.value)} disabled={!isEditing} className={inputCls}>
-                      {SOIL_TYPES.map(s => <option key={s} value={s}>{s}</option>)}</select></div>
-                  <div><label className={labelCls}>Irrigation Type</label>
-                    <select value={farm.irrigationType} onChange={e => upFarm("irrigationType", e.target.value)} disabled={!isEditing} className={inputCls}>
-                      {IRRIGATION_TYPES.map(s => <option key={s} value={s}>{s}</option>)}</select></div>
-                  <div><label className={labelCls}>Primary Crops</label>
-                    <div className="flex flex-wrap gap-2 mt-1">
-                      {CROP_OPTIONS.map(crop => (
-                        <button key={crop} onClick={() => isEditing && toggleCrop(crop)}
-                          className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${selectedCrops.includes(crop) ? "bg-emerald-600 text-white shadow" : isEditing ? "bg-white border border-gray-300 text-gray-600 hover:border-emerald-400 cursor-pointer" : "bg-gray-100 text-gray-400"}`}>
-                          {crop}</button>
-                      ))}
-                    </div>
-                  </div>
+                   <div><label className={labelCls}>Soil Type</label>
+                     <select value={farm.soilType} onChange={e => upFarm("soilType", e.target.value)} disabled={!isEditing} className={inputCls}>
+                       {SOIL_TYPES.map(s => <option key={s} value={s}>{t("profileModal.soil." + s.toLowerCase().replace(/\s+/g, ''))}</option>)}</select></div>
+                   <div><label className={labelCls}>Irrigation Type</label>
+                     <select value={farm.irrigationType} onChange={e => upFarm("irrigationType", e.target.value)} disabled={!isEditing} className={inputCls}>
+                       {IRRIGATION_TYPES.map(s => <option key={s} value={s}>{t("profileModal.irrigation." + s.toLowerCase())}</option>)}</select></div>
+                   <div><label className={labelCls}>Primary Crops</label>
+                     <div className="flex flex-wrap gap-2 mt-1">
+                       {CROP_OPTIONS.map(crop => (
+                         <button key={crop} onClick={() => isEditing && toggleCrop(crop)}
+                           className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${selectedCrops.includes(crop) ? "bg-emerald-600 text-white shadow" : isEditing ? "bg-white border border-gray-300 text-gray-600 hover:border-emerald-400 cursor-pointer" : "bg-gray-100 text-gray-400"}`}>
+                           {t("produce.crop." + crop.toLowerCase())}
+                         </button>
+                       ))}
+                     </div>
+                   </div>
                   <div><label className={labelCls}>UPI ID</label>
                     <input value={farm.upiId || ""} onChange={e => upFarm("upiId", e.target.value)} disabled={!isEditing} className={inputCls} /></div>
                 </div>
               </div>
 
-              {/* Crop History */}
-              <div className="bg-gray-50 rounded-2xl p-5">
-                <h4 className="text-sm font-bold text-gray-700 flex items-center gap-2 mb-4"><ChevronRight className="w-4 h-4 text-emerald-600" />Crop History</h4>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead><tr className="border-b text-left text-gray-500">{["Season","Crop","Yield","Sold To","Revenue","Rating"].map(h => <th key={h} className="pb-2 font-medium pr-4 whitespace-nowrap">{h}</th>)}</tr></thead>
-                    <tbody className="text-gray-700">
-                      {cropHistory.map((row, i) => (
-                        <tr key={i} className="border-b last:border-0 hover:bg-emerald-50/50 transition-colors">
-                          <td className="py-2 pr-4 font-medium whitespace-nowrap">{row.season}</td>
-                          <td className="py-2 pr-4">{row.crop}</td><td className="py-2 pr-4">{row.yield}</td>
-                          <td className="py-2 pr-4">{row.soldTo}</td>
-                          <td className="py-2 pr-4 font-semibold text-emerald-700">{row.revenue}</td>
-                          <td className="py-2"><Badge variant="outline" className="text-amber-600 border-amber-200">⭐ {row.rating}</Badge></td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+               {/* Crop History */}
+               <div className="bg-gray-50 rounded-2xl p-5">
+                 <h4 className="text-sm font-bold text-gray-700 flex items-center gap-2 mb-4"><ChevronRight className="w-4 h-4 text-emerald-600" />{t("farmer.profileModal.cropHistory")}</h4>
+                 <div className="overflow-x-auto">
+                   <table className="w-full text-sm">
+                     <thead>
+                       <tr className="border-b text-left text-gray-500">
+                         <th className="pb-2 font-medium pr-4 whitespace-nowrap">{t("farmer.cropHistory.season")}</th>
+                         <th className="pb-2 font-medium pr-4 whitespace-nowrap">{t("farmer.cropHistory.crop")}</th>
+                         <th className="pb-2 font-medium pr-4 whitespace-nowrap">{t("farmer.cropHistory.yield")}</th>
+                         <th className="pb-2 font-medium pr-4 whitespace-nowrap">{t("farmer.cropHistory.soldTo")}</th>
+                         <th className="pb-2 font-medium pr-4 whitespace-nowrap">{t("farmer.cropHistory.revenue")}</th>
+                         <th className="pb-2 font-medium pr-4 whitespace-nowrap">{t("farmer.cropHistory.rating")}</th>
+                       </tr>
+                     </thead>
+                     <tbody className="text-gray-700">
+                       {cropHistory.map((row, i) => (
+                         <tr key={i} className="border-b last:border-0 hover:bg-emerald-50/50 transition-colors">
+                           <td className="py-2 pr-4 font-medium whitespace-nowrap">{row.season}</td>
+                           <td className="py-2 pr-4">{row.crop}</td>
+                           <td className="py-2 pr-4">{row.yield}</td>
+                           <td className="py-2 pr-4">{row.soldTo}</td>
+                           <td className="py-2 pr-4 font-semibold text-emerald-700">{row.revenue}</td>
+                           <td className="py-2"><Badge variant="outline" className="text-amber-600 border-amber-200">⭐ {row.rating}</Badge></td>
+                         </tr>
+                       ))}
+                     </tbody>
+                   </table>
+                 </div>
                 </div>
-              </div>
-            </>
+              </>
           )}
         </div>
 

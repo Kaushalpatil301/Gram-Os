@@ -4,6 +4,7 @@ import "./App.css";
 // Pages
 import FarmerPage from "./farmer/app/page.jsx";
 import AuthPage from "./auth/app/page.jsx";
+import LandingPage from "./landing/page.jsx";
 import ProductPage from "./product/app/page.jsx";
 import ConsumerProductPage from "./consumer/product/page.jsx";
 import RetailerProductPage from "./retailer/product/page.jsx";
@@ -21,8 +22,11 @@ function App() {
     <>
       <Router>
         <Routes>
-          {/* Default Route */}
-          <Route path="/" element={<AuthPage />} />
+          {/* Landing Page */}
+          <Route path="/" element={<LandingPage />} />
+
+          {/* Auth Page */}
+          <Route path="/auth" element={<AuthPage />} />
 
           {/* Dashboards */}
           <Route path="/dashboard/farmer" element={<FarmerPage />} />

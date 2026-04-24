@@ -16,6 +16,7 @@ import {
   Map,
   QrCode,
 } from "lucide-react";
+import { useTranslation } from "../../consumer/i18n/config.jsx";
 
 export default function Navbar({
   onNavigate,
@@ -24,18 +25,19 @@ export default function Navbar({
   showProfileModal,
   setShowProfileModal,
 }) {
+  const { t } = useTranslation();
   const [scrolled, setScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
 
   const navItems = [
-    { id: "home", label: "Home", icon: "Leaf" },
-    { id: "produce", label: "My Produce", icon: "Warehouse" },
-    { id: "scanner", label: "QR Scanner", icon: "QrCode" },
-    { id: "market", label: "Local Market", icon: "ShoppingCart" },
-    { id: "queries", label: "Queries", icon: "HelpCircle" },
-    { id: "reports", label: "Reports", icon: "BarChart3" },
-    { id: "map", label: "Map", icon: "Map" },
+    { id: "home", label: t("farmer.nav.home"), icon: "Leaf" },
+    { id: "produce", label: t("farmer.nav.produce"), icon: "Warehouse" },
+    { id: "scanner", label: t("farmer.nav.scanner"), icon: "QrCode" },
+    { id: "market", label: t("farmer.nav.localMarket"), icon: "ShoppingCart" },
+    { id: "queries", label: t("farmer.nav.queries"), icon: "HelpCircle" },
+    { id: "reports", label: t("farmer.nav.reports"), icon: "BarChart3" },
+    { id: "map", label: t("farmer.nav.map"), icon: "Map" },
   ];
 
   useEffect(() => {
@@ -161,16 +163,16 @@ export default function Navbar({
                   <User className="h-5 w-5 sm:h-6 sm:w-6" />
                 </button>
 
-                {showUserMenu && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border py-2 z-50">
-                    <div className="px-4 py-2 border-b border-gray-200">
-                      <p className="font-medium text-gray-900">
-                        Farmer Dashboard
-                      </p>
-                      <p className="text-xs text-gray-500 truncate">
-                        farmer@agricchain.com
-                      </p>
-                    </div>
+                 {showUserMenu && (
+                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border py-2 z-50">
+                     <div className="px-4 py-2 border-b border-gray-200">
+                       <p className="font-medium text-gray-900">
+                         {t("farmer.dashboard.title")}
+                       </p>
+                       <p className="text-xs text-gray-500 truncate">
+                         farmer@agricchain.com
+                       </p>
+                     </div>
                     <button
                       onClick={() => {
                         setShowUserMenu(false);
@@ -179,14 +181,14 @@ export default function Navbar({
                       className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors"
                     >
                       <User className="h-4 w-4" />
-                      Profile Settings
+                      {t("farmer.profileModal.title")}
                     </button>
                     <button
                       onClick={handleLogout}
                       className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors"
                     >
                       <LogOut className="h-4 w-4" />
-                      Logout
+                      {t("header.logout")}
                     </button>
                   </div>
                 )}

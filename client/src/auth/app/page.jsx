@@ -1,12 +1,14 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import LoginForm from "../components/forms/LoginForm";
 import SignupForm from "../components/forms/SignupForm";
 import ProfileSetupWizard from "../components/ProfileSetupWizard";
 import { prefetchTrustLoanData } from "../../lib/trustLoanCache";
 
 export default function AuthPage({ onAuthSuccess }) {
-  const [tab, setTab] = useState("login");
+  const [searchParams] = useSearchParams();
+  const initialTab = searchParams.get("tab") || "login";
+  const [tab, setTab] = useState(initialTab);
   const [setupUser, setSetupUser] = useState(null); // non-null triggers wizard
   const navigate = useNavigate();
 
