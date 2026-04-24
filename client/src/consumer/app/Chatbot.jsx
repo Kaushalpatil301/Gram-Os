@@ -843,9 +843,9 @@ export default function Chatbot() {
             {/* Mic — greyed out for non-Sarvam languages */}
             <button
               onClick={toggleMic}
-              disabled={typing || !sarvamAvailable}
-              title={!sarvamAvailable ? "Voice not available for this language" : listening ? t("chatbot.stop") : t("chatbot.voiceWithLanguage", { language: lang.name })}
-              style={{ width:40, height:40, borderRadius:12, flexShrink:0, border:"none", background:!sarvamAvailable?"#e5e7eb":listening?"#ef4444":"#f0fdf4", outline:(!sarvamAvailable||listening)?"none":"1.5px solid #bbf7d0", cursor:!sarvamAvailable?"not-allowed":"pointer", fontSize:17, display:"flex", alignItems:"center", justifyContent:"center", transition:"all 0.2s", animation:listening?"agri-blink 0.7s infinite":"none", boxShadow:listening?"0 2px 10px rgba(239,68,68,0.35)":"none", color:!sarvamAvailable?"#9ca3af":"#16a34a", opacity:!sarvamAvailable?0.45:1 }}
+              disabled={typing || !lang.sarvamCode}
+              title={!lang.sarvamCode ? "Mic not available for this language" : listening ? t("chatbot.stop") : "Speak"}
+              style={{ width:40, height:40, borderRadius:12, flexShrink:0, border:"none", background:!lang.sarvamCode?"#e5e7eb":listening?"#ef4444":"#f0fdf4", outline:(!lang.sarvamCode||listening)?"none":"1.5px solid #bbf7d0", cursor:!lang.sarvamCode?"not-allowed":"pointer", fontSize:17, display:"flex", alignItems:"center", justifyContent:"center", transition:"all 0.2s", animation:listening?"agri-blink 0.7s infinite":"none", boxShadow:listening?"0 2px 10px rgba(239,68,68,0.35)":"none", color:!lang.sarvamCode?"#9ca3af":"#16a34a", opacity:!lang.sarvamCode?0.45:1 }}
             >
               🎤
             </button>
@@ -870,7 +870,7 @@ export default function Chatbot() {
           </div>
 
           <div style={{ textAlign:"center", fontSize:10, color:"#9ca3af", marginTop:6 }}>
-            {t("chatbot.footer", { language: lang.name })} · {sarvamAvailable ? "Sarvam AI · Voice enabled" : "Text only"}
+            {t("chatbot.footer", { language: lang.name })} · {lang.sarvamCode ? "Sarvam AI" : "Text only"}
           </div>
         </div>
       </div>
