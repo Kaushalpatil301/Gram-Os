@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react"
+import { useTranslation } from "../../consumer/i18n/config.jsx"
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"
 import { Button } from "./ui/button"
 import { Badge } from "./ui/badge"
@@ -36,6 +37,7 @@ import {
 import { Bar, Line, Doughnut } from "react-chartjs-2"
 import axios from "axios"
 import { toast } from "react-toastify"
+import translationService from "../../consumer/i18n/translationService"
 
 ChartJS.register(
   CategoryScale,
@@ -58,43 +60,238 @@ const gridStyle = { color: "rgba(0,0,0,0.04)", drawBorder: false }
 const axisTicks = { color: "#9CA3AF", font: chartFont }
 
 export default function Analytics() {
+  const { t, currentLanguage } = useTranslation();
   const [loading, setLoading] = useState(true)
   const [insights, setInsights] = useState(null)
   const [alerts, setAlerts] = useState([])
   const [selectedProduct, setSelectedProduct] = useState(null)
   const [refreshing, setRefreshing] = useState(false)
+  const [translatedAlerts, setTranslatedAlerts] = useState([])
+  const [translatedInsights, setTranslatedInsights] = useState(null)
+  const [translatedSelectedProduct, setTranslatedSelectedProduct] = useState(null)
 
   useEffect(() => {
     fetchData()
   }, [])
 
-  const fetchData = async () => {
-    try {
-      setLoading(true)
-      const retailerEmail =
-        localStorage.getItem("userEmail") || "retailer@agrichain.com"
+  // Dynamic translation for user-generated content
+  useEffect(() => {
+    let cancelled = false;
 
-      const [insightsRes, alertsRes] = await Promise.all([
-        axios.get(`${API_URL}/inventory/retailer/${retailerEmail}/insights`),
-        axios.get(`${API_URL}/inventory/retailer/${retailerEmail}/alerts`),
-      ])
+    const loadDynamicCache = (lang) => {
+      try {
+        return JSON.parse(localStorage.getItem(`dynamic_translations_${lang}`) || "{}");
+      } catch {
+        return {};
+      }
+    };
+    const saveDynamicCache = (lang, cache) => {
+      try {
+        localStorage.setItem(`dynamic_translations_${lang}`, JSON.stringify(cache));
+      } catch {}
+    };
 
-      setInsights(insightsRes.data.data)
-      setAlerts(alertsRes.data.data.alerts)
-    } catch (error) {
-      console.error("Error fetching inventory data:", error)
-      toast.error("Failed to load inventory data")
-    } finally {
-      setLoading(false)
-    }
-  }
+    const translateContent = async () => {
+      if (!currentLanguage || currentLanguage === "en") {
+        setTranslatedAlerts(alerts);
+        setTranslatedInsights(insights);
+        setTranslatedSelectedProduct(selectedProduct);
+        return;
+      }
 
-  const handleRefresh = async () => {
-    setRefreshing(true)
-    await fetchData()
-    setTimeout(() => setRefreshing(false), 800)
-    toast.success("Data refreshed")
-  }
+      const cache = loadDynamicCache(currentLanguage);
+      const toTranslate = {};
+
+      const collect = (val) => {
+        const text = typeof val === "string" ? val.trim() : "";
+        if (!text) return;
+        if (!cache[text]) toTranslate[text] = text;
+      };
+
+      (alerts || []).forEach((a) => {
+        collect(a?.product);
+        collect(a?.message);
+      });
+
+      (insights?.insights || []).forEach((it) => {
+        collect(it?.product);
+        (it?.recommendations || []).forEach(collect);
+      });
+
+      if (selectedProduct) {
+        collect(selectedProduct?.product);
+        (selectedProduct?.recommendations || []).forEach(collect);
+      }
+
+      if (Object.keys(toTranslate).length > 0) {
+        const translated = await translationService.batchTranslate(toTranslate, currentLanguage, "google");
+        Object.assign(cache, translated);
+        saveDynamicCache(currentLanguage, cache);
+      }
+
+      const nextAlerts = (alerts || []).map((a) => ({
+        ...a,
+        product: cache[a?.product] || a?.product,
+        message: cache[a?.message] || a?.message,
+      }));
+
+      const nextInsights = insights
+        ? {
+            ...insights,
+            insights: (insights.insights || []).map((it) => ({
+              ...it,
+              product: cache[it?.product] || it?.product,
+              recommendations: (it?.recommendations || []).map((r) => cache[r] || r),
+            })),
+          }
+        : insights;
+
+      const nextSelected = selectedProduct
+        ? {
+            ...selectedProduct,
+            product: cache[selectedProduct?.product] || selectedProduct?.product,
+            recommendations: (selectedProduct?.recommendations || []).map((r) => cache[r] || r),
+          }
+        : selectedProduct;
+
+      if (!cancelled) {
+        setTranslatedAlerts(nextAlerts);
+        setTranslatedInsights(nextInsights);
+        setTranslatedSelectedProduct(nextSelected);
+      }
+    };
+
+    translateContent();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [alerts, insights, selectedProduct, currentLanguage]);
+
+  // Dynamic translation effect for user-generated content
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadDynamicCache = (lang) => {
+      try {
+        return JSON.parse(localStorage.getItem(`dynamic_translations_${lang}`) || "{}");
+      } catch {
+        return {};
+      }
+    };
+    const saveDynamicCache = (lang, cache) => {
+      try {
+        localStorage.setItem(`dynamic_translations_${lang}`, JSON.stringify(cache));
+      } catch {}
+    };
+
+    const translateContent = async () => {
+      if (!currentLanguage || currentLanguage === "en") {
+        setTranslatedAlerts(alerts);
+        setTranslatedInsights(insights);
+        setTranslatedSelectedProduct(selectedProduct);
+        return;
+      }
+
+      const cache = loadDynamicCache(currentLanguage);
+      const toTranslate = {};
+
+      const collect = (val) => {
+        const text = typeof val === "string" ? val.trim() : "";
+        if (!text) return;
+        if (!cache[text]) toTranslate[text] = text;
+      };
+
+      // Collect from alerts
+      (alerts || []).forEach((a) => {
+        collect(a?.product);
+        collect(a?.message);
+      });
+
+      // Collect from insights
+      (insights?.insights || []).forEach((it) => {
+        collect(it?.product);
+        (it?.recommendations || []).forEach(collect);
+      });
+
+      // Collect from selectedProduct
+      if (selectedProduct) {
+        collect(selectedProduct?.product);
+        (selectedProduct?.recommendations || []).forEach(collect);
+      }
+
+      if (Object.keys(toTranslate).length > 0) {
+        const translated = await translationService.batchTranslate(toTranslate, currentLanguage, "google");
+        Object.assign(cache, translated);
+        saveDynamicCache(currentLanguage, cache);
+      }
+
+      const nextAlerts = (alerts || []).map((a) => ({
+        ...a,
+        product: cache[a?.product] || a?.product,
+        message: cache[a?.message] || a?.message,
+      }));
+
+      const nextInsights = insights
+        ? {
+            ...insights,
+            insights: (insights.insights || []).map((it) => ({
+              ...it,
+              product: cache[it?.product] || it?.product,
+              recommendations: (it?.recommendations || []).map((r) => cache[r] || r),
+            })),
+          }
+        : insights;
+
+      const nextSelected = selectedProduct
+        ? {
+            ...selectedProduct,
+            product: cache[selectedProduct?.product] || selectedProduct?.product,
+            recommendations: (selectedProduct?.recommendations || []).map((r) => cache[r] || r),
+          }
+        : selectedProduct;
+
+      if (!cancelled) {
+        setTranslatedAlerts(nextAlerts);
+        setTranslatedInsights(nextInsights);
+        setTranslatedSelectedProduct(nextSelected);
+      }
+    };
+
+    translateContent();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [alerts, insights, selectedProduct, currentLanguage]);
+
+   const fetchData = async () => {
+     try {
+       setLoading(true)
+       const retailerEmail =
+         localStorage.getItem("userEmail") || "retailer@agrichain.com"
+
+       const [insightsRes, alertsRes] = await Promise.all([
+         axios.get(`${API_URL}/inventory/retailer/${retailerEmail}/insights`),
+         axios.get(`${API_URL}/inventory/retailer/${retailerEmail}/alerts`),
+       ])
+
+       setInsights(insightsRes.data.data)
+       setAlerts(alertsRes.data.data.alerts)
+     } catch (error) {
+       console.error("Error fetching inventory data:", error)
+       toast.error(t("retailer.inventory.toast.loadError"))
+     } finally {
+       setLoading(false)
+     }
+   }
+
+   const handleRefresh = async () => {
+     setRefreshing(true)
+     await fetchData()
+     setTimeout(() => setRefreshing(false), 800)
+     toast.success(t("retailer.inventory.toast.refreshSuccess"))
+   }
 
   // ─── Derived metrics ───
   const totalProducts = insights?.summary?.totalProducts || 0
@@ -115,7 +312,7 @@ export default function Analytics() {
   // Demand Forecast (line) — 7 day projection per product
   const demandForecastData = {
     labels: ["Day 1", "Day 2", "Day 3", "Day 4", "Day 5", "Day 6", "Day 7"],
-    datasets: (insights?.insights?.slice(0, 3) || []).map((item, idx) => {
+    datasets: (translatedInsights?.insights?.slice(0, 3) || []).map((item, idx) => {
       const colors = [
         { border: "#10B981", bg: "rgba(16,185,129,0.08)" },
         { border: "#3B82F6", bg: "rgba(59,130,246,0.08)" },
@@ -140,38 +337,38 @@ export default function Analytics() {
     }),
   }
 
-  // Inventory Health (doughnut)
-  const inventoryHealthData = {
-    labels: ["Healthy", "Low Stock", "Overstock"],
-    datasets: [
-      {
-        data: [healthyItems, lowStockItems, overstockItems],
-        backgroundColor: ["#10B981", "#F59E0B", "#3B82F6"],
-        borderWidth: 0,
-        hoverOffset: 6,
-      },
-    ],
-  }
+   // Inventory Health (doughnut)
+   const inventoryHealthData = {
+     labels: [t("retailer.inventory.status.healthy"), t("retailer.inventory.status.lowStock"), t("retailer.inventory.status.overstock")],
+     datasets: [
+       {
+         data: [healthyItems, lowStockItems, overstockItems],
+         backgroundColor: ["#10B981", "#F59E0B", "#3B82F6"],
+         borderWidth: 0,
+         hoverOffset: 6,
+       },
+     ],
+   }
 
   // Stock vs Reorder Point (bar)
   const stockReorderData = {
-    labels: insights?.insights?.map((i) => i.product) || [],
+    labels: translatedInsights?.insights?.map((i) => i.product) || [],
     datasets: [
       {
-        label: "Current Stock",
-        data: insights?.insights?.map((i) => i.currentStock) || [],
+        label: t("retailer.inventory.dataset.currentStock"),
+        data: translatedInsights?.insights?.map((i) => i.currentStock) || [],
         backgroundColor: "rgba(59,130,246,0.75)",
         borderRadius: 4,
       },
       {
-        label: "Reorder Point",
-        data: insights?.insights?.map((i) => i.reorderPoint) || [],
+        label: t("retailer.inventory.dataset.reorderPoint"),
+        data: translatedInsights?.insights?.map((i) => i.reorderPoint) || [],
         backgroundColor: "rgba(239,68,68,0.35)",
         borderRadius: 4,
       },
       {
-        label: "Forecasted Demand",
-        data: insights?.insights?.map((i) => i.forecast) || [],
+        label: t("retailer.inventory.dataset.forecastedDemand"),
+        data: translatedInsights?.insights?.map((i) => i.forecast) || [],
         backgroundColor: "rgba(16,185,129,0.65)",
         borderRadius: 4,
       },
@@ -180,12 +377,12 @@ export default function Analytics() {
 
   // Waste Risk (bar — days of stock vs threshold)
   const wasteRiskData = {
-    labels: insights?.insights?.map((i) => i.product) || [],
+    labels: translatedInsights?.insights?.map((i) => i.product) || [],
     datasets: [
       {
-        label: "Days of Stock",
-        data: insights?.insights?.map((i) => i.daysOfStock) || [],
-        backgroundColor: insights?.insights?.map((i) =>
+        label: t("retailer.inventory.dataset.daysOfStock"),
+        data: translatedInsights?.insights?.map((i) => i.daysOfStock) || [],
+        backgroundColor: translatedInsights?.insights?.map((i) =>
           i.daysOfStock < 3 ? "rgba(239,68,68,0.7)" : i.daysOfStock > 10 ? "rgba(59,130,246,0.7)" : "rgba(16,185,129,0.7)"
         ) || [],
         borderRadius: 4,
@@ -195,17 +392,24 @@ export default function Analytics() {
 
   // ─── Helper Functions ───
   const getStatusBadge = (status) => {
-    const map = {
+    const statusKeyMap = {
+      healthy: "retailer.inventory.status.healthy",
+      "low-stock": "retailer.inventory.status.lowStock",
+      "reorder-needed": "retailer.inventory.status.lowStock", // reuse same
+      overstock: "retailer.inventory.status.overstock",
+    };
+    const styleMap = {
       healthy: { bg: "bg-emerald-50 text-emerald-700 border-emerald-200", icon: <CheckCircle className="w-3.5 h-3.5" /> },
       "low-stock": { bg: "bg-amber-50 text-amber-700 border-amber-200", icon: <AlertTriangle className="w-3.5 h-3.5" /> },
       "reorder-needed": { bg: "bg-red-50 text-red-700 border-red-200", icon: <AlertTriangle className="w-3.5 h-3.5" /> },
       overstock: { bg: "bg-blue-50 text-blue-700 border-blue-200", icon: <Boxes className="w-3.5 h-3.5" /> },
-    }
-    const style = map[status] || map.healthy
+    };
+    const style = styleMap[status] || styleMap.healthy;
+    const label = t(statusKeyMap[status] || "retailer.inventory.status.healthy");
     return (
       <Badge className={`${style.bg} border gap-1 font-medium`}>
         {style.icon}
-        {status.replace("-", " ")}
+        {label}
       </Badge>
     )
   }
@@ -238,13 +442,13 @@ export default function Analytics() {
     return map[type] || <AlertTriangle className="w-5 h-5 text-gray-500" />
   }
 
-  // ─── Loading ───
+   // ─── Loading ───
   if (loading) {
     return (
       <section id="inventory" className="py-16 px-4 md:px-6 bg-gradient-to-br from-green-50/60 via-white to-emerald-50/40">
         <div className="max-w-7xl mx-auto text-center py-20">
           <div className="animate-spin w-10 h-10 border-[3px] border-emerald-200 border-t-emerald-600 rounded-full mx-auto" />
-          <p className="mt-4 text-sm text-gray-500">Loading inventory intelligence...</p>
+          <p className="mt-4 text-sm text-gray-500">{t("retailer.inventory.loading")}</p>
         </div>
       </section>
     )
@@ -262,13 +466,13 @@ export default function Analytics() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
           <div>
             <div className="flex items-center gap-3 mb-1">
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Smart Inventory</h2>
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-900">{t("retailer.inventory.title")}</h2>
               <Badge className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-0 text-xs px-2.5 py-0.5 font-medium">
                 <Brain className="w-3 h-3 mr-1" />
                 AI
               </Badge>
             </div>
-            <p className="text-sm text-gray-500">AI-powered stock management, demand forecasting & waste prevention</p>
+            <p className="text-sm text-gray-500">{t("retailer.inventory.subtitle")}</p>
           </div>
           <Button
             onClick={handleRefresh}
@@ -277,7 +481,7 @@ export default function Analytics() {
             className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 text-sm h-9"
           >
             <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${refreshing ? "animate-spin" : ""}`} />
-            Refresh
+            {t("retailer.inventory.refresh")}
           </Button>
         </div>
 
@@ -291,11 +495,11 @@ export default function Analytics() {
                   <ShieldCheck className="w-5 h-5 text-emerald-600" />
                 </div>
                 <Badge className={`text-xs border font-medium ${healthScore >= 70 ? "bg-emerald-50 text-emerald-700 border-emerald-200" : healthScore >= 40 ? "bg-amber-50 text-amber-700 border-amber-200" : "bg-red-50 text-red-700 border-red-200"}`}>
-                  {healthScore >= 70 ? "Good" : healthScore >= 40 ? "Fair" : "Critical"}
+                  {healthScore >= 70 ? t("retailer.inventory.health.good") : healthScore >= 40 ? t("retailer.inventory.health.fair") : t("retailer.inventory.health.critical")}
                 </Badge>
               </div>
               <p className="text-3xl font-bold text-gray-900">{healthScore}%</p>
-              <p className="text-sm text-gray-500 mt-1">Stock Health</p>
+               <p className="text-sm text-gray-500 mt-1">{t("retailer.inventory.kpi.stockHealth")}</p>
               <div className="mt-3 w-full bg-gray-100 rounded-full h-1.5">
                 <div
                   className={`h-1.5 rounded-full transition-all ${healthScore >= 70 ? "bg-emerald-500" : healthScore >= 40 ? "bg-amber-500" : "bg-red-500"}`}
@@ -308,16 +512,16 @@ export default function Analytics() {
           {/* Total SKUs */}
           <Card className="border border-gray-100 shadow-sm">
             <CardContent className="p-5">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
-                  <Package className="w-5 h-5 text-blue-600" />
-                </div>
-                <div className="flex items-center gap-1 text-xs text-gray-400">
-                  <span className="text-emerald-600 font-medium">{healthyItems}</span> healthy
-                </div>
-              </div>
+               <div className="flex items-center justify-between mb-4">
+                 <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
+                   <Package className="w-5 h-5 text-blue-600" />
+                 </div>
+                 <div className="flex items-center gap-1 text-xs text-gray-400">
+                   <span className="text-emerald-600 font-medium">{healthyItems}</span> {t("retailer.inventory.health.healthy")}
+                 </div>
+               </div>
               <p className="text-3xl font-bold text-gray-900">{totalProducts}</p>
-              <p className="text-sm text-gray-500 mt-1">Total Products</p>
+               <p className="text-sm text-gray-500 mt-1">{t("retailer.inventory.kpi.totalProducts")}</p>
               <div className="mt-3 flex gap-1">
                 <div className="h-1.5 rounded-full bg-emerald-400 flex-1" style={{ flex: healthyItems }} />
                 <div className="h-1.5 rounded-full bg-amber-400 flex-1" style={{ flex: lowStockItems }} />
@@ -340,10 +544,10 @@ export default function Analytics() {
                 )}
               </div>
               <p className="text-3xl font-bold text-gray-900">{alerts.length}</p>
-              <p className="text-sm text-gray-500 mt-1">Active Alerts</p>
-              <p className="text-xs text-gray-400 mt-3">
-                {wasteRiskItems} waste risk · {lowStockItems} low stock
-              </p>
+               <p className="text-sm text-gray-500 mt-1">{t("retailer.inventory.kpi.activeAlerts")}</p>
+               <p className="text-xs text-gray-400 mt-3">
+                 {wasteRiskItems} {t("retailer.inventory.risk.waste")} · {lowStockItems} {t("retailer.inventory.risk.lowStock")}
+               </p>
             </CardContent>
           </Card>
 
@@ -356,11 +560,11 @@ export default function Analytics() {
                 </div>
                 <Badge className="bg-purple-50 text-purple-700 border-purple-200 text-xs border font-medium">
                   <Sparkles className="w-3 h-3 mr-1" />
-                  ML Model
+                  {t("retailer.inventory.badge.mlModel")}
                 </Badge>
               </div>
               <p className="text-3xl font-bold text-gray-900">{avgConfidence}%</p>
-              <p className="text-sm text-gray-500 mt-1">Forecast Accuracy</p>
+               <p className="text-sm text-gray-500 mt-1">{t("retailer.inventory.kpi.forecastAccuracy")}</p>
               <div className="mt-3 w-full bg-gray-100 rounded-full h-1.5">
                 <div
                   className="h-1.5 rounded-full bg-purple-500 transition-all"
@@ -377,8 +581,8 @@ export default function Analytics() {
             <CardHeader className="pb-2 pt-5 px-5">
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-base font-semibold text-gray-900">Demand Forecast</CardTitle>
-                  <p className="text-xs text-gray-400 mt-0.5">7-day AI prediction for top products</p>
+                  <CardTitle className="text-base font-semibold text-gray-900">{t("retailer.inventory.charts.demandForecast.title")}</CardTitle>
+                  <p className="text-xs text-gray-400 mt-0.5">{t("retailer.inventory.charts.demandForecast.subtitle")}</p>
                 </div>
                 <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center">
                   <TrendingUp className="w-4 h-4 text-emerald-600" />
@@ -410,7 +614,7 @@ export default function Analytics() {
           <Card className="border border-gray-100 shadow-sm">
             <CardHeader className="pb-2 pt-5 px-5">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-base font-semibold text-gray-900">Stock Health</CardTitle>
+                <CardTitle className="text-base font-semibold text-gray-900">{t("retailer.inventory.charts.stockHealth.title")}</CardTitle>
                 <div className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center">
                   <BarChart3 className="w-4 h-4 text-purple-600" />
                 </div>
@@ -441,8 +645,8 @@ export default function Analytics() {
             <CardHeader className="pb-2 pt-5 px-5">
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-base font-semibold text-gray-900">Stock vs Reorder vs Forecast</CardTitle>
-                  <p className="text-xs text-gray-400 mt-0.5">Current levels against reorder thresholds and AI demand forecast</p>
+                  <CardTitle className="text-base font-semibold text-gray-900">{t("retailer.inventory.charts.stockVsReorder.title")}</CardTitle>
+                  <p className="text-xs text-gray-400 mt-0.5">{t("retailer.inventory.charts.stockVsReorder.subtitle")}</p>
                 </div>
                 <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
                   <Boxes className="w-4 h-4 text-blue-600" />
@@ -474,8 +678,8 @@ export default function Analytics() {
             <CardHeader className="pb-2 pt-5 px-5">
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-base font-semibold text-gray-900">Shelf Life</CardTitle>
-                  <p className="text-xs text-gray-400 mt-0.5">Days of stock remaining</p>
+                  <CardTitle className="text-base font-semibold text-gray-900">{t("retailer.inventory.charts.shelfLife.title")}</CardTitle>
+                  <p className="text-xs text-gray-400 mt-0.5">{t("retailer.inventory.charts.shelfLife.subtitle")}</p>
                 </div>
                 <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center">
                   <Clock className="w-4 h-4 text-amber-600" />
@@ -506,23 +710,23 @@ export default function Analytics() {
         </div>
 
         {/* ── AI Alerts ── */}
-        {alerts.length > 0 && (
+        {translatedAlerts.length > 0 && (
           <Card className="mb-4 border border-gray-100 shadow-sm">
             <CardHeader className="pb-3 pt-5 px-5">
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2 text-base font-semibold text-gray-900">
                   <Zap className="w-4 h-4 text-amber-500" />
-                  AI Alerts
-                  <span className="ml-1 text-xs font-normal text-gray-400">Automated insights</span>
+                  {t("retailer.inventory.alerts.title")}
+                  <span className="ml-1 text-xs font-normal text-gray-400">{t("retailer.inventory.alerts.subtitle")}</span>
                 </CardTitle>
                 <Badge className="bg-amber-50 text-amber-700 border-amber-200 text-xs border font-medium">
-                  {alerts.length} active
+                  {translatedAlerts.length} active
                 </Badge>
               </div>
             </CardHeader>
             <CardContent className="px-5 pb-5">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {alerts.map((alert) => (
+                {translatedAlerts.map((alert) => (
                   <div
                     key={alert.id}
                     className={`p-4 rounded-xl border transition-colors ${getPriorityStyle(alert.priority)}`}
@@ -548,6 +752,14 @@ export default function Analytics() {
             </CardContent>
           </Card>
         )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* ── Product Insights Table ── */}
         <Card className="border border-gray-100 shadow-sm">
@@ -555,9 +767,9 @@ export default function Analytics() {
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-base font-semibold text-gray-900">
                 <Sparkles className="w-4 h-4 text-purple-500" />
-                Product Intelligence
+                {t("retailer.inventory.insights.title")}
               </CardTitle>
-              <p className="text-xs text-gray-400">Click a row for AI recommendations</p>
+              <p className="text-xs text-gray-400">{t("retailer.inventory.insights.subtitle")}</p>
             </div>
           </CardHeader>
           <CardContent className="px-5 pb-5">
@@ -565,21 +777,21 @@ export default function Analytics() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-gray-50/80">
-                    <th className="text-left py-3 px-4 font-medium text-gray-600">Product</th>
-                    <th className="text-center py-3 px-4 font-medium text-gray-600">Stock</th>
-                    <th className="text-center py-3 px-4 font-medium text-gray-600">Forecast</th>
-                    <th className="text-center py-3 px-4 font-medium text-gray-600">Days Left</th>
-                    <th className="text-center py-3 px-4 font-medium text-gray-600">Trend</th>
-                    <th className="text-center py-3 px-4 font-medium text-gray-600">Status</th>
-                    <th className="text-center py-3 px-4 font-medium text-gray-600">Confidence</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-600">{t("retailer.inventory.table.product")}</th>
+                    <th className="text-center py-3 px-4 font-medium text-gray-600">{t("retailer.inventory.table.stock")}</th>
+                    <th className="text-center py-3 px-4 font-medium text-gray-600">{t("retailer.inventory.table.forecast")}</th>
+                    <th className="text-center py-3 px-4 font-medium text-gray-600">{t("retailer.inventory.table.daysLeft")}</th>
+                    <th className="text-center py-3 px-4 font-medium text-gray-600">{t("retailer.inventory.table.trend")}</th>
+                    <th className="text-center py-3 px-4 font-medium text-gray-600">{t("retailer.inventory.table.status")}</th>
+                    <th className="text-center py-3 px-4 font-medium text-gray-600">{t("retailer.inventory.table.confidence")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
-                  {insights?.insights?.map((item, index) => (
+                  {translatedInsights?.insights?.map((item, index) => (
                     <tr
                       key={index}
-                      className={`transition-colors cursor-pointer ${selectedProduct?.product === item.product ? "bg-purple-50/50" : "hover:bg-gray-50/50"}`}
-                      onClick={() => setSelectedProduct(selectedProduct?.product === item.product ? null : item)}
+                      className={`transition-colors cursor-pointer ${translatedSelectedProduct?.product === item.product ? "bg-purple-50/50" : "hover:bg-gray-50/50"}`}
+                      onClick={() => setSelectedProduct(translatedSelectedProduct?.product === item.product ? null : item)}
                     >
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-2">
@@ -626,16 +838,16 @@ export default function Analytics() {
             </div>
 
             {/* AI Recommendations (inline expand) */}
-            {selectedProduct && (
+            {translatedSelectedProduct && (
               <div className="mt-4 p-4 rounded-xl bg-purple-50/60 border border-purple-100">
                 <div className="flex items-center gap-2 mb-3">
                   <Brain className="w-4 h-4 text-purple-600" />
                   <span className="font-semibold text-sm text-purple-900">
-                    AI Recommendations — {selectedProduct.product}
+                    {t("retailer.inventory.recommendations.title", { product: translatedSelectedProduct.product })}
                   </span>
                 </div>
                 <div className="space-y-2">
-                  {selectedProduct.recommendations?.map((rec, i) => (
+                  {translatedSelectedProduct.recommendations?.map((rec, i) => (
                     <div key={i} className="flex items-start gap-2 text-sm text-purple-800">
                       <Sparkles className="w-3.5 h-3.5 mt-0.5 text-purple-400 flex-shrink-0" />
                       <span>{rec}</span>

@@ -132,11 +132,11 @@ export default function Farmers() {
                 <SelectValue placeholder={t("farmers.allProduceTypes")} />
               </SelectTrigger>
               <SelectContent>
-                {filterOptions.produceTypes.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
+                 {filterOptions.produceTypes.map((option) => (
+                   <SelectItem key={option.value} value={option.value}>
+                     {t(option.label)}
+                   </SelectItem>
+                 ))}
               </SelectContent>
             </Select>
 
@@ -151,7 +151,7 @@ export default function Farmers() {
               <SelectContent>
                 {filterOptions.locations.map((option) => (
                   <SelectItem key={option.value} value={option.value}>
-                    {option.label}
+                    {t(option.label)}
                   </SelectItem>
                 ))}
               </SelectContent>

@@ -200,63 +200,73 @@ export const transactions = [
   },
 ];
 
-// Recent activity feed
+// Recent activity feed (use translation keys)
 export const activities = [
   {
     id: 1,
-    action: "New contract signed",
+    actionKey: "retailer.dashboard.activity.actions.newContract",
     farmer: "John Smith",
-    time: "2 hours ago",
+    timeKey: "retailer.dashboard.time.ago.hours",
+    timeCount: 2,
     type: "contract",
-    details: "Contract CNT-001 for Organic Tomatoes worth $1,250",
+    detailsKey: "retailer.dashboard.activity.details.contract",
+    detailsParams: { contractId: "CNT-001", produce: "Organic Tomatoes", amount: "$1,250" },
   },
   {
     id: 2,
-    action: "Payment processed",
+    actionKey: "retailer.dashboard.activity.actions.paymentProcessed",
     farmer: "Maria Garcia",
-    time: "4 hours ago",
+    timeKey: "retailer.dashboard.time.ago.hours",
+    timeCount: 4,
     type: "payment",
-    details: "$900 payment completed successfully",
+    detailsKey: "retailer.dashboard.activity.details.payment",
+    detailsParams: { amount: "$900" },
   },
   {
     id: 3,
-    action: "Lot verified",
+    actionKey: "retailer.dashboard.activity.actions.lotVerified",
     farmer: "David Chen",
-    time: "6 hours ago",
+    timeKey: "retailer.dashboard.time.ago.hours",
+    timeCount: 6,
     type: "verification",
-    details: "LOT-2024-003 quality verified and approved",
+    detailsKey: "retailer.dashboard.activity.details.lotVerified",
+    detailsParams: { lotId: "LOT-2024-003" },
   },
   {
     id: 4,
-    action: "Quality check completed",
+    actionKey: "retailer.dashboard.activity.actions.qualityCheckCompleted",
     farmer: "Sarah Johnson",
-    time: "8 hours ago",
+    timeKey: "retailer.dashboard.time.ago.hours",
+    timeCount: 8,
     type: "quality",
-    details: "Organic Carrots batch passed quality standards",
+    detailsKey: "retailer.dashboard.activity.details.qualityCheck",
+    detailsParams: { produce: "Organic Carrots" },
   },
   {
     id: 5,
-    action: "Delivery scheduled",
+    actionKey: "retailer.dashboard.activity.actions.deliveryScheduled",
     farmer: "Mike Wilson",
-    time: "1 day ago",
+    timeKey: "retailer.dashboard.time.ago.days",
+    timeCount: 1,
     type: "delivery",
-    details: "Bell Peppers delivery set for Jan 15, 2024",
+    detailsKey: "retailer.dashboard.activity.details.deliveryScheduled",
+    detailsParams: { produce: "Bell Peppers", date: "Jan 15, 2024" },
   },
 ];
 
-// KPI dashboard data
+// KPI dashboard data (period uses translation key)
 export const kpiData = {
   connectedFarmers: {
     value: 247,
     change: "+12%",
-    period: "from last month",
+    period: "retailer.dashboard.kpi.period.lastMonth",
     icon: "Users",
     trend: "up",
   },
   activeContracts: {
     value: 89,
     change: "+5%",
-    period: "from last month",
+    period: "retailer.dashboard.kpi.period.lastMonth",
     icon: "FileText",
     trend: "up",
   },
@@ -270,7 +280,7 @@ export const kpiData = {
   lotsVerified: {
     value: 1234,
     change: "+18%",
-    period: "from last month",
+    period: "retailer.dashboard.kpi.period.lastMonth",
     icon: "CheckCircle",
     trend: "up",
   },
@@ -330,28 +340,28 @@ export const retailerProfile = {
   employeeCount: "150-200",
 };
 
-// Filter and dropdown options
+// Filter and dropdown options (labels are translation keys)
 export const filterOptions = {
   produceTypes: [
-    { value: "all", label: "All Produce" },
-    { value: "vegetables", label: "Vegetables" },
-    { value: "fruits", label: "Fruits" },
-    { value: "grains", label: "Grains" },
-    { value: "organic", label: "Organic" },
+    { value: "all", label: "filter.produce.all" },
+    { value: "vegetables", label: "filter.produce.vegetables" },
+    { value: "fruits", label: "filter.produce.fruits" },
+    { value: "grains", label: "filter.produce.grains" },
+    { value: "organic", label: "filter.produce.organic" },
   ],
   locations: [
-    { value: "all", label: "All Locations" },
-    { value: "california", label: "California" },
-    { value: "texas", label: "Texas" },
-    { value: "florida", label: "Florida" },
-    { value: "iowa", label: "Iowa" },
-    { value: "oregon", label: "Oregon" },
+    { value: "all", label: "filter.locations.all" },
+    { value: "california", label: "filter.locations.california" },
+    { value: "texas", label: "filter.locations.texas" },
+    { value: "florida", label: "filter.locations.florida" },
+    { value: "iowa", label: "filter.locations.iowa" },
+    { value: "oregon", label: "filter.locations.oregon" },
   ],
   units: [
-    { value: "kg", label: "Kilograms" },
-    { value: "lbs", label: "Pounds" },
-    { value: "tons", label: "Tons" },
-    { value: "boxes", label: "Boxes" },
+    { value: "kg", label: "filter.units.kilograms" },
+    { value: "lbs", label: "filter.units.pounds" },
+    { value: "tons", label: "filter.units.tons" },
+    { value: "boxes", label: "filter.units.boxes" },
   ],
   languages: [
     { value: "en", label: "EN" },

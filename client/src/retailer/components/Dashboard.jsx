@@ -1,3 +1,5 @@
+import { useTranslation } from "../../consumer/i18n/config.jsx"
+import { useTranslation } from "../../consumer/i18n/config.jsx"
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"
 import { Badge } from "./ui/badge"
 import { kpiData, activities } from "../lib/data"
@@ -39,6 +41,8 @@ ChartJS.register(
 )
 
 export default function Dashboard() {
+  const { t } = useTranslation();
+
   const getIconComponent = (iconName) => {
     const icons = {
       Users,
@@ -49,9 +53,13 @@ export default function Dashboard() {
     return icons[iconName] || Users
   }
 
+  // Translated month and category labels
+  const monthLabels = ["jan","feb","mar","apr","may","jun"].map(m => t(`months.${m}`))
+  const categoryLabels = ["vegetables","fruits","grains","organic","dairy"].map(c => t(`retailer.dashboard.categories.${c}`))
+
   // Monthly Transactions Chart Data
   const monthlyTransactionsData = {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+    labels: monthLabels,
     datasets: [
       {
         label: 'Transactions',
@@ -108,7 +116,7 @@ export default function Dashboard() {
 
   // Produce Categories Chart Data
   const produceCategoriesData = {
-    labels: ['Vegetables', 'Fruits', 'Grains', 'Organic', 'Dairy'],
+    labels: categoryLabels,
     datasets: [
       {
         label: 'Products',
@@ -193,10 +201,10 @@ export default function Dashboard() {
                   <div>
                     <p className="text-3xl font-bold text-gray-900 mb-1">{data.value}</p>
                     <p className="text-sm text-gray-600 capitalize">
-                      {key.replace(/([A-Z])/g, ' $1').trim()}
+                      {t(`retailer.dashboard.kpi.${key}`)}
                     </p>
                     {data.period && (
-                      <p className="text-xs text-gray-500 mt-1">{data.period}</p>
+                      <p className="text-xs text-gray-500 mt-1">{t(data.period)}</p>
                     )}
                   </div>
                 </CardContent>
@@ -208,52 +216,52 @@ export default function Dashboard() {
         {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
           
-          {/* Monthly Transactions Chart */}
-          <Card className="border-0 shadow-sm">
-            <CardHeader className="pb-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-lg font-semibold">Monthly Transactions</CardTitle>
-                  <p className="text-sm text-gray-600 mt-1">Revenue trend over time</p>
-                </div>
-                <div className="p-2 rounded-lg bg-blue-50">
-                  <TrendingUp className="w-5 h-5 text-blue-600" />
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="h-64">
-                <Line data={monthlyTransactionsData} options={monthlyTransactionsOptions} />
-              </div>
-            </CardContent>
-          </Card>
+           {/* Monthly Transactions Chart */}
+           <Card className="border-0 shadow-sm">
+             <CardHeader className="pb-4">
+               <div className="flex items-center justify-between">
+                 <div>
+                   <CardTitle className="text-lg font-semibold">{t("retailer.dashboard.charts.monthlyTransactions.title")}</CardTitle>
+                   <p className="text-sm text-gray-600 mt-1">{t("retailer.dashboard.charts.monthlyTransactions.subtitle")}</p>
+                 </div>
+                 <div className="p-2 rounded-lg bg-blue-50">
+                   <TrendingUp className="w-5 h-5 text-blue-600" />
+                 </div>
+               </div>
+             </CardHeader>
+             <CardContent>
+               <div className="h-64">
+                 <Line data={monthlyTransactionsData} options={monthlyTransactionsOptions} />
+               </div>
+             </CardContent>
+           </Card>
 
-          {/* Produce Categories Chart */}
-          <Card className="border-0 shadow-sm">
-            <CardHeader className="pb-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-lg font-semibold">Produce Categories</CardTitle>
-                  <p className="text-sm text-gray-600 mt-1">Product distribution by type</p>
-                </div>
-                <div className="p-2 rounded-lg bg-green-50">
-                  <BarChart3 className="w-5 h-5 text-green-600" />
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="h-64">
-                <Bar data={produceCategoriesData} options={produceCategoriesOptions} />
-              </div>
-            </CardContent>
-          </Card>
+           {/* Produce Categories Chart */}
+           <Card className="border-0 shadow-sm">
+             <CardHeader className="pb-4">
+               <div className="flex items-center justify-between">
+                 <div>
+                   <CardTitle className="text-lg font-semibold">{t("retailer.dashboard.charts.produceCategories.title")}</CardTitle>
+                   <p className="text-sm text-gray-600 mt-1">{t("retailer.dashboard.charts.produceCategories.subtitle")}</p>
+                 </div>
+                 <div className="p-2 rounded-lg bg-green-50">
+                   <BarChart3 className="w-5 h-5 text-green-600" />
+                 </div>
+               </div>
+             </CardHeader>
+             <CardContent>
+               <div className="h-64">
+                 <Bar data={produceCategoriesData} options={produceCategoriesOptions} />
+               </div>
+             </CardContent>
+           </Card>
         </div>
 
         {/* Recent Activity */}
         <Card className="border-0 shadow-sm">
           <CardHeader className="pb-4">
-            <CardTitle className="text-lg font-semibold">Recent Activity</CardTitle>
-            <p className="text-sm text-gray-600 mt-1">Latest updates from your network</p>
+            <CardTitle className="text-lg font-semibold">{t("retailer.dashboard.activity.title")}</CardTitle>
+            <p className="text-sm text-gray-600 mt-1">{t("retailer.dashboard.activity.subtitle")}</p>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -269,15 +277,15 @@ export default function Dashboard() {
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center justify-between mb-1">
-                      <p className="font-medium text-gray-900">{activity.action}</p>
+                      <p className="font-medium text-gray-900">{t(activity.actionKey)}</p>
                       <Badge variant="secondary" className="text-xs">
-                        {activity.time}
+                        {t(activity.timeKey, { count: activity.timeCount })}
                       </Badge>
                     </div>
                     <p className="text-sm text-gray-600">
                       <span className="font-medium">{activity.farmer}</span>
-                      {activity.details && (
-                        <span className="text-gray-500"> • {activity.details}</span>
+                      {activity.detailsKey && (
+                        <span className="text-gray-500"> • {t(activity.detailsKey, activity.detailsParams)}</span>
                       )}
                     </p>
                   </div>

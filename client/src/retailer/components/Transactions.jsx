@@ -65,13 +65,13 @@ export default function Transactions() {
   const exportToCSV = () => {
     const csvContent = [
       [
-        "Transaction ID",
-        "Farmer",
-        "Lot ID",
-        "Date",
-        "Amount",
-        "Status",
-        "Hash",
+        t("transactions.id"),
+        t("transactions.farmer"),
+        t("transactions.lotId"),
+        t("transactions.date"),
+        t("transactions.amount"),
+        t("transactions.status"),
+        t("transactions.hash"),
       ],
       ...filteredTransactions.map((t) => [
         t.id,
@@ -148,21 +148,21 @@ export default function Transactions() {
                 <SelectValue placeholder={t("transactions.allStatus")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">
-                  {t("transactions.allStatus")}
-                </SelectItem>
-                <SelectItem value="confirmed">
-                  {t("transactions.confirmed")}
-                </SelectItem>
-                <SelectItem value="pending">
-                  {t("transactions.pending")}
-                </SelectItem>
-                <SelectItem value="failed">
-                  {t("transactions.failed")}
-                </SelectItem>
-                <SelectItem value="completed">
-                  {t("status.completed")}
-                </SelectItem>
+                 <SelectItem value="all">
+                   {t("transactions.allStatus")}
+                 </SelectItem>
+                 <SelectItem value="confirmed">
+                   {t("status.confirmed")}
+                 </SelectItem>
+                 <SelectItem value="pending">
+                   {t("status.pending")}
+                 </SelectItem>
+                 <SelectItem value="failed">
+                   {t("status.failed")}
+                 </SelectItem>
+                 <SelectItem value="completed">
+                   {t("status.completed")}
+                 </SelectItem>
               </SelectContent>
             </Select>
 

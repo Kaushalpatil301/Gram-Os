@@ -691,37 +691,37 @@ export default function Analytics() {
       className="bg-white rounded-3xl shadow-xl overflow-hidden mb-12 border border-green-100"
       style={{ scrollMarginTop: "30px" }}
     >
-      <div className="p-6 md:p-10">
+      <div className="p-4 md:p-6 lg:p-10">
         {/* Header */}
-        <div className="mb-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div className="mb-6 md:mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <div className="flex items-center gap-3 mb-2">
-              <h2 className="text-3xl font-bold text-gray-900">
+            <div className="flex items-center gap-2 md:gap-3 mb-2">
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
                 {t("retailer.analytics.title")}
               </h2>
-              <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0 px-3 py-1">
+              <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0 px-2 py-0.5 md:px-3 md:py-1 text-xs md:text-sm">
                 <Brain className="w-3 h-3 mr-1" />
                 {t("retailer.analytics.badge.aiPowered")}
               </Badge>
             </div>
-            <p className="text-gray-600">
+            <p className="text-sm md:text-base text-gray-600">
               {t("retailer.analytics.subtitle")}
             </p>
           </div>
           <Button
             onClick={handleRefresh}
             disabled={refreshing}
-            className="bg-white hover:bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-sm rounded-xl px-5 py-5 transition-all font-semibold flex items-center h-auto"
+            className="bg-white hover:bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-sm rounded-xl px-3 py-2 md:px-5 md:py-5 transition-all font-semibold flex items-center h-auto text-sm md:text-base"
           >
             <RefreshCw
-              className={`w-5 h-5 mr-2 ${refreshing ? "animate-spin" : ""}`}
+              className={`w-4 h-4 md:w-5 md:h-5 mr-2 ${refreshing ? "animate-spin" : ""}`}
             />
             {t("retailer.analytics.refresh")}
           </Button>
         </div>
 
         {/* ── KPI Cards ── */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 md:gap-4 mb-6 md:mb-8">
           {kpiMetrics.map((metric) => {
             const Icon = metric.icon
             return (
@@ -729,22 +729,22 @@ export default function Analytics() {
                 key={metric.label}
                 className={`border-l-4 ${metric.borderColor} hover:shadow-lg transition-shadow`}
               >
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className={`p-2 rounded-lg ${metric.color}`}>
-                      <Icon className="w-4 h-4" />
+                <CardContent className="p-2 md:p-4">
+                  <div className="flex items-center justify-between mb-2 md:mb-3">
+                    <div className={`p-1.5 md:p-2 rounded-lg ${metric.color}`}>
+                      <Icon className="w-3 h-3 md:w-4 md:h-4" />
                     </div>
                     {metric.change && (
                       <span className="text-xs font-medium text-green-600 flex items-center">
                         <ArrowUpRight className="w-3 h-3" />
-                        {metric.change}
+                        <span className="hidden sm:inline">{metric.change}</span>
                       </span>
                     )}
                   </div>
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-xl md:text-2xl font-bold text-gray-900">
                     {metric.value}
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">{metric.label}</p>
+                  <p className="text-xs text-gray-500 mt-1 line-clamp-2">{metric.label}</p>
                 </CardContent>
               </Card>
             )
@@ -752,29 +752,51 @@ export default function Analytics() {
         </div>
 
         {/* ── Charts Grid ── */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
           {/* Weekly Procurement Cost */}
           <Card className="lg:col-span-2 border-0 shadow-sm hover:shadow-lg transition-shadow">
             <CardHeader className="pb-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-lg font-semibold">
+                  <CardTitle className="text-base md:text-lg font-semibold">
                     {t("retailer.analytics.charts.weeklyProcurement.title")}
                   </CardTitle>
-                  <p className="text-sm text-gray-600 mt-1">
+                  <p className="text-xs md:text-sm text-gray-600 mt-1">
                     {t("retailer.analytics.charts.weeklyProcurement.subtitle")}
                   </p>
                 </div>
-                <div className="p-2 rounded-lg bg-green-50">
-                  <TrendingUp className="w-5 h-5 text-green-600" />
+                <div className="p-1.5 md:p-2 rounded-lg bg-green-50">
+                  <TrendingUp className="w-4 h-4 md:w-5 md:h-5 text-green-600" />
                 </div>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="h-56">
+              <div className="h-40 md:h-48 lg:h-56">
                 <Line
                   data={monthlyTransactionsData}
-                  options={lineChartOptions}
+                  options={{
+                    ...lineChartOptions,
+                    plugins: {
+                      ...lineChartOptions.plugins,
+                      legend: { display: false },
+                      tooltip: {
+                        ...lineChartOptions.plugins.tooltip,
+                        bodyFont: { size: 11 },
+                        titleFont: { size: 12 },
+                      },
+                    },
+                    scales: {
+                      ...lineChartOptions.scales,
+                      x: {
+                        ...lineChartOptions.scales.x,
+                        ticks: { color: "#6B7280", font: { size: 10 } },
+                      },
+                      y: {
+                        ...lineChartOptions.scales.y,
+                        ticks: { color: "#6B7280", font: { size: 10 } },
+                      },
+                    },
+                  }}
                 />
               </div>
             </CardContent>
@@ -783,13 +805,13 @@ export default function Analytics() {
           {/* Inventory Status Doughnut */}
           <Card className="border-0 shadow-sm hover:shadow-lg transition-shadow">
             <CardHeader className="pb-4">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <BarChart3 className="w-5 h-5 text-purple-600" />
+              <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+                <BarChart3 className="w-4 h-4 md:w-5 md:h-5 text-purple-600" />
                 {t("retailer.analytics.charts.stockHealth")}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="h-56">
+              <div className="h-40 md:h-48 lg:h-56">
                 <Doughnut
                   data={inventoryStatusData}
                   options={{
@@ -798,7 +820,7 @@ export default function Analytics() {
                     plugins: {
                       legend: {
                         position: "bottom",
-                        labels: { boxWidth: 12, font: { size: 10 } },
+                        labels: { boxWidth: 10, font: { size: 9 } },
                       },
                     },
                   }}
@@ -808,31 +830,31 @@ export default function Analytics() {
           </Card>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
           {/* Stock vs AI Forecast */}
           <Card className="lg:col-span-2 border-0 shadow-sm hover:shadow-lg transition-shadow">
             <CardHeader className="pb-4">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Target className="w-5 h-5 text-emerald-600" />
+              <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+                <Target className="w-4 h-4 md:w-5 md:h-5 text-emerald-600" />
                 {t("retailer.analytics.charts.stockVsForecast")}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="h-56">
+              <div className="h-40 md:h-48 lg:h-56">
                 <Bar
                   data={forecastComparisonData}
                   options={{
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                      legend: { display: true, position: "top" },
+                      legend: { display: true, position: "top", labels: { font: { size: 10 } } },
                     },
                     scales: {
                       y: {
                         beginAtZero: true,
-                        ticks: { font: { size: 10 } },
+                        ticks: { font: { size: 9 } },
                       },
-                      x: { ticks: { font: { size: 10 } } },
+                      x: { ticks: { font: { size: 9 } } },
                     },
                   }}
                 />
@@ -844,19 +866,40 @@ export default function Analytics() {
           <Card className="border-0 shadow-sm hover:shadow-lg transition-shadow">
             <CardHeader className="pb-4">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-lg font-semibold">
+                <CardTitle className="text-base md:text-lg font-semibold">
                   {t("retailer.analytics.charts.produceMix")}
                 </CardTitle>
-                <div className="p-2 rounded-lg bg-green-50">
-                  <Leaf className="w-5 h-5 text-green-600" />
+                <div className="p-1.5 md:p-2 rounded-lg bg-green-50">
+                  <Leaf className="w-4 h-4 md:w-5 md:h-5 text-green-600" />
                 </div>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="h-56">
+              <div className="h-40 md:h-48 lg:h-56">
                 <Bar
                   data={produceCategoriesData}
-                  options={barChartOptions}
+                  options={{
+                    ...barChartOptions,
+                    plugins: {
+                      ...barChartOptions.plugins,
+                      legend: { display: false },
+                      tooltip: {
+                        ...barChartOptions.plugins.tooltip,
+                        bodyFont: { size: 11 },
+                      },
+                    },
+                    scales: {
+                      ...barChartOptions.scales,
+                      x: {
+                        ...barChartOptions.scales.x,
+                        ticks: { color: "#6B7280", font: { size: 9 } },
+                      },
+                      y: {
+                        ...barChartOptions.scales.y,
+                        ticks: { color: "#6B7280", font: { size: 9 } },
+                      },
+                    },
+                  }}
                 />
               </div>
             </CardContent>
@@ -866,47 +909,47 @@ export default function Analytics() {
         {/* ── AI Alerts ── */}
         {(translatedAlerts.length > 0 ? translatedAlerts : alerts).length >
           0 && (
-          <Card className="mb-8 border-l-4 border-l-orange-500 hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Zap className="w-5 h-5 text-orange-600" />
+          <Card className="mb-6 md:mb-8 border-l-4 border-l-orange-500 hover:shadow-lg transition-shadow">
+            <CardHeader className="px-4 md:px-6 py-4">
+              <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+                <Zap className="w-4 h-4 md:w-5 md:h-5 text-orange-600" />
                 {t("retailer.analytics.alerts.title")}
-                <Badge className="ml-2 bg-orange-500 text-white">
+                <Badge className="ml-2 bg-orange-500 text-white text-xs">
                   {(translatedAlerts.length > 0 ? translatedAlerts : alerts)
                     .length}
                 </Badge>
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
+            <CardContent className="px-4 md:px-6">
+              <div className="space-y-2 md:space-y-3">
                 {(translatedAlerts.length > 0 ? translatedAlerts : alerts).map(
                   (alert) => (
-                  <div
-                    key={alert.id}
-                    className={`p-4 rounded-lg border ${getPriorityColor(alert.priority)} flex items-start gap-3 hover:shadow-md transition-shadow`}
-                  >
-                    <AlertTriangle className="w-5 h-5 mt-0.5 flex-shrink-0" />
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-semibold">{alert.product}</span>
-                        <Badge
-                          className={`text-xs ${getPriorityColor(alert.priority)}`}
-                        >
-                          {getPriorityLabel(alert.priority)}
-                        </Badge>
+                    <div
+                      key={alert.id}
+                      className={`p-3 md:p-4 rounded-lg border ${getPriorityColor(alert.priority)} flex items-start gap-2 md:gap-3 hover:shadow-md transition-shadow`}
+                    >
+                      <AlertTriangle className="w-4 h-4 md:w-5 md:h-5 mt-0.5 flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          <span className="font-semibold text-sm md:text-base truncate">{alert.product}</span>
+                          <Badge
+                            className={`text-xs ${getPriorityColor(alert.priority)} shrink-0`}
+                          >
+                            {getPriorityLabel(alert.priority)}
+                          </Badge>
+                        </div>
+                        <p className="text-xs md:text-sm text-gray-700 line-clamp-2 md:line-clamp-none">{alert.message}</p>
+                        {alert.currentStock && (
+                          <p className="text-xs text-gray-600 mt-1">
+                            {t("retailer.analytics.alerts.current", {
+                              value: alert.currentStock,
+                            })}
+                          </p>
+                        )}
                       </div>
-                      <p className="text-sm text-gray-700">{alert.message}</p>
-                      {alert.currentStock && (
-                        <p className="text-xs text-gray-600 mt-1">
-                          {t("retailer.analytics.alerts.current", {
-                            value: alert.currentStock,
-                          })}
-                        </p>
-                      )}
+                      <Clock className="w-3 h-3 md:w-4 md:h-4 text-gray-400 flex-shrink-0" />
                     </div>
-                    <Clock className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                  </div>
-                ),
+                  ),
                 )}
               </div>
             </CardContent>
@@ -914,37 +957,37 @@ export default function Analytics() {
         )}
 
         {/* ── Product Insights Table ── */}
-        <Card className="mb-8 hover:shadow-lg transition-shadow">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-purple-600" />
+        <Card className="mb-6 md:mb-8 hover:shadow-lg transition-shadow">
+          <CardHeader className="px-4 md:px-6">
+            <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+              <Sparkles className="w-4 h-4 md:w-5 md:h-5 text-purple-600" />
               {t("retailer.analytics.table.title")}
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full">
+          <CardContent className="px-4 md:px-6">
+            <div className="overflow-x-auto -mx-4 md:mx-0 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+              <table className="w-full min-w-[640px]">
                 <thead>
                   <tr className="border-b bg-gray-50">
-                    <th className="text-left p-3 text-sm font-semibold">
+                    <th className="text-left p-2 md:p-3 text-xs md:text-sm font-semibold">
                       {t("retailer.analytics.table.produce")}
                     </th>
-                    <th className="text-center p-3 text-sm font-semibold">
+                    <th className="text-center p-2 md:p-3 text-xs md:text-sm font-semibold">
                       {t("retailer.analytics.table.stockKg")}
                     </th>
-                    <th className="text-center p-3 text-sm font-semibold">
+                    <th className="text-center p-2 md:p-3 text-xs md:text-sm font-semibold">
                       {t("retailer.analytics.table.demand7Day")}
                     </th>
-                    <th className="text-center p-3 text-sm font-semibold">
+                    <th className="text-center p-2 md:p-3 text-xs md:text-sm font-semibold">
                       {t("retailer.analytics.table.daysLeft")}
                     </th>
-                    <th className="text-center p-3 text-sm font-semibold">
+                    <th className="text-center p-2 md:p-3 text-xs md:text-sm font-semibold">
                       {t("retailer.analytics.table.demandTrend")}
                     </th>
-                    <th className="text-center p-3 text-sm font-semibold">
+                    <th className="text-center p-2 md:p-3 text-xs md:text-sm font-semibold">
                       {t("retailer.analytics.table.status")}
                     </th>
-                    <th className="text-center p-3 text-sm font-semibold">
+                    <th className="text-center p-2 md:p-3 text-xs md:text-sm font-semibold">
                       {t("retailer.analytics.table.aiConfidence")}
                     </th>
                   </tr>
@@ -954,54 +997,55 @@ export default function Analytics() {
                     (item, index) => (
                     <tr
                       key={index}
-                      className="border-b hover:bg-gray-50 transition-colors cursor-pointer"
+                      className="border-b hover:bg-gray-50 transition-colors cursor-pointer touch-manipulation"
                       onClick={() => setSelectedProduct(item)}
                     >
-                      <td className="p-3">
+                      <td className="p-2 md:p-3">
                         <div className="flex items-center gap-2">
-                          <Leaf className="w-4 h-4 text-green-500" />
-                          <span className="font-medium">{item.product}</span>
+                          <Leaf className="w-4 h-4 text-green-500 shrink-0" />
+                          <span className="font-medium text-sm md:text-base truncate">{item.product}</span>
                         </div>
                       </td>
-                      <td className="text-center p-3">
-                        <span className="font-semibold">
+                      <td className="text-center p-2 md:p-3">
+                        <span className="font-semibold text-sm md:text-base">
                           {item.currentStock} kg
                         </span>
                       </td>
-                      <td className="text-center p-3">
-                        <span className="text-emerald-600 font-semibold">
+                      <td className="text-center p-2 md:p-3">
+                        <span className="text-emerald-600 font-semibold text-sm md:text-base">
                           {item.forecast} kg
                         </span>
                       </td>
-                      <td className="text-center p-3">
+                      <td className="text-center p-2 md:p-3">
                         <Badge
-                          className={
+                          className={`text-xs ${
                             item.daysOfStock < 3
                               ? "bg-red-100 text-red-800"
                               : item.daysOfStock < 5
                               ? "bg-yellow-100 text-yellow-800"
                               : "bg-gray-100 text-gray-800"
-                          }
+                          }`}
                         >
                           {t("analytics.unit.daysShort", { days: item.daysOfStock })}
                         </Badge>
                       </td>
-                      <td className="text-center p-3">
+                      <td className="text-center p-2 md:p-3">
                         <div className="flex justify-center">
                           {getTrendIcon(item.trend)}
                         </div>
                       </td>
-                      <td className="text-center p-3">
-                        <Badge className={getStatusColor(item.status)}>
+                      <td className="text-center p-2 md:p-3">
+                        <Badge className={`text-xs ${getStatusColor(item.status)}`}>
                           <span className="flex items-center gap-1">
                             {getStatusIcon(item.status)}
-                            {getStatusLabel(item.status)}
+                            <span className="hidden sm:inline">{getStatusLabel(item.status)}</span>
+                            <span className="sr-only">{getStatusLabel(item.status)}</span>
                           </span>
                         </Badge>
                       </td>
-                      <td className="text-center p-3">
-                        <div className="flex items-center justify-center gap-1">
-                          <div className="w-16 bg-gray-200 rounded-full h-2">
+                      <td className="text-center p-2 md:p-3">
+                        <div className="flex items-center justify-center gap-1 md:gap-2">
+                          <div className="w-12 md:w-16 bg-gray-200 rounded-full h-2">
                             <div
                               className={`h-2 rounded-full ${
                                 item.confidence > 80
@@ -1029,30 +1073,30 @@ export default function Analytics() {
 
         {/* ── AI Recommendations Panel ── */}
         {(translatedSelectedProduct || selectedProduct) && (
-          <Card className="mb-8 border-l-4 border-l-purple-500 hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Brain className="w-5 h-5 text-purple-600" />
+          <Card className="mb-6 md:mb-8 border-l-4 border-l-purple-500 hover:shadow-lg transition-shadow">
+            <CardHeader className="px-4 md:px-6">
+              <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+                <Brain className="w-4 h-4 md:w-5 md:h-5 text-purple-600" />
                 {t("retailer.analytics.reco.title", {
                   product: (translatedSelectedProduct || selectedProduct).product,
                 })}
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="px-4 md:px-6">
               <div className="space-y-2">
                 {(translatedSelectedProduct || selectedProduct).recommendations?.map(
                   (rec, index) => (
-                  <div
-                    key={index}
-                    className="p-3 bg-purple-50 rounded-lg border border-purple-200"
-                  >
-                    <p className="text-sm text-gray-700">{rec}</p>
-                  </div>
-                ),
+                    <div
+                      key={index}
+                      className="p-2 md:p-3 bg-purple-50 rounded-lg border border-purple-200"
+                    >
+                      <p className="text-xs md:text-sm text-gray-700">{rec}</p>
+                    </div>
+                  ),
                 )}
                 <Button
                   onClick={() => setSelectedProduct(null)}
-                  className="mt-4 w-full bg-purple-600 hover:bg-purple-700"
+                  className="mt-4 w-full bg-purple-600 hover:bg-purple-700 text-sm py-2"
                 >
                   {t("common.close")}
                 </Button>
@@ -1063,58 +1107,58 @@ export default function Analytics() {
 
         {/* ── Recent Activity ── */}
         <Card className="border-0 shadow-sm hover:shadow-lg transition-shadow">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg font-semibold">
+          <CardHeader className="pb-4 px-4 md:px-6">
+            <CardTitle className="text-base md:text-lg font-semibold">
               {t("retailer.analytics.recentActivity.title")}
             </CardTitle>
-            <p className="text-sm text-gray-600 mt-1">
+            <p className="text-xs md:text-sm text-gray-600 mt-1">
               {t("retailer.analytics.recentActivity.subtitle")}
             </p>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
+          <CardContent className="px-4 md:px-6">
+            <div className="space-y-2 md:space-y-3">
               {(translatedActivities?.length ? translatedActivities : RECENT_ACTIVITIES).map(
                 (activity, index) => (
-                <div
-                  key={activity.id || index}
-                  className="flex items-start space-x-4 p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
-                >
-                  <div className="flex-shrink-0 mt-2">
-                    <div
-                      className={`w-3 h-3 rounded-full ${
-                        activity.type === "contract"
-                          ? "bg-blue-500"
-                          : activity.type === "payment"
-                          ? "bg-green-500"
-                          : activity.type === "verification"
-                          ? "bg-purple-500"
-                          : activity.type === "reorder"
-                          ? "bg-emerald-500"
-                          : "bg-orange-500"
-                      }`}
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between mb-1">
-                      <p className="font-medium text-gray-900">
-                        {activity.action}
-                      </p>
-                      <Badge variant="secondary" className="text-xs">
-                        {activity.time}
-                      </Badge>
+                  <div
+                    key={activity.id || index}
+                    className="flex items-start space-x-2 md:space-x-4 p-3 md:p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
+                  >
+                    <div className="flex-shrink-0 mt-1 md:mt-2">
+                      <div
+                        className={`w-2.5 h-2.5 md:w-3 md:h-3 rounded-full ${
+                          activity.type === "contract"
+                            ? "bg-blue-500"
+                            : activity.type === "payment"
+                            ? "bg-green-500"
+                            : activity.type === "verification"
+                            ? "bg-purple-500"
+                            : activity.type === "reorder"
+                            ? "bg-emerald-500"
+                            : "bg-orange-500"
+                        }`}
+                      />
                     </div>
-                    <p className="text-sm text-gray-600">
-                      <span className="font-medium">{activity.farmer}</span>
-                      {activity.details && (
-                        <span className="text-gray-500">
-                          {" "}
-                          • {activity.details}
-                        </span>
-                      )}
-                    </p>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <p className="font-medium text-gray-900 text-sm md:text-base truncate">
+                          {activity.action}
+                        </p>
+                        <Badge variant="secondary" className="text-xs shrink-0">
+                          {activity.time}
+                        </Badge>
+                      </div>
+                      <p className="text-xs md:text-sm text-gray-600 truncate">
+                        <span className="font-medium truncate">{activity.farmer}</span>
+                        {activity.details && (
+                          <span className="text-gray-500 hidden md:inline">
+                            {" "}
+                            • {activity.details}
+                          </span>
+                        )}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ),
+                ),
               )}
             </div>
           </CardContent>

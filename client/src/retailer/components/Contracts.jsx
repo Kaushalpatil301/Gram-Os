@@ -239,11 +239,11 @@ export default function Contracts() {
                       <SelectValue placeholder={t("contracts.selectUnit")} />
                     </SelectTrigger>
                     <SelectContent>
-                      {filterOptions.units.map((unit) => (
-                        <SelectItem key={unit.value} value={unit.value}>
-                          {unit.label}
-                        </SelectItem>
-                      ))}
+                       {filterOptions.units.map((unit) => (
+                         <SelectItem key={unit.value} value={unit.value}>
+                           {t(unit.label)}
+                         </SelectItem>
+                       ))}
                     </SelectContent>
                   </Select>
                 </div>

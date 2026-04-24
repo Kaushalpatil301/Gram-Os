@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   X,
   MapPin,
@@ -15,14 +15,80 @@ import {
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { useTranslation } from "../../consumer/i18n/config.jsx";
+import translationService from "../../consumer/i18n/translationService";
 
 export default function ProductModal({ isOpen, onClose, product }) {
-  const { t } = useTranslation();
+  const { t, currentLanguage } = useTranslation();
+  const [translatedProduct, setTranslatedProduct] = useState(product);
   const handleJitsiConnect = () => {
     // Construct a unique room name using product ID or farmer name
     const roomName = `agrichain-${product?._id || product?.farmerName?.replace(/[^a-zA-Z0-9]/g, "") || Math.random().toString(36).substring(7)}`;
     window.open(`https://meet.jit.si/${roomName}`, "_blank");
   };
+
+  // Dynamic translation for product fields
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadDynamicCache = (lang) => {
+      try {
+        return JSON.parse(localStorage.getItem(`dynamic_translations_${lang}`) || "{}");
+      } catch {
+        return {};
+      }
+    };
+    const saveDynamicCache = (lang, cache) => {
+      try {
+        localStorage.setItem(`dynamic_translations_${lang}`, JSON.stringify(cache));
+      } catch {}
+    };
+
+    const translateProduct = async () => {
+      if (!product) return;
+      if (!currentLanguage || currentLanguage === "en") {
+        setTranslatedProduct(product);
+        return;
+      }
+
+      const cache = loadDynamicCache(currentLanguage);
+      const toTranslate = {};
+
+      const collect = (val) => {
+        const text = typeof val === "string" ? val.trim() : "";
+        if (!text) return;
+        if (!cache[text]) toTranslate[text] = text;
+      };
+
+      collect(product?.name);
+      collect(product?.description);
+      collect(product?.category);
+      collect(product?.location);
+      collect(product?.unit);
+
+      if (Object.keys(toTranslate).length > 0) {
+        const translated = await translationService.batchTranslate(toTranslate, currentLanguage, "google");
+        Object.assign(cache, translated);
+        saveDynamicCache(currentLanguage, cache);
+      }
+
+      const next = {
+        ...product,
+        name: cache[product?.name] || product?.name,
+        description: cache[product?.description] || product?.description,
+        category: cache[product?.category] || product?.category,
+        location: cache[product?.location] || product?.location,
+        unit: cache[product?.unit] || product?.unit,
+      };
+
+      if (!cancelled) setTranslatedProduct(next);
+    };
+
+    translateProduct();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [product, currentLanguage]);
 
   if (!isOpen || !product) return null;
 
@@ -67,15 +133,15 @@ export default function ProductModal({ isOpen, onClose, product }) {
           {/* Details Section */}
           <div className="md:w-1/2 p-6 md:p-8 flex flex-col">
             <div className="mb-2">
-              <Badge
-                variant="outline"
-                className="text-emerald-700 bg-emerald-50 border-emerald-200 mb-3"
-              >
-                {product.category || t("productModal.produce")}
-              </Badge>
-              <h2 className="text-3xl font-bold text-gray-900 leading-tight mb-2">
-                {product.name}
-              </h2>
+               <Badge
+                 variant="outline"
+                 className="text-emerald-700 bg-emerald-50 border-emerald-200 mb-3"
+               >
+                 {translatedProduct.category || t("productModal.produce")}
+               </Badge>
+               <h2 className="text-3xl font-bold text-gray-900 leading-tight mb-2">
+                 {translatedProduct.name}
+               </h2>
               <div className="flex items-end gap-2 mb-4">
                 <span className="text-3xl font-bold text-emerald-600">
                   {product.price || product.basePrice
@@ -93,8 +159,8 @@ export default function ProductModal({ isOpen, onClose, product }) {
             </div>
 
             <p className="text-gray-600 mb-6 leading-relaxed">
-              {product.description ||
-                `High-quality ${product.name} cultivated using sustainable farming practices. Freshly harvested and ready for market delivery.`}
+              {translatedProduct.description ||
+                `High-quality ${translatedProduct.name} cultivated using sustainable farming practices. Freshly harvested and ready for market delivery.`}
             </p>
 
             <div className="grid grid-cols-2 gap-4 mb-8">
@@ -104,9 +170,9 @@ export default function ProductModal({ isOpen, onClose, product }) {
                   <p className="text-xs text-gray-500 font-medium tracking-wide uppercase">
                     {t("productModal.availableQty")}
                   </p>
-                  <p className="font-semibold text-gray-900">
-                    {product.quantity || 0} {product.unit || "kg"}
-                  </p>
+                   <p className="font-semibold text-gray-900">
+                     {translatedProduct.quantity || 0} {translatedProduct.unit || "kg"}
+                   </p>
                 </div>
               </div>
               <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 flex items-start gap-3">
@@ -147,7 +213,7 @@ export default function ProductModal({ isOpen, onClose, product }) {
               <div className="space-y-2 mb-4">
                 <div className="flex items-center gap-2 text-gray-700 text-sm">
                   <MapPin className="w-4 h-4 text-gray-400" />
-                  {product.location || t("productModal.defaultLocation")}
+                  {translatedProduct.location || t("productModal.defaultLocation")}
                 </div>
                 {product.farmerPhone && (
                   <div className="flex items-center gap-2 text-gray-700 text-sm">

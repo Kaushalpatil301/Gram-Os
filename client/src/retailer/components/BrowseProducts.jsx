@@ -314,17 +314,17 @@ export default function BrowseProducts() {
 
   return (
     <div className="bg-white rounded-3xl shadow-xl overflow-hidden mb-12 border border-green-100">
-      <div className="p-6 md:p-8">
+      <div className="p-4 md:p-6">
         {/* Search & Filter Bar */}
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-3 md:gap-4 mb-6 md:mb-8">
           <div className="relative w-full md:w-96">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search className="h-5 w-5 text-gray-400" />
+              <Search className="h-4 w-4 md:h-5 md:w-5 text-gray-400" />
             </div>
             <input
               type="text"
               placeholder={t("browse.searchPlaceholder")}
-              className="pl-10 pr-4 py-3 w-full border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 shadow-sm transition-all bg-gray-50 hover:bg-white"
+              className="pl-10 pr-4 py-2.5 md:py-3 w-full border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 shadow-sm transition-all bg-gray-50 hover:bg-white text-sm md:text-base"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -336,7 +336,7 @@ export default function BrowseProducts() {
                 <button
                   key={category}
                   onClick={() => setActiveCategory(category)}
-                  className={`py-2 px-6 rounded-lg font-medium text-sm transition-all whitespace-nowrap ${
+                  className={`py-1.5 md:py-2 px-3 md:px-6 rounded-lg font-medium text-xs md:text-sm transition-all whitespace-nowrap ${
                     activeCategory === category
                       ? "bg-white text-emerald-700 shadow-sm border border-gray-200"
                       : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
@@ -349,13 +349,13 @@ export default function BrowseProducts() {
             <div className="w-px bg-gray-200 hidden md:block my-1"></div>
             <button
               onClick={() => setIsAiMode(!isAiMode)}
-              className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-bold text-sm transition-all whitespace-nowrap ${
+              className={`flex items-center justify-center gap-2 px-3 md:px-4 py-1.5 md:py-2 rounded-lg font-bold text-xs md:text-sm transition-all whitespace-nowrap shrink-0 ${
                 isAiMode
                   ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md"
                   : "bg-white text-purple-600 border border-purple-200 hover:bg-purple-50"
               }`}
             >
-              <Sparkles className="w-4 h-4" />
+              <Sparkles className="w-3 h-3 md:w-4 md:h-4" />
               {isAiMode ? t("browse.aiProfitOn") : t("browse.aiProfitFinder")}
             </button>
           </div>
@@ -363,20 +363,20 @@ export default function BrowseProducts() {
 
         {/* Loading State */}
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-20">
-            <div className="animate-spin w-12 h-12 border-4 border-emerald-200 border-t-emerald-600 rounded-full mb-4"></div>
-            <p className="text-gray-500 font-medium">{t("browse.loading")}</p>
+          <div className="flex flex-col items-center justify-center py-12 md:py-20">
+            <div className="animate-spin w-10 h-10 md:w-12 md:h-12 border-4 border-emerald-200 border-t-emerald-600 rounded-full mb-3 md:mb-4"></div>
+            <p className="text-gray-500 font-medium text-sm md:text-base">{t("browse.loading")}</p>
           </div>
         ) : filteredProducts.length === 0 ? (
-          <div className="text-center py-20 bg-gray-50 rounded-2xl border border-dashed border-gray-300">
-            <Leaf className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-1">
+          <div className="text-center py-12 md:py-20 bg-gray-50 rounded-2xl border border-dashed border-gray-300">
+            <Leaf className="w-10 h-10 md:w-12 md:h-12 text-gray-300 mx-auto mb-3" />
+            <h3 className="text-base md:text-lg font-semibold text-gray-900 mb-1">
               {t("browse.emptyTitle")}
             </h3>
-            <p className="text-gray-500">{t("browse.emptyDesc")}</p>
+            <p className="text-gray-500 text-sm md:text-base">{t("browse.emptyDesc")}</p>
             <Button
               variant="outline"
-              className="mt-4 border-emerald-200 text-emerald-700"
+              className="mt-4 border-emerald-200 text-emerald-700 text-sm py-2"
               onClick={() => {
                 setSearchQuery("");
                 setActiveCategory("All");
@@ -387,14 +387,14 @@ export default function BrowseProducts() {
           </div>
         ) : (
           /* Products Grid */
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
             {filteredProducts.map((product) => (
               <div
                 key={product._id || Math.random().toString()}
                 className="group bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col h-full"
               >
                 {/* Image & Badges */}
-                <div className="relative h-48 overflow-hidden bg-gray-100">
+                <div className="relative h-36 md:h-48 overflow-hidden bg-gray-100">
                   <img
                     src={
                       product.image &&
@@ -408,20 +408,20 @@ export default function BrowseProducts() {
                   />
 
                   {product.isOrganic && (
-                    <div className="absolute top-3 left-3 bg-green-500/90 backdrop-blur-md text-white text-xs font-bold px-2 py-1 rounded shadow-sm">
+                    <div className="absolute top-2 md:top-3 left-2 md:left-3 bg-green-500/90 backdrop-blur-md text-white text-xs font-bold px-2 py-1 rounded shadow-sm">
                       {t("browse.organic")}
                     </div>
                   )}
-                  <div className="absolute bottom-3 right-3 bg-white/90 backdrop-blur-md px-2 py-1 rounded text-xs font-semibold text-gray-800 shadow-sm flex items-center gap-1">
+                  <div className="absolute bottom-2 md:bottom-3 right-2 md:right-3 bg-white/90 backdrop-blur-md px-2 py-1 rounded text-xs font-semibold text-gray-800 shadow-sm flex items-center gap-1">
                     <TrendingUp className="w-3 h-3 text-emerald-600" />
                     {t("browse.highDemand")}
                   </div>
                 </div>
 
                 {/* Content */}
-                <div className="p-5 flex flex-col flex-1 border-t border-gray-50">
+                <div className="p-3 md:p-5 flex flex-col flex-1 border-t border-gray-50">
                   {isAiMode && product.ai && (
-                    <div className="mb-3 p-2.5 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg border border-purple-100">
+                    <div className="mb-2 md:mb-3 p-2 md:p-2.5 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg border border-purple-100">
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-xs font-bold text-purple-700 flex items-center gap-1">
                           <Sparkles className="w-3 h-3" />{" "}
@@ -431,33 +431,33 @@ export default function BrowseProducts() {
                           {product.ai.margin}% {t("browse.margin")}
                         </span>
                       </div>
-                      <p className="text-[11px] text-gray-600 leading-snug">
+                      <p className="text-xs text-gray-600 leading-snug">
                         {t(product.ai.reasonKey)}
                       </p>
                     </div>
                   )}
 
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-bold text-gray-900 text-lg leading-tight line-clamp-2">
+                  <div className="flex justify-between items-start mb-1 md:mb-2">
+                    <h3 className="font-bold text-gray-900 text-base md:text-lg leading-tight line-clamp-2">
                       {product.name}
                     </h3>
                   </div>
 
-                  <div className="flex items-end gap-1 mb-4">
-                    <span className="text-2xl font-black text-emerald-600">
+                  <div className="flex items-end gap-1 mb-3 md:mb-4">
+                    <span className="text-xl md:text-2xl font-black text-emerald-600">
                       {product.price || product.basePrice
                         ? `₹${product.price || product.basePrice}`
                         : t("browse.askPrice")}
                     </span>
                     {(product.price || product.basePrice) && (
-                      <span className="text-gray-500 text-sm mb-1 font-medium">
+                      <span className="text-gray-500 text-xs md:text-sm mb-1 font-medium">
                         /{unitLabel(product.unit || "ton")}
                       </span>
                     )}
                   </div>
 
                   {/* Metadata tags */}
-                  <div className="space-y-2 mb-5 mt-auto">
+                  <div className="space-y-1.5 md:space-y-2 mb-4 md:mb-5 mt-auto">
                     <div className="flex flex-wrap gap-2">
                       <Badge
                         variant="secondary"
@@ -480,24 +480,24 @@ export default function BrowseProducts() {
                   </div>
 
                   {/* Footer (Farmer & CTA) */}
-                  <div className="pt-4 border-t border-gray-100 flex flex-col gap-3 mt-auto">
+                  <div className="pt-3 md:pt-4 border-t border-gray-100 flex flex-col gap-2 md:gap-3 mt-auto">
                     <div className="flex items-center gap-2 w-full">
-                      <div className="w-7 h-7 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 shrink-0">
-                        <User className="w-4 h-4" />
+                      <div className="w-6 h-6 md:w-7 md:h-7 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 shrink-0">
+                        <User className="w-3 h-3 md:w-4 md:h-4" />
                       </div>
-                      <span className="text-sm font-semibold text-gray-700 truncate">
+                      <span className="text-xs md:text-sm font-semibold text-gray-700 truncate">
                         {product.farmerName ||
                           product.farmerEmail ||
                           `${product.type || t("browse.verifiedFarmer")}`}
                       </span>
                     </div>
 
-                    <div className="w-full mt-2">
+                    <div className="w-full mt-1 md:mt-2">
                       <Button
                         onClick={() =>
                           navigate(`/retailer/product/${product._id}`)
                         }
-                        className="w-full bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-semibold rounded-xl py-2.5 transition-all text-sm shadow-sm"
+                        className="w-full bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-semibold rounded-xl py-2.5 md:py-2.5 transition-all text-sm shadow-sm min-h-[44px]"
                       >
                         {t("browse.viewMore")}
                       </Button>
