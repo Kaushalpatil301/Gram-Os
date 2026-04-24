@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { LanguageProvider } from "../../consumer/i18n/config.jsx";
 import LanguageDropdown from "../../consumer/components/LanguageDropdown.jsx";
+import Notification from "../../product/components/Notification.jsx";
 import ProfileModal from "../components/ProfileModal";
 
 // Sections
@@ -86,6 +87,7 @@ export default function FarmerPage({ onLogout }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [produce, setProduce] = useState(initialProduce);
   const [activeChats, setActiveChats] = useState([]);
+  const [notification, setNotification] = useState("");
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState([
     {
@@ -108,6 +110,11 @@ export default function FarmerPage({ onLogout }) {
     },
   ]);
 
+  const showNotificationToast = (msg) => {
+    setNotification(msg);
+    setTimeout(() => setNotification(""), 3000);
+  };
+
   const handleAcceptConnect = (notif) => {
     if (!activeChats.find((chat) => chat.id === notif.id)) {
       setActiveChats((prev) => [
@@ -117,6 +124,7 @@ export default function FarmerPage({ onLogout }) {
     }
     setNotifications((prev) => prev.filter((n) => n.id !== notif.id));
     setShowNotifications(false);
+    showNotificationToast("Connected!");
     goTo("chat");
   };
 
@@ -419,7 +427,8 @@ export default function FarmerPage({ onLogout }) {
           {/* Content */}
           <div className="p-6">{renderSection()}</div>
 
-          {/* Chatbot */}
+          {/* Chatbot & Notification */}
+          <Notification message={notification} />
           <Chatbot />
         </main>
 

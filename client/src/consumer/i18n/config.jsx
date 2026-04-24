@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import translationService from './translationService';
+import React, { createContext, useContext, useState, useEffect } from "react";
+import translationService from "./translationService";
 
 // Base English translations (source language)
 const baseTranslations = {
@@ -10,7 +10,8 @@ const baseTranslations = {
   "header.consumer": "Consumer",
   "header.logoutSuccess": "You have been logged out successfully ✅",
   "scan.title": "QR Code Scanner",
-  "scan.subtitle": "Verify authenticity and trace your product's complete journey from farm to table",
+  "scan.subtitle":
+    "Verify authenticity and trace your product's complete journey from farm to table",
   "scan.button": "Scan QR Code",
   "scan.history": "Recent Scans",
   "scan.noScans": "No scans yet. Start by scanning your first product!",
@@ -66,7 +67,7 @@ const baseTranslations = {
   "common.save": "Save",
   "common.cancel": "Cancel",
   "common.selectLanguage": "Select Language",
-  "common.optional": "Optional"
+  "common.optional": "Optional",
 };
 
 // Language Context
@@ -75,79 +76,78 @@ const LanguageContext = createContext();
 export const useTranslation = () => {
   const context = useContext(LanguageContext);
   if (!context) {
-    throw new Error('useTranslation must be used within a LanguageProvider');
+    throw new Error("useTranslation must be used within a LanguageProvider");
   }
   return context;
 };
 
 export const LanguageProvider = ({ children }) => {
   const [currentLanguage, setCurrentLanguage] = useState(() => {
-    return localStorage.getItem('preferred-language') || 'en';
+    return localStorage.getItem("preferred-language") || "en";
   });
-  
+
   const [translations, setTranslations] = useState({ en: baseTranslations });
   const [isLoading, setIsLoading] = useState(false);
 
   // Load cached translations on mount
   useEffect(() => {
     const loadCachedTranslations = () => {
-      const availableLanguages = ['hi', 'mr', 'ta', 'te', 'bn', 'gu'];
+      const availableLanguages = ["hi", "mr", "ta", "te", "bn", "gu"];
       const cachedTranslations = { en: baseTranslations };
-      
-      availableLanguages.forEach(lang => {
+
+      availableLanguages.forEach((lang) => {
         const cached = translationService.loadFromCache(lang);
         if (cached) {
           cachedTranslations[lang] = cached;
         }
       });
-      
+
       setTranslations(cachedTranslations);
     };
-    
+
     loadCachedTranslations();
   }, []);
 
   // Auto-translate when language changes
   useEffect(() => {
     const translateLanguage = async () => {
-      if (currentLanguage === 'en' || translations[currentLanguage]) {
+      if (currentLanguage === "en" || translations[currentLanguage]) {
         return; // English or already translated
       }
 
       setIsLoading(true);
-      
+
       try {
         // Map language codes for API
         const languageMap = {
-          'hi': 'hi', // Hindi
-          'mr': 'mr', // Marathi  
-          'ta': 'ta', // Tamil
-          'te': 'te', // Telugu
-          'bn': 'bn', // Bengali
-          'gu': 'gu'  // Gujarati
+          hi: "hi", // Hindi
+          mr: "mr", // Marathi
+          ta: "ta", // Tamil
+          te: "te", // Telugu
+          bn: "bn", // Bengali
+          gu: "gu", // Gujarati
         };
-        
+
         const targetLang = languageMap[currentLanguage];
         if (!targetLang) return;
 
         // Batch translate all texts
         const translatedTexts = await translationService.batchTranslate(
-          baseTranslations, 
-          targetLang, 
-          'google' // You can change to 'libre'
+          baseTranslations,
+          targetLang,
+          "google", // You can change to 'libre'
         );
 
         // Update state and cache
-        setTranslations(prev => ({
+        setTranslations((prev) => ({
           ...prev,
-          [currentLanguage]: translatedTexts
+          [currentLanguage]: translatedTexts,
         }));
-        
+
         // Save to cache for offline use
         translationService.saveToCache(translatedTexts, currentLanguage);
-        
       } catch (error) {
-        console.error('Translation failed:', error);
+        console.error("Translation failed:", error);
       } finally {
         setIsLoading(false);
       }
@@ -164,7 +164,7 @@ export const LanguageProvider = ({ children }) => {
 
   const changeLanguage = (langCode) => {
     setCurrentLanguage(langCode);
-    localStorage.setItem('preferred-language', langCode);
+    localStorage.setItem("preferred-language", langCode);
   };
 
   const value = {
@@ -173,14 +173,14 @@ export const LanguageProvider = ({ children }) => {
     t,
     isLoading, // Show loading indicator while translating
     availableLanguages: [
-      { code: 'en', name: 'English', flag: '🇺🇸' },
-      { code: 'hi', name: 'हिंदी', flag: '🇮🇳' },
-      { code: 'mr', name: 'मराठी', flag: '🇮🇳' },
-      { code: 'ta', name: 'தமிழ்', flag: '🇮🇳' },
-      { code: 'te', name: 'తెలుగు', flag: '🇮🇳' },
-      { code: 'bn', name: 'বাংলা', flag: '🇧🇩' },
-      { code: 'gu', name: 'ગુજરાતી', flag: '🇮🇳' }
-    ]
+      { code: "en", name: "English", flag: "🇺🇸" },
+      { code: "hi", name: "हिंदी", flag: "🇮🇳" },
+      { code: "mr", name: "मराठी", flag: "🇮🇳" },
+      { code: "ta", name: "தமிழ்", flag: "🇮🇳" },
+      { code: "te", name: "తెలుగు", flag: "🇮🇳" },
+      { code: "bn", name: "বাংলা", flag: "🇧🇩" },
+      { code: "gu", name: "ગુજરાતી", flag: "🇮🇳" },
+    ],
   };
 
   return (

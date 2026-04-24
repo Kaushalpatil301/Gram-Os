@@ -12,6 +12,8 @@ export default function Notification({ message, duration = 3000 }) {
       }, duration);
 
       return () => clearTimeout(timer);
+    } else {
+      setVisible(false);
     }
   }, [message, duration]);
 
