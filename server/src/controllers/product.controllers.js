@@ -4,12 +4,7 @@ import { ApiResponse } from "../utils/api-response.js";
 import { ApiError } from "../utils/api-error.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { deleteFromCloudinary } from "../utils/cloudinary.js";
-import { spawn } from "child_process";
-import path from "path";
-import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import { predictPriceWithAI } from "../utils/pricePredictor.js";
 
 const createProduct = asyncHandler(async (req, res) => {
   console.log("📦 Creating product...");
@@ -42,6 +37,8 @@ const createProduct = asyncHandler(async (req, res) => {
   console.log("Image Public ID:", imagePublicId);
 
   try {
+    const aiPredictedPrice = await predictPriceWithAI({ name, type, locality, basePrice });
+
     const product = await Product.create({
       name,
       type,
@@ -52,6 +49,7 @@ const createProduct = asyncHandler(async (req, res) => {
       imagePublicId: imagePublicId,
       farmerId: farmer?._id || null,
       farmerEmail: farmerEmail || "demo@agrichain.com",
+      aiPredictedPrice: aiPredictedPrice,
     });
 
     product.farmId = `FARM_${product._id}`;
@@ -234,7 +232,7 @@ const getProductStats = asyncHandler(async (req, res) => {
     );
 });
 
-// Predict price using ML model
+// Predict price using OpenRouter AI
 const predictPrice = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
@@ -244,101 +242,49 @@ const predictPrice = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Product not found");
   }
 
-  // Prepare product data for Python script
-  const productData = {
+  // If already predicted and stored, return it
+  if (product.aiPredictedPrice) {
+    return res.status(200).json(
+      new ApiResponse(
+        200,
+        {
+          productId: product._id,
+          productName: product.name,
+          farmerPrice: product.basePrice,
+          predictedPrice: product.aiPredictedPrice,
+        },
+        "Price retrieved successfully"
+      )
+    );
+  }
+
+  // Otherwise, calculate, store, and return
+  const predictedPrice = await predictPriceWithAI({
     name: product.name,
     type: product.type,
     locality: product.locality,
-    quantity: product.quantity,
-    basePrice: product.basePrice,
-    image: product.image || "",
-  };
-
-  // Path to Python script (in server root directory)
-  const pythonScriptPath = path.join(__dirname, "../../predict_price.py");
-
-  return new Promise((resolve, reject) => {
-    // Call Python script with product data
-    const pythonProcess = spawn("python", [
-      pythonScriptPath,
-      JSON.stringify(productData),
-    ]);
-
-    let result = "";
-    let errorOutput = "";
-
-    pythonProcess.stdout.on("data", (data) => {
-      result += data.toString();
-    });
-
-    pythonProcess.stderr.on("data", (data) => {
-      errorOutput += data.toString();
-    });
-
-    pythonProcess.on("close", (code) => {
-      if (code !== 0) {
-        console.error("Python script error:", errorOutput);
-        return res
-          .status(500)
-          .json(
-            new ApiResponse(
-              500,
-              null,
-              `Price prediction failed: ${errorOutput}`,
-            ),
-          );
-      }
-
-      try {
-        const prediction = JSON.parse(result);
-
-        if (!prediction.success) {
-          return res
-            .status(500)
-            .json(
-              new ApiResponse(
-                500,
-                null,
-                prediction.message || "Price prediction failed",
-              ),
-            );
-        }
-
-        return res.status(200).json(
-          new ApiResponse(
-            200,
-            {
-              productId: product._id,
-              productName: product.name,
-              farmerPrice: product.basePrice,
-              predictedPrice: prediction.predictedPrice,
-            },
-            "Price predicted successfully",
-          ),
-        );
-      } catch (error) {
-        console.error("Error parsing Python output:", error);
-        return res
-          .status(500)
-          .json(
-            new ApiResponse(500, null, "Failed to parse prediction result"),
-          );
-      }
-    });
-
-    pythonProcess.on("error", (error) => {
-      console.error("Failed to start Python process:", error);
-      return res
-        .status(500)
-        .json(
-          new ApiResponse(
-            500,
-            null,
-            "Failed to start prediction service. Ensure Python is installed.",
-          ),
-        );
-    });
+    basePrice: product.basePrice
   });
+
+  if (!predictedPrice) {
+    throw new ApiError(500, "Failed to predict price from AI");
+  }
+
+  product.aiPredictedPrice = predictedPrice;
+  await product.save();
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        productId: product._id,
+        productName: product.name,
+        farmerPrice: product.basePrice,
+        predictedPrice: product.aiPredictedPrice,
+      },
+      "Price predicted and stored successfully"
+    )
+  );
 });
 
 export {

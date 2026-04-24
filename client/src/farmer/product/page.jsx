@@ -6,82 +6,18 @@ import axios from "axios";
 import Header from "../../product/components/Header.jsx";
 import Footer from "../../product/components/Footer.jsx";
 import ProductDetails from "../../product/components/ProductDetails.jsx";
-import Actions from "../../product/components/Actions.jsx";
 import Notification from "../../product/components/Notification.jsx";
 import Chatbot from "../../consumer/app/Chatbot.jsx";
 import {
   TrendingUp, TrendingDown, Brain, Store, Wheat,
   MessageSquare, CheckCircle, XCircle, Clock, IndianRupee,
-  MapPin, AlertTriangle, ChevronRight, Star, Package, BarChart3
+  MapPin, AlertTriangle, ChevronRight, Star, Package, BarChart3, Activity
 } from "lucide-react";
 
 const API_URL = "http://localhost:8000/api/v1/products";
 
-// ── Static AI prediction data ──────────────────────────────────────────────
-const AI_PREDICTIONS = {
-  currentMsp: 1850,
-  predictedPriceWeek: 2120,
-  predictedPriceMonth: 2380,
-  confidence: 87,
-  trend: "up",
-  mandiPrices: [
-    { mandi: "APMC Pune",      price: 2050, distance: "12 km", trend: "up"   },
-    { mandi: "APMC Nashik",    price: 1980, distance: "48 km", trend: "down" },
-    { mandi: "Lasalgaon",      price: 2210, distance: "62 km", trend: "up"   },
-    { mandi: "APMC Mumbai",    price: 2340, distance: "148 km", trend: "up"  },
-    { mandi: "Solapur APMC",   price: 1890, distance: "95 km", trend: "down" },
-  ],
-  bestTimeToSell: "Next 10–14 days",
-  aiTip: "Prices typically spike in the 2nd & 3rd week of the month due to wholesale demand. Holding 40–50% of produce for 1–2 more weeks could yield ₹250–₹350/qtl higher returns.",
-  weeklyTrend: [1780, 1820, 1850, 1920, 2050, 2120, 2180],
-};
 
-// ── Static retailer bids / buyer requests ──────────────────────────────────
-const INITIAL_BIDS = [
-  {
-    id: "b1", type: "retailer", name: "FreshMart Superstore", location: "Pune",
-    offeredPrice: 2080, qty: "40 qtl", validTill: "2h 14m",
-    message: "Need Grade-A tomatoes for weekend stocking. Can arrange pickup.",
-    rating: 4.7, verified: true, status: "pending",
-  },
-  {
-    id: "b2", type: "retailer", name: "Reliance Smart Bazaar", location: "Mumbai",
-    offeredPrice: 2210, qty: "80 qtl", validTill: "5h 40m",
-    message: "Bulk order for 3 outlets. Price negotiable for consistent supply.",
-    rating: 4.9, verified: true, status: "pending",
-  },
-  {
-    id: "b3", type: "wholesaler", name: "Patil Agro Traders", location: "Nashik",
-    offeredPrice: 1950, qty: "120 qtl", validTill: "1h 05m",
-    message: "Regular purchase for export processing unit. Competitive rate.",
-    rating: 4.2, verified: false, status: "pending",
-  },
-  {
-    id: "b4", type: "retailer", name: "Metro Cash & Carry", location: "Pune",
-    offeredPrice: 2290, qty: "60 qtl", validTill: "10h 20m",
-    message: "Premium slot for Grade-A produce. Cold chain logistics included.",
-    rating: 4.8, verified: true, status: "pending",
-  },
-];
 
-// ── Farmer requests (multiple farmers requesting from same product) ─────────
-const FARMER_REQUESTS = [
-  {
-    id: "f1", farmerName: "Dinesh Pawar", village: "Sinnar", qty: "15 qtl",
-    crop: "Tomato", requestType: "Bulk Buy Together", message: "Looking to pool produce for APMC Mumbai. Same crop grade.",
-    time: "20 min ago", avatar: "👨‍🌾",
-  },
-  {
-    id: "f2", farmerName: "Lata Jadhav", village: "Phaltan", qty: "22 qtl",
-    crop: "Tomato", requestType: "Price Sharing", message: "Share buyer lead? I have similar grade produce ready.",
-    time: "1 hr ago", avatar: "👩‍🌾",
-  },
-  {
-    id: "f3", farmerName: "Mahesh Deshmukh", village: "Daund", qty: "30 qtl",
-    crop: "Tomato", requestType: "Cooperative Sell", message: "Can we approach FPO together? More leverage on price.",
-    time: "3 hr ago", avatar: "👨‍🌾",
-  },
-];
 
 // ── Mini sparkline component ───────────────────────────────────────────────
 function Sparkline({ values }) {
@@ -115,7 +51,7 @@ export default function FarmerProductPage({ onLogout }) {
   const [currentProduct, setCurrentProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [bids, setBids] = useState(INITIAL_BIDS);
+  const [bids, setBids] = useState([]);
   const [activeTab, setActiveTab] = useState("predictions");
   const [counterPrice, setCounterPrice] = useState({});
 
@@ -125,9 +61,46 @@ export default function FarmerProductPage({ onLogout }) {
         try {
           setLoading(true);
           const response = await axios.get(`${API_URL}/${id}`);
-          const product = response.data.data.product;
+          let product = response.data.data.product;
+          
+          // Auto-fetch AI predicted price if missing
+          if (!product.aiPredictedPrice) {
+            try {
+              const priceRes = await axios.post(`${API_URL}/${id}/predict-price`);
+              if (priceRes.data.success) {
+                product.aiPredictedPrice = priceRes.data.data.predictedPrice;
+              }
+            } catch(e) {
+              console.log("Failed to auto-fetch predicted price", e);
+            }
+          }
+          
           setCurrentProduct(product);
           setNotification(`✅ Viewing: ${product.name}`);
+          
+          // Generate dynamic buyer offers based on product details
+          const targetPrice = product.aiPredictedPrice || product.basePrice * 1.2;
+          const displayQty = product.quantity;
+          setBids([
+            {
+              id: "b1", type: "retailer", name: "FreshMart Superstore", location: product.locality || "Pune",
+              offeredPrice: Math.round(targetPrice * 0.98), qty: `${Math.min(displayQty, 400)} kg`, validTill: "2h 14m",
+              message: `Need Grade-A ${product.name} for weekend stocking. Can arrange pickup.`,
+              rating: 4.7, verified: true, status: "pending",
+            },
+            {
+              id: "b2", type: "retailer", name: "Reliance Smart Bazaar", location: "Mumbai",
+              offeredPrice: Math.round(targetPrice * 1.05), qty: `${displayQty} kg`, validTill: "5h 40m",
+              message: `Bulk order for 3 outlets. Price negotiable for consistent supply of ${product.name}.`,
+              rating: 4.9, verified: true, status: "pending",
+            },
+            {
+              id: "b3", type: "wholesaler", name: "Patil Agro Traders", location: "Nashik",
+              offeredPrice: Math.round(targetPrice * 0.92), qty: `${Math.min(displayQty * 0.5, 1200)} kg`, validTill: "1h 05m",
+              message: `Regular purchase of ${product.type} for export processing unit. Competitive rate.`,
+              rating: 4.2, verified: false, status: "pending",
+            }
+          ]);
         } catch (err) {
           setError("Product not found or failed to load");
           setNotification("❌ Failed to load product");
@@ -178,7 +151,26 @@ export default function FarmerProductPage({ onLogout }) {
     );
   }
 
-  const pred = AI_PREDICTIONS;
+  const base = currentProduct?.basePrice || 100;
+  const target = currentProduct?.aiPredictedPrice || base * 1.2;
+  const pred = {
+    currentMsp: base * 0.9,
+    predictedPriceWeek: target,
+    predictedPriceMonth: target * 1.05,
+    confidence: 87,
+    trend: target >= base ? "up" : "down",
+    mandiPrices: [
+      { mandi: "APMC Pune",      price: Math.round(target * 0.98), distance: "12 km", trend: "up"   },
+      { mandi: "APMC Nashik",    price: Math.round(target * 0.95), distance: "48 km", trend: "down" },
+      { mandi: "Lasalgaon",      price: Math.round(target * 1.02), distance: "62 km", trend: "up"   },
+      { mandi: "APMC Mumbai",    price: Math.round(target * 1.05), distance: "148 km", trend: "up"  },
+      { mandi: "Solapur APMC",   price: Math.round(target * 0.92), distance: "95 km", trend: "down" },
+    ],
+    bestTimeToSell: "Next 10–14 days",
+    aiTip: "Prices typically spike in the 2nd & 3rd week of the month due to wholesale demand. Holding 40–50% of produce for 1–2 more weeks could yield higher returns.",
+    weeklyTrend: [base, base * 1.02, base * 1.05, target * 0.95, target * 0.98, target, target * 1.02].map(Math.round),
+  };
+
   const cardCls = "bg-white rounded-2xl shadow-sm border border-gray-100 p-5";
 
   return (
@@ -193,26 +185,17 @@ export default function FarmerProductPage({ onLogout }) {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
 
-        {/* Role heading */}
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-green-800 mb-1">Farmer View</h1>
-          <p className="text-gray-500">Market Intelligence · Price Predictions · Buyer Negotiation</p>
-        </div>
+
 
         {/* Product Details */}
-        <ProductDetails product={currentProduct} />
-
-        {/* Actions */}
-        <div id="actions-section">
-          <Actions showQR={showQR} setShowQR={setShowQR} productId={id} product={currentProduct} />
-        </div>
+        <ProductDetails product={currentProduct} hideFarmerDetails={true} />
 
         {/* ── Tab bar ── */}
         <div className="flex gap-2 border-b border-gray-200 pb-0">
           {[
             { id: "predictions", label: "AI Predictions", icon: <Brain className="w-4 h-4" /> },
             { id: "buyers",      label: "Buyer Offers",   icon: <Store className="w-4 h-4" />, badge: bids.filter(b => b.status === "pending").length },
-            { id: "farmers",     label: "Farmer Requests",icon: <Wheat className="w-4 h-4" />, badge: FARMER_REQUESTS.length },
+            { id: "journey",     label: "Journey",        icon: <Activity className="w-4 h-4" /> },
           ].map(tab => (
             <button
               key={tab.id}
@@ -243,9 +226,9 @@ export default function FarmerProductPage({ onLogout }) {
             {/* Summary cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
-                { label: "MSP Rate",         value: `₹${pred.currentMsp}`, sub: "per quintal", icon: <IndianRupee className="w-5 h-5" />, color: "text-gray-700",    bg: "bg-gray-50"    },
-                { label: "7-Day Forecast",   value: `₹${pred.predictedPriceWeek}`, sub: `+₹${pred.predictedPriceWeek - pred.currentMsp} gain`, icon: <TrendingUp className="w-5 h-5" />, color: "text-emerald-700", bg: "bg-emerald-50" },
-                { label: "30-Day Forecast",  value: `₹${pred.predictedPriceMonth}`, sub: "Best case", icon: <BarChart3 className="w-5 h-5" />, color: "text-blue-700",    bg: "bg-blue-50"    },
+                { label: "Your Base Rate",   value: `₹${currentProduct?.basePrice}`, sub: "per kg", icon: <IndianRupee className="w-5 h-5" />, color: "text-gray-700",    bg: "bg-gray-50"    },
+                { label: "AI Predicted Price", value: currentProduct?.aiPredictedPrice ? `₹${currentProduct.aiPredictedPrice}` : "Calculating...", sub: currentProduct?.aiPredictedPrice ? `${currentProduct.aiPredictedPrice >= currentProduct.basePrice ? "+" : ""}₹${currentProduct.aiPredictedPrice - currentProduct.basePrice} vs base` : "Checking market", icon: <TrendingUp className="w-5 h-5" />, color: "text-emerald-700", bg: "bg-emerald-50" },
+                { label: "30-Day Forecast",  value: `₹${currentProduct?.aiPredictedPrice ? (currentProduct.aiPredictedPrice * 1.1).toFixed(2) : "..."}`, sub: "Best case", icon: <BarChart3 className="w-5 h-5" />, color: "text-blue-700",    bg: "bg-blue-50"    },
                 { label: "AI Confidence",    value: `${pred.confidence}%`, sub: "model accuracy", icon: <Brain className="w-5 h-5" />, color: "text-purple-700", bg: "bg-purple-50"  },
               ].map((c, i) => (
                 <div key={i} className={`${cardCls} flex flex-col gap-2`}>
@@ -419,57 +402,92 @@ export default function FarmerProductPage({ onLogout }) {
         )}
 
         {/* ════════════════════════════════════════════════════════════
-            TAB: FARMER REQUESTS
+            TAB: JOURNEY
         ════════════════════════════════════════════════════════════ */}
-        {activeTab === "farmers" && (
-          <div className="space-y-4">
-            <p className="text-sm text-gray-500">
-              {FARMER_REQUESTS.length} nearby farmers are viewing this product and requesting to collaborate
-            </p>
-
-            {FARMER_REQUESTS.map(req => (
-              <div key={req.id} className={`${cardCls} hover:shadow-md transition-shadow`}>
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-emerald-50 border-2 border-emerald-200 rounded-2xl flex items-center justify-center text-2xl shrink-0">
-                    {req.avatar}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-start justify-between flex-wrap gap-2">
-                      <div>
-                        <h4 className="font-bold text-gray-900">{req.farmerName}</h4>
-                        <p className="text-xs text-gray-500 flex items-center gap-1"><MapPin className="w-3 h-3" />{req.village}</p>
-                      </div>
-                      <div className="text-right">
-                        <span className="text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-full font-semibold">
-                          {req.requestType}
-                        </span>
-                        <p className="text-[10px] text-gray-400 mt-1 flex items-center gap-1 justify-end"><Clock className="w-3 h-3" />{req.time}</p>
-                      </div>
+        {activeTab === "journey" && (
+          <div className="space-y-6">
+            <h2 className="text-xl font-bold text-gray-800">Supply Chain Traceability (Projected)</h2>
+            <div className="relative border-l-2 border-emerald-200 ml-4 space-y-8 pb-4">
+              
+              {/* Consumer Node */}
+              <div className="relative pl-8">
+                <div className="absolute -left-2.5 bg-blue-500 w-5 h-5 rounded-full border-4 border-white shadow-sm" />
+                <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 opacity-60">
+                  <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-full border border-blue-100">End Consumer (Projected)</span>
+                  <div className="mt-3 grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Stakeholder</p>
+                      <p className="text-sm font-semibold text-gray-800">Urban Shoppers</p>
                     </div>
-
-                    <div className="mt-2 flex flex-wrap gap-3">
-                      <span className="flex items-center gap-1.5 text-xs font-semibold bg-gray-100 text-gray-700 px-3 py-1 rounded-full">
-                        <Package className="w-3 h-3" /> {req.qty} · {req.crop}
-                      </span>
+                    <div>
+                      <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Location</p>
+                      <p className="text-sm font-semibold text-gray-800 flex items-center gap-1"><MapPin className="w-3 h-3 text-gray-400" /> Mumbai City</p>
                     </div>
-
-                    <p className="mt-2 text-sm text-gray-600 italic">"{req.message}"</p>
-
-                    <div className="mt-4 flex gap-2 flex-wrap">
-                      <button className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 text-white text-sm font-semibold rounded-xl hover:bg-emerald-700 transition-colors">
-                        <CheckCircle className="w-4 h-4" /> Connect
-                      </button>
-                      <button className="flex items-center gap-1.5 px-4 py-2 bg-gray-50 text-gray-700 text-sm font-semibold rounded-xl hover:bg-gray-100 border border-gray-200 transition-colors">
-                        <MessageSquare className="w-4 h-4" /> Message
-                      </button>
-                      <button className="flex items-center gap-1.5 px-4 py-2 bg-blue-50 text-blue-700 text-sm font-semibold rounded-xl hover:bg-blue-100 border border-blue-200 transition-colors">
-                        <ChevronRight className="w-4 h-4" /> View Profile
-                      </button>
+                    <div>
+                      <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Retail Price</p>
+                      <p className="text-sm font-bold text-emerald-600 flex items-center gap-1"><IndianRupee className="w-3 h-3" />{Math.round((currentProduct?.aiPredictedPrice || (currentProduct?.basePrice || 100) * 1.2) * 1.4)}/kg</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Quantity</p>
+                      <p className="text-sm font-semibold text-gray-800 flex items-center gap-1"><Package className="w-3 h-3 text-gray-400" /> Retail lots</p>
                     </div>
                   </div>
                 </div>
               </div>
-            ))}
+
+              {/* Retailer/Wholesaler Node */}
+              <div className="relative pl-8">
+                <div className="absolute -left-2.5 bg-purple-500 w-5 h-5 rounded-full border-4 border-white shadow-sm" />
+                <div className="bg-white p-5 rounded-xl shadow-sm border border-emerald-100 ring-1 ring-emerald-50">
+                  <span className="text-xs font-bold text-purple-600 bg-purple-50 px-2 py-1 rounded-full border border-purple-100">Current Phase: Bidding</span>
+                  <div className="mt-3 grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Stakeholder</p>
+                      <p className="text-sm font-semibold text-gray-800">Marketplace Buyers</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Location</p>
+                      <p className="text-sm font-semibold text-gray-800 flex items-center gap-1"><MapPin className="w-3 h-3 text-gray-400" /> Nationwide</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Market Value</p>
+                      <p className="text-sm font-bold text-emerald-600 flex items-center gap-1"><IndianRupee className="w-3 h-3" />{currentProduct?.aiPredictedPrice || Math.round((currentProduct?.basePrice || 100) * 1.2)}/kg</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Quantity</p>
+                      <p className="text-sm font-semibold text-gray-800 flex items-center gap-1"><Package className="w-3 h-3 text-gray-400" /> {currentProduct?.quantity} kg (Full Batch)</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Farmer Origin Node */}
+              <div className="relative pl-8">
+                <div className="absolute -left-2.5 bg-emerald-500 w-5 h-5 rounded-full border-4 border-white shadow-sm" />
+                <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+                  <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full border border-emerald-100">Origin / Harvest</span>
+                  <div className="mt-3 grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Stakeholder</p>
+                      <p className="text-sm font-semibold text-gray-800">{currentProduct?.farmerEmail || "You (Farmer)"}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Location</p>
+                      <p className="text-sm font-semibold text-gray-800 flex items-center gap-1"><MapPin className="w-3 h-3 text-gray-400" /> {currentProduct?.locality}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Base Asking Price</p>
+                      <p className="text-sm font-bold text-emerald-600 flex items-center gap-1"><IndianRupee className="w-3 h-3" />{currentProduct?.basePrice}/kg</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Quantity Harvested</p>
+                      <p className="text-sm font-semibold text-gray-800 flex items-center gap-1"><Package className="w-3 h-3 text-gray-400" /> {currentProduct?.quantity} kg</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
           </div>
         )}
 
