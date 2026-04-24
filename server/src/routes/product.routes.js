@@ -8,6 +8,8 @@ import {
   deleteProduct,
   getProductStats,
   predictPrice,
+  predictPriceForAdd,
+  analyzeProfit,
 } from "../controllers/product.controllers.js";
 import { upload } from "../utils/cloudinary.js";
 
@@ -24,5 +26,9 @@ router.route("/:id").delete(deleteProduct);
 
 // Price prediction route
 router.route("/:id/predict-price").post(predictPrice);
+router.route("/predict-price-add").post(predictPriceForAdd);
+
+// AI Profit Analysis Route
+router.route("/:id/analyze-profit").post(analyzeProfit);
 
 export default router;

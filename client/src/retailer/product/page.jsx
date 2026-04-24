@@ -144,61 +144,15 @@ export default function RetailerProductPage({ onLogout }) {
     }
   };
 
-  // ─── AI Profit Analysis via Anthropic ─────────────────────────────────
+  // ─── AI Profit Analysis via Backend ─────────────────────────────────
   const fetchAiAnalysis = async (product) => {
     setAiLoading(true);
     setAiError(null);
     try {
-      const prompt = `You are an AI procurement advisor for a farm retailer in India.
-Analyze this product and give a profit recommendation in JSON only, no markdown, no explanation outside JSON.
-
-Product: ${product.name}
-Type: ${product.type}
-Farmer: ${product.farmerName} (${product.yearsOfExperience || 15} yrs exp, rating ${product.farmerRating || 4.8}/5)
-Location: ${product.farmLocation || product.locality}
-Farm Size: ${product.farmSize || "5 acres"}
-Certification: ${product.certification || "Organic"}
-Quantity Available: ${product.quantity} kg
-Farmer's Base Price: ₹${product.basePrice}/kg
-Market Predicted Wholesale Price (AI): ₹${product.aiPredictedPrice || "N/A"}/kg
-Days Since Harvest: ${Math.floor((Date.now() - new Date(product.harvestDate || product.createdAt)) / 86400000)}
-Freshness Score: 9.2/10
-
-Return this JSON:
-{
-  "buyRecommendation": "STRONG BUY" | "BUY" | "HOLD" | "AVOID",
-  "recommendedBuyQty": number (kg),
-  "estimatedRetailPrice": number (₹/kg),
-  "estimatedProfitPerKg": number (₹),
-  "estimatedTotalProfit": number (₹),
-  "profitMarginPercent": number,
-  "demandLevel": "Very High" | "High" | "Medium" | "Low",
-  "peakSellWindow": "string (e.g. Next 3 days)",
-  "spoilageRisk": "Low" | "Medium" | "High",
-  "competitorPrice": number (₹/kg, typical market price),
-  "priceAdvantage": number (₹/kg below market),
-  "whyBuy": ["reason 1", "reason 2", "reason 3"],
-  "risks": ["risk 1", "risk 2"],
-  "storageAdvice": "string",
-  "aiConfidence": number (0-100)
-}`;
-
-      const response = await fetch(ANTHROPIC_API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 1000,
-          messages: [{ role: "user", content: prompt }],
-        }),
-      });
-
-      const data = await response.json();
-      const text = data.content?.[0]?.text || "";
-      const clean = text.replace(/```json|```/g, "").trim();
-      const parsed = JSON.parse(clean);
-      setAiAnalysis(parsed);
+      const response = await axios.post(`${API_URL}/${product._id}/analyze-profit`);
+      setAiAnalysis(response.data.data.analysis);
     } catch (err) {
+      console.error("AI Analysis Error:", err);
       // Fallback static analysis
       setAiAnalysis({
         buyRecommendation: "STRONG BUY",
@@ -213,16 +167,14 @@ Return this JSON:
         competitorPrice: 175,
         priceAdvantage: 15,
         whyBuy: [
-          "GI-certified Alphonso at ₹15/kg below market price — instant margin advantage.",
-          "Festival season demand surge: Alphonso mangoes sell 3x faster in April–May.",
-          "Farmer has 22 years experience with 4.9/5 rating — supply reliability is top-tier.",
+          "AI analysis failed to load properly. Displaying default static data.",
+          "Check backend connection."
         ],
         risks: [
-          "Shelf life window is 5–7 days — plan display and turnover carefully.",
-          "Bulk buy above 200 kg may create surplus if weekend footfall is low.",
+          "Shelf life window is limited.",
         ],
-        storageAdvice: "Store at 12–14°C, 85% humidity. Avoid ethylene-producing items nearby.",
-        aiConfidence: 92,
+        storageAdvice: "Store at optimal temperature.",
+        aiConfidence: 50,
       });
     } finally {
       setAiLoading(false);

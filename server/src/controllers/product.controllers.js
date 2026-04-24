@@ -287,6 +287,62 @@ const predictPrice = asyncHandler(async (req, res) => {
   );
 });
 
+// Predict price before saving product
+const predictPriceForAdd = asyncHandler(async (req, res) => {
+  const { name, type, locality, imageBase64, soil } = req.body;
+
+  if (!name || !type) {
+    throw new ApiError(400, "Name and type are required for prediction");
+  }
+
+  const predictedPrice = await predictPriceWithAI({
+    name,
+    type,
+    locality,
+    imageBase64,
+    soil
+  });
+
+  if (!predictedPrice) {
+    throw new ApiError(500, "Failed to predict price from AI");
+  }
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      { predictedPrice },
+      "Price predicted successfully"
+    )
+  );
+});
+
+import { analyzeProfitWithAI } from "../utils/pricePredictor.js";
+
+const analyzeProfit = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  const product = await Product.findById(id).populate("farmerId", "username email");
+  if (!product) {
+    throw new ApiError(404, "Product not found");
+  }
+
+  // Inject farmer name if available from populate, else fallback
+  const productData = {
+    ...product.toObject(),
+    farmerName: product.farmerId?.username || "Unknown"
+  };
+
+  const analysis = await analyzeProfitWithAI(productData);
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      { analysis },
+      "Profit analysis generated successfully"
+    )
+  );
+});
+
 export {
   createProduct,
   getAllProducts,
@@ -296,4 +352,6 @@ export {
   deleteProduct,
   getProductStats,
   predictPrice,
+  predictPriceForAdd,
+  analyzeProfit,
 };

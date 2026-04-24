@@ -197,18 +197,22 @@ function PriceOverlay({ map, priceData, selectedProduce, onLocationSelect }) {
     const newMarkers = priceData.map(location => {
       const price = location.prices[selectedProduce]?.retail || 0
       const trend = location.prices[selectedProduce]?.trend
-      const marker = new window.google.maps.Marker({
+      
+      const pinColor = getColor(price)
+      
+      const pinDiv = document.createElement("div")
+      pinDiv.style.width = "28px"
+      pinDiv.style.height = "28px"
+      pinDiv.style.backgroundColor = pinColor
+      pinDiv.style.borderRadius = "50%"
+      pinDiv.style.border = "3px solid white"
+      pinDiv.style.boxShadow = "0 2px 4px rgba(0,0,0,0.3)"
+
+      const marker = new window.google.maps.marker.AdvancedMarkerElement({
         position: { lat: location.lat, lng: location.lng },
         map,
         title: `${location.city} — ₹${price}/kg`,
-        icon: {
-          path: window.google.maps.SymbolPath.CIRCLE,
-          fillColor: getColor(price),
-          fillOpacity: 0.85,
-          strokeColor: "#ffffff",
-          strokeWeight: 2.5,
-          scale: 14,
-        },
+        content: pinDiv,
       })
 
       const priceInfo = location.prices[selectedProduce]
@@ -227,7 +231,7 @@ function PriceOverlay({ map, priceData, selectedProduce, onLocationSelect }) {
         `,
       })
 
-      marker.addListener("click", () => {
+      marker.addListener("gmp-click", () => {
         infoWindow.open(map, marker)
         onLocationSelect(location)
       })
@@ -243,9 +247,8 @@ function PriceOverlay({ map, priceData, selectedProduce, onLocationSelect }) {
 }
 
 // ── AI Market Insight Panel ───────────────────────────────────────────────────
-function AIMarketInsight({ produce, priceData }) {
+function AIMarketInsight({ insight }) {
   const [expanded, setExpanded] = useState(true)
-  const insight = AI_MARKET_INSIGHTS[produce]
   if (!insight) return null
 
   const signalConfig = {
@@ -438,9 +441,9 @@ function NationalPriceTable({ priceData, produce }) {
 }
 
 // ── Sidebar Controls ──────────────────────────────────────────────────────────
-function MapSidebar({ selectedProduce, onProduceChange, priceData }) {
+// ── Sidebar Controls ──────────────────────────────────────────────────────────
+function MapSidebar({ selectedProduce, onProduceChange, priceData, produceOptions }) {
   const stats = getPriceStats(priceData, selectedProduce)
-  const [search, setSearch] = useState("")
 
   return (
     <div className="space-y-4">
@@ -449,7 +452,7 @@ function MapSidebar({ selectedProduce, onProduceChange, priceData }) {
         <CardContent className="p-4 space-y-3">
           <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">Select Produce</p>
           <div className="grid grid-cols-2 gap-2">
-            {PRODUCE_OPTIONS.map(opt => (
+            {produceOptions.map(opt => (
               <button
                 key={opt.value}
                 onClick={() => onProduceChange(opt.value)}
@@ -509,41 +512,45 @@ export default function MapSection() {
   const [map, setMap] = useState(null)
   const [selectedLocation, setSelectedLocation] = useState(null)
   const [selectedProduce, setSelectedProduce] = useState("tomatoes")
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [activeView, setActiveView] = useState("map") // "map" | "table"
 
+  const [priceData, setPriceData] = useState(PRICE_DATA);
+  const [produceOptions, setProduceOptions] = useState(PRODUCE_OPTIONS);
+  const [insight, setInsight] = useState(AI_MARKET_INSIGHTS["tomatoes"]);
+
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 400)
-    return () => clearTimeout(timer)
-  }, [])
+    setInsight(AI_MARKET_INSIGHTS[selectedProduce]);
+  }, [selectedProduce]);
 
   useEffect(() => {
     const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY
-    const initMap = () => {
+    const initMap = async () => {
       const mapInstance = new window.google.maps.Map(mapRef.current, {
         zoom: 5,
         center: { lat: 20.5937, lng: 78.9629 },
         mapTypeId: "roadmap",
         disableDefaultUI: true,
         zoomControl: true,
-        styles: [
-          { featureType: "poi", elementType: "labels", stylers: [{ visibility: "off" }] },
-          { featureType: "transit", stylers: [{ visibility: "off" }] },
-        ],
+        mapId: "DEMO_MAP_ID"
       })
       setMap(mapInstance)
     }
 
     if (window.google?.maps) { initMap(); return }
     const script = document.createElement("script")
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&callback=initMap`
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&callback=initMap&loading=async&libraries=marker`
     script.async = true
     script.defer = true
     window.initMap = initMap
     document.head.appendChild(script)
   }, [])
 
-  const currentProduce = PRODUCE_OPTIONS.find(p => p.value === selectedProduce)
+  const currentProduce = produceOptions.find(p => p.value === selectedProduce) || {
+    value: selectedProduce,
+    label: selectedProduce.charAt(0).toUpperCase() + selectedProduce.slice(1),
+    icon: "🌾"
+  };
 
   return (
     <div className="space-y-6">
@@ -557,7 +564,7 @@ export default function MapSection() {
             Regional Price Intelligence
           </h2>
           <p className="text-gray-500 mt-1 text-sm">
-            AI-analysed mandi prices across India · Updated every 15 minutes
+            AI-analysed mandi prices across India · Live Contextual Data
           </p>
         </div>
         {/* View toggle */}
@@ -577,7 +584,7 @@ export default function MapSection() {
       </div>
 
       {/* AI Market Insight — always on top */}
-      <AIMarketInsight produce={selectedProduce} priceData={PRICE_DATA} />
+      <AIMarketInsight insight={insight} />
 
       {/* Main content */}
       <div className="grid lg:grid-cols-4 gap-5">
@@ -586,7 +593,8 @@ export default function MapSection() {
           <MapSidebar
             selectedProduce={selectedProduce}
             onProduceChange={setSelectedProduce}
-            priceData={PRICE_DATA}
+            priceData={priceData}
+            produceOptions={produceOptions}
           />
         </div>
 
@@ -600,7 +608,7 @@ export default function MapSection() {
                     {currentProduce?.icon} {currentProduce?.label} Prices Across India
                   </h3>
                   <Badge className="bg-blue-50 text-blue-700 border-blue-200 text-xs">
-                    {PRICE_DATA.length} markets
+                    {priceData.length} markets
                   </Badge>
                 </div>
                 <div className="relative">
@@ -608,7 +616,7 @@ export default function MapSection() {
                   {map && !loading && (
                     <PriceOverlay
                       map={map}
-                      priceData={PRICE_DATA}
+                      priceData={priceData}
                       selectedProduce={selectedProduce}
                       onLocationSelect={setSelectedLocation}
                     />
@@ -617,7 +625,7 @@ export default function MapSection() {
                     <div className="absolute inset-0 flex items-center justify-center bg-white/80 rounded-xl">
                       <div className="text-center">
                         <div className="animate-spin rounded-full h-8 w-8 border-2 border-emerald-600 border-t-transparent mx-auto mb-2" />
-                        <p className="text-sm text-gray-400">Loading market data…</p>
+                        <p className="text-sm text-gray-400">Loading AI market data…</p>
                       </div>
                     </div>
                   )}
@@ -626,7 +634,7 @@ export default function MapSection() {
               </CardContent>
             </Card>
           ) : (
-            <NationalPriceTable priceData={PRICE_DATA} produce={selectedProduce} />
+            <NationalPriceTable priceData={priceData} produce={selectedProduce} />
           )}
 
           {/* Location Detail */}
