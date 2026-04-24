@@ -2,14 +2,16 @@ import React from "react";
 import { CheckCircle2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "../../../consumer/i18n/config.jsx";
 
 export default function AcademySection({ modules, onAdvance }) {
+  const { t } = useTranslation();
   return (
     <>
       <div className="mb-4">
-        <h3 className="text-xl font-semibold text-gray-900">Skill Academy</h3>
+        <h3 className="text-xl font-semibold text-gray-900">{t("villager.academy.title")}</h3>
         <p className="text-sm text-gray-600">
-          Complete modules to unlock better-paying gigs
+          {t("villager.academy.subtitle")}
         </p>
       </div>
       <div className="grid md:grid-cols-2 gap-4">
@@ -38,8 +40,8 @@ export default function AcademySection({ modules, onAdvance }) {
                     />
                   </div>
                   <div className="mt-1.5 flex justify-between text-xs text-gray-500">
-                    <span>{m.progressPercent}% complete</span>
-                    <span>~{m.estimatedMinutes} min</span>
+                    <span>{t("villager.academy.completePercent", { percent: m.progressPercent })}</span>
+                    <span>{t("villager.academy.minutes", { minutes: m.estimatedMinutes })}</span>
                   </div>
                 </div>
                 <Button
@@ -50,10 +52,10 @@ export default function AcademySection({ modules, onAdvance }) {
                   disabled={m.progressPercent === 100}
                 >
                   {m.progressPercent === 100
-                    ? "Done"
+                    ? t("villager.academy.done")
                     : m.progressPercent === 0
-                    ? "Start"
-                    : "Continue"}
+                    ? t("villager.academy.start")
+                    : t("villager.academy.continue")}
                 </Button>
               </div>
             </CardContent>

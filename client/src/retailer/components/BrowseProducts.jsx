@@ -16,6 +16,8 @@ import {
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import ProductModal from "./ProductModal";
+import { useTranslation } from "../../consumer/i18n/config.jsx";
+import translationService from "../../consumer/i18n/translationService";
 
 const API_URL = "http://localhost:8000/api/v1/products";
 
@@ -127,39 +129,53 @@ const mockProducts = [
 
 const categories = ["All", "Vegetables", "Fruits", "Grains"];
 
+const categoryKeyByValue = {
+  All: "category.all",
+  Vegetables: "category.vegetables",
+  Fruits: "category.fruits",
+  Grains: "category.grains",
+};
+
 const getAiInsight = (product) => {
   // Use backend AI predicted price if available
   if (product.aiPredictedPrice && product.basePrice) {
-    const margin = ((product.aiPredictedPrice - product.basePrice) / product.basePrice) * 100;
-    let reason = "Solid wholesale margin based on AI projection";
-    if (margin > 30) reason = "Exceptional profit margin projected based on market scarcity";
-    else if (margin < 10) reason = "Tight margin, high volume required to yield profit";
+    const margin =
+      ((product.aiPredictedPrice - product.basePrice) / product.basePrice) *
+      100;
+    let reasonKey = "browse.aiReason.solid";
+    if (margin > 30)
+      reasonKey = "browse.aiReason.exceptional";
+    else if (margin < 10)
+      reasonKey = "browse.aiReason.tight";
 
     return {
       margin: Math.max(0, Math.round(margin)),
-      reason
+      reasonKey,
     };
   }
 
   // Fallback for mock data
-  const hash = (product.name || "").length + (product.price || product.basePrice || 10);
+  const hash =
+    (product.name || "").length + (product.price || product.basePrice || 10);
   const profitMargin = (hash % 35) + 15; // 15% to 50%
-  const reasons = [
-    "High urban demand this week",
-    "Low supply in local mandis",
-    "Export quality yields high margin",
-    "Trending seasonal crop",
-    "Predicted price surge in 3 days"
+  const reasonKeys = [
+    "browse.aiReason.urbanDemand",
+    "browse.aiReason.lowSupply",
+    "browse.aiReason.exportQuality",
+    "browse.aiReason.seasonal",
+    "browse.aiReason.priceSurge",
   ];
   return {
     margin: profitMargin,
-    reason: reasons[hash % reasons.length]
+    reasonKey: reasonKeys[hash % reasonKeys.length],
   };
 };
 
 export default function BrowseProducts() {
+  const { t, currentLanguage } = useTranslation();
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
+  const [translatedProducts, setTranslatedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
@@ -193,8 +209,82 @@ export default function BrowseProducts() {
     fetchProducts();
   }, []);
 
+  // Translate backend/mock product fields (name/location/description) for non-English languages.
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadDynamicCache = (lang) => {
+      try {
+        return JSON.parse(localStorage.getItem(`dynamic_translations_${lang}`) || "{}");
+      } catch {
+        return {};
+      }
+    };
+    const saveDynamicCache = (lang, cache) => {
+      try {
+        localStorage.setItem(`dynamic_translations_${lang}`, JSON.stringify(cache));
+      } catch {
+        // ignore storage failures
+      }
+    };
+
+    const translateProducts = async () => {
+      if (!products?.length) {
+        setTranslatedProducts(products);
+        return;
+      }
+      if (!currentLanguage || currentLanguage === "en") {
+        setTranslatedProducts(products);
+        return;
+      }
+
+      const cache = loadDynamicCache(currentLanguage);
+      const toTranslate = {};
+
+      const collect = (val) => {
+        const text = typeof val === "string" ? val.trim() : "";
+        if (!text) return;
+        if (!cache[text]) toTranslate[text] = text;
+      };
+
+      products.forEach((p) => {
+        collect(p?.name);
+        collect(p?.location);
+        collect(p?.description);
+        collect(p?.unit);
+      });
+
+      if (Object.keys(toTranslate).length > 0) {
+        const translated = await translationService.batchTranslate(
+          toTranslate,
+          currentLanguage,
+          "google",
+        );
+        Object.assign(cache, translated);
+        saveDynamicCache(currentLanguage, cache);
+      }
+
+      const next = products.map((p) => ({
+        ...p,
+        name: cache[p?.name] || p?.name,
+        location: cache[p?.location] || p?.location,
+        description: cache[p?.description] || p?.description,
+        unit: cache[p?.unit] || p?.unit,
+      }));
+
+      if (!cancelled) setTranslatedProducts(next);
+    };
+
+    translateProducts();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [products, currentLanguage]);
+
   // Filter logic
-  let filteredProducts = products.filter((product) => {
+  const sourceProducts = translatedProducts?.length ? translatedProducts : products;
+  let filteredProducts = sourceProducts.filter((product) => {
     const matchesSearch =
       product.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       product.location?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -212,13 +302,14 @@ export default function BrowseProducts() {
 
   if (isAiMode) {
     filteredProducts = filteredProducts
-      .map(p => ({ ...p, ai: getAiInsight(p) }))
+      .map((p) => ({ ...p, ai: getAiInsight(p) }))
       .sort((a, b) => b.ai.margin - a.ai.margin);
   }
 
-  const handleOpenModal = (product) => {
-    setSelectedProduct(product);
-    setIsModalOpen(true);
+  const unitLabel = (unit) => {
+    const key = `unit.${String(unit || "").toLowerCase()}`;
+    const label = t(key);
+    return label === key ? unit : label;
   };
 
   return (
@@ -232,7 +323,7 @@ export default function BrowseProducts() {
             </div>
             <input
               type="text"
-              placeholder="Search by crop, farmer, or location..."
+              placeholder={t("browse.searchPlaceholder")}
               className="pl-10 pr-4 py-3 w-full border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 shadow-sm transition-all bg-gray-50 hover:bg-white"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -251,7 +342,7 @@ export default function BrowseProducts() {
                       : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
                   }`}
                 >
-                  {category}
+                  {t(categoryKeyByValue[category] || "category.all")}
                 </button>
               ))}
             </div>
@@ -265,7 +356,7 @@ export default function BrowseProducts() {
               }`}
             >
               <Sparkles className="w-4 h-4" />
-              {isAiMode ? "AI Profit Mode On" : "AI Profit Finder"}
+              {isAiMode ? t("browse.aiProfitOn") : t("browse.aiProfitFinder")}
             </button>
           </div>
         </div>
@@ -274,19 +365,15 @@ export default function BrowseProducts() {
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20">
             <div className="animate-spin w-12 h-12 border-4 border-emerald-200 border-t-emerald-600 rounded-full mb-4"></div>
-            <p className="text-gray-500 font-medium">
-              Loading fresh produce marketplace...
-            </p>
+            <p className="text-gray-500 font-medium">{t("browse.loading")}</p>
           </div>
         ) : filteredProducts.length === 0 ? (
           <div className="text-center py-20 bg-gray-50 rounded-2xl border border-dashed border-gray-300">
             <Leaf className="w-12 h-12 text-gray-300 mx-auto mb-3" />
             <h3 className="text-lg font-semibold text-gray-900 mb-1">
-              No products found
+              {t("browse.emptyTitle")}
             </h3>
-            <p className="text-gray-500">
-              We couldn't find any produce matching your current filters.
-            </p>
+            <p className="text-gray-500">{t("browse.emptyDesc")}</p>
             <Button
               variant="outline"
               className="mt-4 border-emerald-200 text-emerald-700"
@@ -295,7 +382,7 @@ export default function BrowseProducts() {
                 setActiveCategory("All");
               }}
             >
-              Clear Filters
+              {t("browse.clearFilters")}
             </Button>
           </div>
         ) : (
@@ -322,12 +409,12 @@ export default function BrowseProducts() {
 
                   {product.isOrganic && (
                     <div className="absolute top-3 left-3 bg-green-500/90 backdrop-blur-md text-white text-xs font-bold px-2 py-1 rounded shadow-sm">
-                      ORGANIC
+                      {t("browse.organic")}
                     </div>
                   )}
                   <div className="absolute bottom-3 right-3 bg-white/90 backdrop-blur-md px-2 py-1 rounded text-xs font-semibold text-gray-800 shadow-sm flex items-center gap-1">
                     <TrendingUp className="w-3 h-3 text-emerald-600" />
-                    High Demand
+                    {t("browse.highDemand")}
                   </div>
                 </div>
 
@@ -337,14 +424,15 @@ export default function BrowseProducts() {
                     <div className="mb-3 p-2.5 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg border border-purple-100">
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-xs font-bold text-purple-700 flex items-center gap-1">
-                          <Sparkles className="w-3 h-3" /> AI Suggestion
+                          <Sparkles className="w-3 h-3" />{" "}
+                          {t("browse.aiSuggestion")}
                         </span>
                         <span className="text-xs font-black text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded-full">
-                          {product.ai.margin}% Margin
+                          {product.ai.margin}% {t("browse.margin")}
                         </span>
                       </div>
                       <p className="text-[11px] text-gray-600 leading-snug">
-                        {product.ai.reason}
+                        {t(product.ai.reasonKey)}
                       </p>
                     </div>
                   )}
@@ -359,11 +447,11 @@ export default function BrowseProducts() {
                     <span className="text-2xl font-black text-emerald-600">
                       {product.price || product.basePrice
                         ? `₹${product.price || product.basePrice}`
-                        : "Ask Price"}
+                        : t("browse.askPrice")}
                     </span>
                     {(product.price || product.basePrice) && (
                       <span className="text-gray-500 text-sm mb-1 font-medium">
-                        /{product.unit || "ton"}
+                        /{unitLabel(product.unit || "ton")}
                       </span>
                     )}
                   </div>
@@ -376,14 +464,17 @@ export default function BrowseProducts() {
                         className="bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border-0 text-xs py-0.5"
                       >
                         <Package className="w-3 h-3 mr-1 inline" />
-                        {product.quantity || 0} {product.unit || "kg"} Available
+                        {product.quantity || 0} {unitLabel(product.unit || "kg")}{" "}
+                        {t("browse.available")}
                       </Badge>
                     </div>
 
                     <div className="flex items-center text-xs text-gray-600 font-medium">
                       <MapPin className="w-3.5 h-3.5 text-gray-400 mr-1.5" />
                       <span className="truncate">
-                        {product.location || product.locality || "Local Source"}
+                        {product.location ||
+                          product.locality ||
+                          t("browse.localSource")}
                       </span>
                     </div>
                   </div>
@@ -397,7 +488,7 @@ export default function BrowseProducts() {
                       <span className="text-sm font-semibold text-gray-700 truncate">
                         {product.farmerName ||
                           product.farmerEmail ||
-                          `${product.type || "Verified"} Farmer`}
+                          `${product.type || t("browse.verifiedFarmer")}`}
                       </span>
                     </div>
 
@@ -408,7 +499,7 @@ export default function BrowseProducts() {
                         }
                         className="w-full bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-semibold rounded-xl py-2.5 transition-all text-sm shadow-sm"
                       >
-                        View More
+                        {t("browse.viewMore")}
                       </Button>
                     </div>
                   </div>

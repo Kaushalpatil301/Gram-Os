@@ -41,6 +41,8 @@ import {
 import { Bar, Line, Doughnut } from "react-chartjs-2"
 import axios from "axios"
 import { toast } from "react-toastify"
+import { useTranslation } from "../../consumer/i18n/config.jsx"
+import translationService from "../../consumer/i18n/translationService"
 
 ChartJS.register(
   CategoryScale,
@@ -230,15 +232,157 @@ const RECENT_ACTIVITIES = [
 ]
 
 export default function Analytics() {
+  const { t, currentLanguage } = useTranslation()
   const [loading, setLoading] = useState(true)
   const [insights, setInsights] = useState(null)
   const [alerts, setAlerts] = useState([])
+  const [translatedInsights, setTranslatedInsights] = useState(null)
+  const [translatedAlerts, setTranslatedAlerts] = useState([])
+  const [translatedActivities, setTranslatedActivities] = useState(RECENT_ACTIVITIES)
   const [selectedProduct, setSelectedProduct] = useState(null)
+  const [translatedSelectedProduct, setTranslatedSelectedProduct] = useState(null)
   const [refreshing, setRefreshing] = useState(false)
+
+  const dayLabels = [
+    t("analytics.day.mon"),
+    t("analytics.day.tue"),
+    t("analytics.day.wed"),
+    t("analytics.day.thu"),
+    t("analytics.day.fri"),
+    t("analytics.day.sat"),
+    t("analytics.day.sun"),
+  ]
 
   useEffect(() => {
     fetchData()
   }, [])
+
+  // Translate dynamic backend/fallback content for non-English languages.
+  useEffect(() => {
+    let cancelled = false
+
+    const loadDynamicCache = (lang) => {
+      try {
+        return JSON.parse(
+          localStorage.getItem(`dynamic_inventory_translations_${lang}`) || "{}",
+        )
+      } catch {
+        return {}
+      }
+    }
+    const saveDynamicCache = (lang, cache) => {
+      try {
+        localStorage.setItem(
+          `dynamic_inventory_translations_${lang}`,
+          JSON.stringify(cache),
+        )
+      } catch {
+        // ignore storage failures
+      }
+    }
+
+    const translateTextSet = async (texts, lang) => {
+      const cache = loadDynamicCache(lang)
+      const toTranslate = {}
+      for (const raw of texts) {
+        const text = typeof raw === "string" ? raw.trim() : ""
+        if (!text) continue
+        if (!cache[text]) toTranslate[text] = text
+      }
+
+      if (Object.keys(toTranslate).length > 0) {
+        const translated = await translationService.batchTranslate(
+          toTranslate,
+          lang,
+          "google",
+        )
+        Object.assign(cache, translated)
+        saveDynamicCache(lang, cache)
+      }
+
+      return cache
+    }
+
+    const run = async () => {
+      if (!currentLanguage || currentLanguage === "en") {
+        setTranslatedInsights(insights)
+        setTranslatedAlerts(alerts)
+        setTranslatedActivities(RECENT_ACTIVITIES)
+        setTranslatedSelectedProduct(selectedProduct)
+        return
+      }
+
+      const texts = []
+
+      ;(alerts || []).forEach((a) => {
+        if (a?.product) texts.push(a.product)
+        if (a?.message) texts.push(a.message)
+      })
+
+      const items = insights?.insights || []
+      items.forEach((it) => {
+        if (it?.product) texts.push(it.product)
+        ;(it?.recommendations || []).forEach((r) => texts.push(r))
+      })
+
+      RECENT_ACTIVITIES.forEach((act) => {
+        if (act?.action) texts.push(act.action)
+        if (act?.details) texts.push(act.details)
+      })
+
+      if (selectedProduct?.product) texts.push(selectedProduct.product)
+      ;(selectedProduct?.recommendations || []).forEach((r) => texts.push(r))
+
+      const cache = await translateTextSet(texts, currentLanguage)
+
+      const nextAlerts = (alerts || []).map((a) => ({
+        ...a,
+        product: cache[a?.product] || a?.product,
+        message: cache[a?.message] || a?.message,
+      }))
+
+      const nextInsights = insights
+        ? {
+            ...insights,
+            insights: (insights.insights || []).map((it) => ({
+              ...it,
+              product: cache[it?.product] || it?.product,
+              recommendations: (it?.recommendations || []).map(
+                (r) => cache[r] || r,
+              ),
+            })),
+          }
+        : insights
+
+      const nextActivities = RECENT_ACTIVITIES.map((act) => ({
+        ...act,
+        action: cache[act?.action] || act?.action,
+        details: cache[act?.details] || act?.details,
+      }))
+
+      const nextSelected = selectedProduct
+        ? {
+            ...selectedProduct,
+            product: cache[selectedProduct?.product] || selectedProduct?.product,
+            recommendations: (selectedProduct?.recommendations || []).map(
+              (r) => cache[r] || r,
+            ),
+          }
+        : selectedProduct
+
+      if (cancelled) return
+      setTranslatedAlerts(nextAlerts)
+      setTranslatedInsights(nextInsights)
+      setTranslatedActivities(nextActivities)
+      setTranslatedSelectedProduct(nextSelected)
+    }
+
+    run()
+
+    return () => {
+      cancelled = true
+    }
+  }, [alerts, insights, selectedProduct, currentLanguage])
 
   const fetchData = async () => {
     try {
@@ -266,7 +410,7 @@ export default function Analytics() {
     setRefreshing(true)
     await fetchData()
     setTimeout(() => setRefreshing(false), 1000)
-    toast.success("Smart Inventory refreshed!")
+    toast.success(t("retailer.analytics.refreshedToast"))
   }
 
   // ─── Helper functions ───
@@ -307,14 +451,30 @@ export default function Analytics() {
     return colors[priority] || "bg-gray-100 text-gray-800"
   }
 
+  const getPriorityLabel = (priority) => {
+    const key = `analytics.priority.${String(priority || "").toLowerCase()}`
+    const label = t(key)
+    return label === key ? priority : label
+  }
+
+  const getStatusLabel = (status) => {
+    const map = {
+      healthy: "analytics.status.healthy",
+      "low-stock": "analytics.status.lowStock",
+      "reorder-needed": "analytics.status.reorderNeeded",
+      overstock: "analytics.status.overstock",
+    }
+    return t(map[status] || "analytics.status.healthy")
+  }
+
   // ─── Chart Data ───
 
   // Weekly Produce Procurement Cost
   const monthlyTransactionsData = {
-    labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+    labels: dayLabels,
     datasets: [
       {
-        label: "Procurement Cost (₹)",
+        label: t("analytics.chart.procurementCost"),
         data: [8200, 11400, 9600, 14800, 13200, 19500, 16700],
         borderColor: "#16a34a",
         backgroundColor: "rgba(22, 163, 74, 0.08)",
@@ -364,10 +524,16 @@ export default function Analytics() {
 
   // Produce Categories by SKU count
   const produceCategoriesData = {
-    labels: ["Vegetables", "Fruits", "Pulses & Grains", "Dairy", "Spices"],
+    labels: [
+      t("category.vegetables"),
+      t("category.fruits"),
+      t("analytics.category.pulsesGrains"),
+      t("analytics.category.dairy"),
+      t("analytics.category.spices"),
+    ],
     datasets: [
       {
-        label: "SKUs",
+        label: t("analytics.label.skus"),
         data: [14, 8, 7, 5, 4],
         backgroundColor: [
           "#16a34a",
@@ -412,14 +578,19 @@ export default function Analytics() {
 
   // Inventory Status Doughnut
   const inventoryStatusData = {
-    labels: ["Healthy", "Low Stock", "Reorder Needed", "Overstock"],
+    labels: [
+      t("analytics.status.healthy"),
+      t("analytics.status.lowStock"),
+      t("analytics.status.reorderNeeded"),
+      t("analytics.status.overstock"),
+    ],
     datasets: [
       {
         data: [
-          insights?.summary?.healthyItems || 0,
-          insights?.summary?.lowStockItems || 0,
-          insights?.summary?.expiringItems || 0,
-          insights?.summary?.overstockItems || 0,
+          (translatedInsights || insights)?.summary?.healthyItems || 0,
+          (translatedInsights || insights)?.summary?.lowStockItems || 0,
+          (translatedInsights || insights)?.summary?.expiringItems || 0,
+          (translatedInsights || insights)?.summary?.overstockItems || 0,
         ],
         backgroundColor: ["#10B981", "#F59E0B", "#EF4444", "#3B82F6"],
         borderWidth: 0,
@@ -429,16 +600,24 @@ export default function Analytics() {
 
   // Stock vs AI Demand Forecast
   const forecastComparisonData = {
-    labels: insights?.insights?.slice(0, 6).map((i) => i.product) || [],
+    labels:
+      (translatedInsights || insights)?.insights?.slice(0, 6).map((i) => i.product) ||
+      [],
     datasets: [
       {
-        label: "Current Stock (kg)",
-        data: insights?.insights?.slice(0, 6).map((i) => i.currentStock) || [],
+        label: t("retailer.analytics.table.stockKg"),
+        data:
+          (translatedInsights || insights)?.insights
+            ?.slice(0, 6)
+            .map((i) => i.currentStock) || [],
         backgroundColor: "rgba(59, 130, 246, 0.7)",
       },
       {
-        label: "7-Day AI Forecast (kg)",
-        data: insights?.insights?.slice(0, 6).map((i) => i.forecast) || [],
+        label: t("retailer.analytics.charts.forecastKg"),
+        data:
+          (translatedInsights || insights)?.insights
+            ?.slice(0, 6)
+            .map((i) => i.forecast) || [],
         backgroundColor: "rgba(16, 185, 129, 0.7)",
       },
     ],
@@ -447,47 +626,47 @@ export default function Analytics() {
   // ─── KPI metrics ───
   const kpiMetrics = [
     {
-      label: "Total SKUs",
-      value: insights?.summary?.totalProducts || 0,
+      label: t("retailer.analytics.kpi.totalSkus"),
+      value: (translatedInsights || insights)?.summary?.totalProducts || 0,
       icon: Package,
       color: "bg-emerald-100 text-emerald-600",
       borderColor: "border-l-emerald-500",
     },
     {
-      label: "Healthy Stock",
-      value: insights?.summary?.healthyItems || 0,
+      label: t("retailer.analytics.kpi.healthyStock"),
+      value: (translatedInsights || insights)?.summary?.healthyItems || 0,
       icon: CheckCircle,
       color: "bg-green-100 text-green-600",
       borderColor: "border-l-green-500",
     },
     {
-      label: "Low Stock Items",
-      value: insights?.summary?.lowStockItems || 0,
+      label: t("retailer.analytics.kpi.lowStockItems"),
+      value: (translatedInsights || insights)?.summary?.lowStockItems || 0,
       icon: AlertTriangle,
       color: "bg-red-100 text-red-600",
       borderColor: "border-l-red-500",
     },
     {
-      label: "Linked Farmers",
+      label: t("retailer.analytics.kpi.linkedFarmers"),
       value: 24,
       icon: Users,
-      change: "+3 this week",
+      change: t("analytics.change.thisWeek", { count: 3 }),
       color: "bg-blue-100 text-blue-600",
       borderColor: "border-l-blue-500",
     },
     {
-      label: "Active Contracts",
+      label: t("retailer.analytics.kpi.activeContracts"),
       value: 11,
       icon: FileText,
-      change: "+2 this month",
+      change: t("analytics.change.thisMonth", { count: 2 }),
       color: "bg-purple-100 text-purple-600",
       borderColor: "border-l-purple-500",
     },
     {
-      label: "Pending Payments",
+      label: t("retailer.analytics.kpi.pendingPayments"),
       value: "₹38.4k",
       icon: CreditCard,
-      change: "3 invoices",
+      change: t("analytics.change.invoices", { count: 3 }),
       color: "bg-amber-100 text-amber-600",
       borderColor: "border-l-amber-500",
     },
@@ -499,7 +678,7 @@ export default function Analytics() {
       <section id="analytics" className="py-16 px-6">
         <div className="max-w-7xl mx-auto text-center">
           <div className="animate-spin w-12 h-12 border-4 border-emerald-200 border-t-emerald-600 rounded-full mx-auto" />
-          <p className="mt-4 text-gray-600">Loading smart inventory...</p>
+          <p className="mt-4 text-gray-600">{t("retailer.analytics.loading")}</p>
         </div>
       </section>
     )
@@ -517,14 +696,16 @@ export default function Analytics() {
         <div className="mb-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <h2 className="text-3xl font-bold text-gray-900">Smart Inventory</h2>
+              <h2 className="text-3xl font-bold text-gray-900">
+                {t("retailer.analytics.title")}
+              </h2>
               <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0 px-3 py-1">
                 <Brain className="w-3 h-3 mr-1" />
-                AI-Powered
+                {t("retailer.analytics.badge.aiPowered")}
               </Badge>
             </div>
             <p className="text-gray-600">
-              Farm supply intelligence, demand forecasting & spoilage prevention
+              {t("retailer.analytics.subtitle")}
             </p>
           </div>
           <Button
@@ -535,7 +716,7 @@ export default function Analytics() {
             <RefreshCw
               className={`w-5 h-5 mr-2 ${refreshing ? "animate-spin" : ""}`}
             />
-            Refresh Data
+            {t("retailer.analytics.refresh")}
           </Button>
         </div>
 
@@ -578,10 +759,10 @@ export default function Analytics() {
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="text-lg font-semibold">
-                    Weekly Procurement Cost
+                    {t("retailer.analytics.charts.weeklyProcurement.title")}
                   </CardTitle>
                   <p className="text-sm text-gray-600 mt-1">
-                    Daily farm procurement spend this week
+                    {t("retailer.analytics.charts.weeklyProcurement.subtitle")}
                   </p>
                 </div>
                 <div className="p-2 rounded-lg bg-green-50">
@@ -604,7 +785,7 @@ export default function Analytics() {
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center gap-2 text-lg">
                 <BarChart3 className="w-5 h-5 text-purple-600" />
-                Stock Health
+                {t("retailer.analytics.charts.stockHealth")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -633,7 +814,7 @@ export default function Analytics() {
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center gap-2 text-lg">
                 <Target className="w-5 h-5 text-emerald-600" />
-                Stock vs 7-Day AI Demand Forecast
+                {t("retailer.analytics.charts.stockVsForecast")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -664,7 +845,7 @@ export default function Analytics() {
             <CardHeader className="pb-4">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg font-semibold">
-                  Produce Mix
+                  {t("retailer.analytics.charts.produceMix")}
                 </CardTitle>
                 <div className="p-2 rounded-lg bg-green-50">
                   <Leaf className="w-5 h-5 text-green-600" />
@@ -683,20 +864,23 @@ export default function Analytics() {
         </div>
 
         {/* ── AI Alerts ── */}
-        {alerts.length > 0 && (
+        {(translatedAlerts.length > 0 ? translatedAlerts : alerts).length >
+          0 && (
           <Card className="mb-8 border-l-4 border-l-orange-500 hover:shadow-lg transition-shadow">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Zap className="w-5 h-5 text-orange-600" />
-                AI-Powered Inventory Alerts
+                {t("retailer.analytics.alerts.title")}
                 <Badge className="ml-2 bg-orange-500 text-white">
-                  {alerts.length}
+                  {(translatedAlerts.length > 0 ? translatedAlerts : alerts)
+                    .length}
                 </Badge>
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {alerts.map((alert) => (
+                {(translatedAlerts.length > 0 ? translatedAlerts : alerts).map(
+                  (alert) => (
                   <div
                     key={alert.id}
                     className={`p-4 rounded-lg border ${getPriorityColor(alert.priority)} flex items-start gap-3 hover:shadow-md transition-shadow`}
@@ -708,19 +892,22 @@ export default function Analytics() {
                         <Badge
                           className={`text-xs ${getPriorityColor(alert.priority)}`}
                         >
-                          {alert.priority.toUpperCase()}
+                          {getPriorityLabel(alert.priority)}
                         </Badge>
                       </div>
                       <p className="text-sm text-gray-700">{alert.message}</p>
                       {alert.currentStock && (
                         <p className="text-xs text-gray-600 mt-1">
-                          Current: {alert.currentStock} kg
+                          {t("retailer.analytics.alerts.current", {
+                            value: alert.currentStock,
+                          })}
                         </p>
                       )}
                     </div>
                     <Clock className="w-4 h-4 text-gray-400 flex-shrink-0" />
                   </div>
-                ))}
+                ),
+                )}
               </div>
             </CardContent>
           </Card>
@@ -731,7 +918,7 @@ export default function Analytics() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-purple-600" />
-              Product-Level AI Insights
+              {t("retailer.analytics.table.title")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -740,30 +927,31 @@ export default function Analytics() {
                 <thead>
                   <tr className="border-b bg-gray-50">
                     <th className="text-left p-3 text-sm font-semibold">
-                      Produce
+                      {t("retailer.analytics.table.produce")}
                     </th>
                     <th className="text-center p-3 text-sm font-semibold">
-                      Stock (kg)
+                      {t("retailer.analytics.table.stockKg")}
                     </th>
                     <th className="text-center p-3 text-sm font-semibold">
-                      7-Day Demand
+                      {t("retailer.analytics.table.demand7Day")}
                     </th>
                     <th className="text-center p-3 text-sm font-semibold">
-                      Days Left
+                      {t("retailer.analytics.table.daysLeft")}
                     </th>
                     <th className="text-center p-3 text-sm font-semibold">
-                      Demand Trend
+                      {t("retailer.analytics.table.demandTrend")}
                     </th>
                     <th className="text-center p-3 text-sm font-semibold">
-                      Status
+                      {t("retailer.analytics.table.status")}
                     </th>
                     <th className="text-center p-3 text-sm font-semibold">
-                      AI Confidence
+                      {t("retailer.analytics.table.aiConfidence")}
                     </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {insights?.insights?.map((item, index) => (
+                  {(translatedInsights || insights)?.insights?.map(
+                    (item, index) => (
                     <tr
                       key={index}
                       className="border-b hover:bg-gray-50 transition-colors cursor-pointer"
@@ -795,7 +983,7 @@ export default function Analytics() {
                               : "bg-gray-100 text-gray-800"
                           }
                         >
-                          {item.daysOfStock}d
+                          {t("analytics.unit.daysShort", { days: item.daysOfStock })}
                         </Badge>
                       </td>
                       <td className="text-center p-3">
@@ -807,7 +995,7 @@ export default function Analytics() {
                         <Badge className={getStatusColor(item.status)}>
                           <span className="flex items-center gap-1">
                             {getStatusIcon(item.status)}
-                            {item.status.replace("-", " ")}
+                            {getStatusLabel(item.status)}
                           </span>
                         </Badge>
                       </td>
@@ -831,7 +1019,8 @@ export default function Analytics() {
                         </div>
                       </td>
                     </tr>
-                  ))}
+                  ),
+                  )}
                 </tbody>
               </table>
             </div>
@@ -839,29 +1028,33 @@ export default function Analytics() {
         </Card>
 
         {/* ── AI Recommendations Panel ── */}
-        {selectedProduct && (
+        {(translatedSelectedProduct || selectedProduct) && (
           <Card className="mb-8 border-l-4 border-l-purple-500 hover:shadow-lg transition-shadow">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Brain className="w-5 h-5 text-purple-600" />
-                AI Recommendations — {selectedProduct.product}
+                {t("retailer.analytics.reco.title", {
+                  product: (translatedSelectedProduct || selectedProduct).product,
+                })}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                {selectedProduct.recommendations?.map((rec, index) => (
+                {(translatedSelectedProduct || selectedProduct).recommendations?.map(
+                  (rec, index) => (
                   <div
                     key={index}
                     className="p-3 bg-purple-50 rounded-lg border border-purple-200"
                   >
                     <p className="text-sm text-gray-700">{rec}</p>
                   </div>
-                ))}
+                ),
+                )}
                 <Button
                   onClick={() => setSelectedProduct(null)}
                   className="mt-4 w-full bg-purple-600 hover:bg-purple-700"
                 >
-                  Close
+                  {t("common.close")}
                 </Button>
               </div>
             </CardContent>
@@ -872,15 +1065,16 @@ export default function Analytics() {
         <Card className="border-0 shadow-sm hover:shadow-lg transition-shadow">
           <CardHeader className="pb-4">
             <CardTitle className="text-lg font-semibold">
-              Recent Activity
+              {t("retailer.analytics.recentActivity.title")}
             </CardTitle>
             <p className="text-sm text-gray-600 mt-1">
-              Latest updates from your farm supply network
+              {t("retailer.analytics.recentActivity.subtitle")}
             </p>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {RECENT_ACTIVITIES.map((activity, index) => (
+              {(translatedActivities?.length ? translatedActivities : RECENT_ACTIVITIES).map(
+                (activity, index) => (
                 <div
                   key={activity.id || index}
                   className="flex items-start space-x-4 p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
@@ -920,7 +1114,8 @@ export default function Analytics() {
                     </p>
                   </div>
                 </div>
-              ))}
+              ),
+              )}
             </div>
           </CardContent>
         </Card>

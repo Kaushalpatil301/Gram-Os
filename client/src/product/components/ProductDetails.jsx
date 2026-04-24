@@ -1,12 +1,14 @@
 import React, { useState } from "react";
+import { useTranslation } from "../../consumer/i18n/config.jsx";
 
 export default function ProductDetails({ product, hideFarmerDetails = false }) {
+  const { t } = useTranslation();
   const [isImageLoading, setIsImageLoading] = useState(true);
 
   if (!product) {
     return (
       <div className="p-8 text-center text-gray-500 flex flex-col items-center">
-        <span>No product data available</span>
+        <span>{t("product.details.noData")}</span>
       </div>
     );
   }
@@ -51,7 +53,7 @@ export default function ProductDetails({ product, hideFarmerDetails = false }) {
               status === 'sold' ? 'bg-gray-100 text-gray-800' : 
               'bg-yellow-100 text-yellow-800'
             }`}>
-              {status || 'Active'}
+              {status || t("status.active")}
             </span>
           </div>
           <div className="flex items-center text-gray-600">
@@ -75,24 +77,24 @@ export default function ProductDetails({ product, hideFarmerDetails = false }) {
         {/* Product Info */}
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
           <div className="bg-blue-50 px-4 py-3 border-b">
-            <h3 className="text-sm font-bold text-blue-800">Product Information</h3>
+            <h3 className="text-sm font-bold text-blue-800">{t("product.details.productInformation")}</h3>
           </div>
           <div className="p-6 space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-xs text-gray-500 uppercase">Type</label>
+                <label className="text-xs text-gray-500 uppercase">{t("product.details.type")}</label>
                 <p className="font-semibold text-gray-800">{type}</p>
               </div>
               <div>
-                <label className="text-xs text-gray-500 uppercase">Farm ID</label>
+                <label className="text-xs text-gray-500 uppercase">{t("product.details.farmId")}</label>
                 <p className="font-mono text-sm text-gray-700">{farmId}</p>
               </div>
               <div>
-                <label className="text-xs text-gray-500 uppercase">Quantity</label>
+                <label className="text-xs text-gray-500 uppercase">{t("product.details.quantity")}</label>
                 <p className="font-bold text-lg text-emerald-600">{quantity} kg</p>
               </div>
               <div>
-                <label className="text-xs text-gray-500 uppercase">Base Price</label>
+                <label className="text-xs text-gray-500 uppercase">{t("product.details.basePrice")}</label>
                 <p className="font-bold text-lg text-emerald-600">₹{basePrice}/kg</p>
               </div>
             </div>
@@ -102,19 +104,19 @@ export default function ProductDetails({ product, hideFarmerDetails = false }) {
         {/* Pricing Summary */}
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
           <div className="bg-emerald-50 px-4 py-3 border-b">
-            <h3 className="text-sm font-bold text-emerald-800">Pricing Details</h3>
+            <h3 className="text-sm font-bold text-emerald-800">{t("product.details.pricingDetails")}</h3>
           </div>
           <div className="p-6">
             <div className="flex justify-between items-center mb-4">
-              <span className="text-gray-600">Unit Price</span>
+              <span className="text-gray-600">{t("product.details.unitPrice")}</span>
               <span className="font-semibold">₹{basePrice}/kg</span>
             </div>
             <div className="flex justify-between items-center mb-4">
-              <span className="text-gray-600">Available Quantity</span>
+              <span className="text-gray-600">{t("product.details.availableQuantity")}</span>
               <span className="font-semibold">{quantity} kg</span>
             </div>
             <div className="border-t pt-4 flex justify-between items-center">
-              <span className="text-gray-800 font-semibold">Total Value</span>
+              <span className="text-gray-800 font-semibold">{t("product.details.totalValue")}</span>
               <span className="text-2xl font-bold text-emerald-600">₹{(basePrice * quantity).toLocaleString()}</span>
             </div>
           </div>
@@ -127,7 +129,7 @@ export default function ProductDetails({ product, hideFarmerDetails = false }) {
               <svg className="w-4 h-4 text-purple-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
-              <h3 className="text-sm font-bold text-purple-800">Farmer Details</h3>
+              <h3 className="text-sm font-bold text-purple-800">{t("product.details.farmerDetails")}</h3>
             </div>
             <div className="p-6">
               <div className="flex items-center gap-3">
@@ -135,8 +137,12 @@ export default function ProductDetails({ product, hideFarmerDetails = false }) {
                   <span className="text-purple-600 font-semibold">{farmerEmail?.[0]?.toUpperCase() || 'F'}</span>
                 </div>
                 <div>
-                  <p className="font-medium text-gray-800">{farmerEmail || 'Unknown Farmer'}</p>
-                  <p className="text-sm text-gray-500">Listed on {createdAt ? new Date(createdAt).toLocaleDateString() : 'N/A'}</p>
+                  <p className="font-medium text-gray-800">{farmerEmail || t("product.details.unknownFarmer")}</p>
+                  <p className="text-sm text-gray-500">
+                    {t("product.details.listedOn", {
+                      date: createdAt ? new Date(createdAt).toLocaleDateString() : t("retailer.product.na"),
+                    })}
+                  </p>
                 </div>
               </div>
             </div>

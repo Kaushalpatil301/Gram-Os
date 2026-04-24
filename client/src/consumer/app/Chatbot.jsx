@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { GiWheat } from "react-icons/gi";
 import { io } from "socket.io-client";
+import { useTranslation } from "../i18n/config.jsx";
 
 // ─── CONFIG ──────────────────────────────────────────────────────────────────
 const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY;
@@ -396,6 +397,7 @@ function speakText(text, langCode, onEnd) {
 const socket = io("http://localhost:8000");
 
 export default function Chatbot() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [userRole, setUserRole] = useState("consumer");
   const [lang, setLang] = useState(LANGUAGES[0]);
@@ -431,7 +433,7 @@ export default function Chatbot() {
       setMessages([
         {
           role: "bot",
-          text: `Namaste! I'm AgriBot 🌾\n\n${meta.greet}`,
+          text: `${t("chatbot.greeting")}\n\n${meta.greet}`,
           id: Date.now(),
         },
       ]);
@@ -445,7 +447,7 @@ export default function Chatbot() {
       setMessages([
         {
           role: "bot",
-          text: `Namaste! I'm AgriBot 🌾\n\n${meta.greet}`,
+          text: `${t("chatbot.greeting")}\n\n${meta.greet}`,
           id: Date.now(),
         },
       ]);
@@ -519,7 +521,7 @@ export default function Chatbot() {
       // Add user message to UI
       const userMsg = {
         role: "user",
-        text: text || "Uploaded an image",
+        text: text || t("chatbot.uploadedImage"),
         id: Date.now(),
       };
       if (currentImage) {
@@ -574,7 +576,7 @@ export default function Chatbot() {
                         target: {
                           type: "string",
                           description:
-                            "The parameter for the action. For 'navigate_section', MUST be one of: 'marketplace', 'produce', 'workforce', 'scanner', 'map', 'credit', 'schemes' (for Farmers), OR 'jobs', 'academy', 'nptel', 'earnings', 'alert' (for Villagers), OR 'browse', 'analytics', 'network', 'contracts', 'qr' (for Retailers). For 'navigate_url', provide a path (e.g. '/dashboard/farmer', '/dashboard/villager', '/dashboard/consumer', '/dashboard/retailer'). For 'open_modal', MUST be one of: 'profile', 'scan', 'add_produce'.",
+                            "The parameter for the action. For 'navigate_section', MUST be one of: 'marketplace', 'produce', 'workforce', 'scanner', 'map', 'credit', 'schemes' (for Farmers), OR 'jobs', 'academy', 'nptel', 'earnings', 'alert' (for Villagers), OR 'browse', 'analytics', 'network', 'contracts', 'qr' (for Retailers). For 'navigate_url', provide an app path such as '/dashboard/farmer', '/dashboard/villager', '/dashboard/consumer', '/dashboard/retailer', '/farmer/product/:id', '/retailer/product/:id', '/consumer/product/:id'. For 'open_modal', MUST be one of: 'profile', 'scan', 'add_produce'.",
                         },
                       },
                       required: ["actionType"],
@@ -782,7 +784,7 @@ export default function Chatbot() {
         }
 
         if (!reply) {
-          reply = "Action executed!";
+          reply = t("chatbot.actionExecuted");
         }
 
         setMessages((prev) => [
@@ -811,7 +813,7 @@ export default function Chatbot() {
           ...prev,
           {
             role: "bot",
-            text: "❌ Connection error. Check your API key and internet.",
+            text: t("chatbot.connectionError"),
             id: Date.now() + 1,
           },
         ]);
@@ -849,7 +851,7 @@ export default function Chatbot() {
     setMessages([
       {
         role: "bot",
-        text: `Chat cleared! Still here.\n\n${meta.greet}`,
+        text: `${t("chatbot.chatCleared")}\n\n${meta.greet}`,
         id: Date.now(),
       },
     ]);
@@ -866,20 +868,20 @@ export default function Chatbot() {
 
   const QUICK = {
     farmer: [
-      "Best crop this season?",
-      "Mandi rates today",
-      "PM-Kisan eligibility",
+      t("chatbot.quick.farmer.crop"),
+      t("chatbot.quick.farmer.mandi"),
+      t("chatbot.quick.farmer.pmkisan"),
     ],
     retailer: [
-      "Find tomato suppliers",
-      "Price trend alert",
-      "Verify QR passport",
+      t("chatbot.quick.retailer.suppliers"),
+      t("chatbot.quick.retailer.trend"),
+      t("chatbot.quick.retailer.qr"),
     ],
-    villager: ["Harvest jobs near me", "Earn skill badges", "My income history"],
+    villager: [t("chatbot.quick.villager.jobs"), t("chatbot.quick.villager.badges"), t("chatbot.quick.villager.income")],
     consumer: [
-      "Seasonal veggies now",
-      "Find local farmers",
-      "What's in my QR?",
+      t("chatbot.quick.consumer.seasonal"),
+      t("chatbot.quick.consumer.localFarmers"),
+      t("chatbot.quick.consumer.qr"),
     ],
   };
 
@@ -1123,7 +1125,7 @@ export default function Chatbot() {
                   if (!next) stopSpeaking();
                 }}
                 className="agri-icon-btn"
-                title={voiceOn ? "Voice on" : "Voice off"}
+                title={voiceOn ? t("chatbot.voiceOn") : t("chatbot.voiceOff")}
                 style={{
                   width: 30,
                   height: 30,
@@ -1269,7 +1271,7 @@ export default function Chatbot() {
                     animation: "agri-blink 0.7s infinite",
                   }}
                 />
-                Listening…
+                {t("chatbot.listening")}
               </span>
             )}
           </div>
@@ -1503,7 +1505,7 @@ export default function Chatbot() {
               }}
               onKeyDown={handleKey}
               rows={1}
-              placeholder={`Message in ${lang.name}…`}
+              placeholder={t("chatbot.messageInLanguage", { language: lang.name })}
               disabled={typing}
               className="agri-input agri-scrollbar"
               style={{
@@ -1527,7 +1529,7 @@ export default function Chatbot() {
             <button
               onClick={toggleMic}
               disabled={typing}
-              title={listening ? "Stop" : `Voice (${lang.name})`}
+              title={listening ? t("chatbot.stop") : t("chatbot.voiceWithLanguage", { language: lang.name })}
               style={{
                 width: 40,
                 height: 40,
@@ -1568,7 +1570,7 @@ export default function Chatbot() {
                 justifyContent: "center",
                 transition: "all 0.2s",
               }}
-              title="Attach Photo"
+              title={t("chatbot.attachPhoto")}
             >
               <input
                 type="file"
@@ -1623,7 +1625,7 @@ export default function Chatbot() {
               marginTop: 6,
             }}
           >
-            GramOS AgriBot · Replies in {lang.name} · Powered by OpenRouter
+            {t("chatbot.footer", { language: lang.name })}
           </div>
         </div>
       </div>

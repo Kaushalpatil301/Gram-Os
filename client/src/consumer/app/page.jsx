@@ -23,8 +23,8 @@ import ScanSection from "../components/ScanSection";
 import InfoSection from "../components/InfoSection";
 
 const NAV_ITEMS = [
-  { id: "scan", label: "Scanner", icon: QrCode, color: "text-emerald-600" },
-  { id: "info", label: "Information", icon: Shield,     color: "text-blue-600" },
+  { id: "scan", labelKey: "consumer.nav.scanner", icon: QrCode, color: "text-emerald-600" },
+  { id: "info", labelKey: "consumer.nav.information", icon: Shield,     color: "text-blue-600" },
 ];
 
 function ConsumerContent() {
@@ -145,7 +145,7 @@ function ConsumerContent() {
             <div>
               <h1 className="text-xl font-black text-gray-900">GramOS</h1>
               <p className="text-[10px] text-gray-400 uppercase font-semibold">
-                Consumer Portal
+                {t("consumer.portal.subtitle")}
               </p>
             </div>
           </div>
@@ -169,7 +169,7 @@ function ConsumerContent() {
                   }`}
                 >
                   <Icon className={`w-6 h-6 ${isActive ? 'text-white' : item.color || 'text-gray-500'}`} />
-                  <span className="truncate">{item.label}</span>
+                  <span className="truncate">{t(item.labelKey)}</span>
                 </button>
               );
             })}
@@ -180,7 +180,7 @@ function ConsumerContent() {
         <div className="border-t border-gray-100 p-4">
           <div className="w-full flex items-center gap-4 px-4 py-3 rounded-2xl text-base font-medium text-gray-600 mb-2">
              <User className="w-6 h-6 text-gray-400" />
-             <span className="truncate">Guest User</span>
+             <span className="truncate">{t("consumer.user.guest")}</span>
           </div>
           
           <button
@@ -188,7 +188,7 @@ function ConsumerContent() {
             className="w-full flex items-center gap-4 px-4 py-3 mt-2 rounded-2xl text-base font-medium text-red-600 hover:bg-red-50 transition-all"
           >
             <LogOut className="w-6 h-6 text-red-500" />
-            <span>Exit Portal</span>
+            <span>{t("consumer.portal.exit")}</span>
           </button>
         </div>
       </aside>
@@ -202,12 +202,14 @@ function ConsumerContent() {
           </button>
 
           <h2 className="text-xl font-bold text-gray-800">
-            {NAV_ITEMS.find(n => n.id === activeSection)?.label}
+            {t(NAV_ITEMS.find(n => n.id === activeSection)?.labelKey)}
           </h2>
 
           <div className="flex items-center gap-2 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-100">
             <History className="w-5 h-5 text-emerald-600" />
-            <span className="text-base font-bold text-emerald-700">{scanHistory.length} Scans</span>
+            <span className="text-base font-bold text-emerald-700">
+              {t("consumer.scans.count", { count: scanHistory.length })}
+            </span>
           </div>
         </header>
 

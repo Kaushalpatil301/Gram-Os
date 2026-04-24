@@ -19,8 +19,10 @@ import {
   IndianRupee,
 } from "lucide-react";
 import { farmers, contracts, filterOptions } from "../lib/data";
+import { useTranslation } from "../../consumer/i18n/config.jsx";
 
 export default function Contracts() {
+  const { t } = useTranslation();
   const [contractForm, setContractForm] = useState({
     farmer: "",
     produce: "",
@@ -43,13 +45,13 @@ export default function Contracts() {
     const totalValue = quantity * pricePerUnit;
 
     setLivePreview({
-      farmer: selectedFarmer?.name || "Select farmer...",
+      farmer: selectedFarmer?.name || t("contracts.chooseFarmer"),
       farmerLocation: selectedFarmer?.location || "",
-      produce: contractForm.produce || "Enter produce type...",
+      produce: contractForm.produce || t("contracts.producePlaceholder"),
       quantity:
         contractForm.quantity && contractForm.unit
           ? `${contractForm.quantity} ${contractForm.unit}`
-          : "Enter quantity...",
+          : t("contracts.quantity"),
       pricePerUnit: contractForm.pricePerUnit
         ? `₹${parseFloat(contractForm.pricePerUnit).toFixed(2)}`
         : "₹0.00",
@@ -57,7 +59,7 @@ export default function Contracts() {
         totalValue > 0
           ? `₹${totalValue.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
           : "₹0.00",
-      delivery: contractForm.deliveryDate || "Select date...",
+      delivery: contractForm.deliveryDate || t("contracts.deliveryDate"),
       contractId: `CNT-${String(contractsData.length + 1).padStart(3, "0")}`,
       isComplete:
         contractForm.farmer &&
@@ -110,7 +112,7 @@ export default function Contracts() {
   };
 
   const handleDeleteContract = (contractId) => {
-    if (window.confirm("Delete this contract?")) {
+    if (window.confirm(t("contracts.confirmDelete"))) {
       setContractsData(contractsData.filter((c) => c.id !== contractId));
     }
   };
@@ -123,6 +125,11 @@ export default function Contracts() {
       Expired: "bg-red-100 text-red-800 border-red-200",
     };
     return styles[status] || "bg-gray-100 text-gray-800 border-gray-200";
+  };
+
+  const getStatusLabel = (status) => {
+    const key = `status.${status.toLowerCase()}`;
+    return t(key);
   };
 
   const getStatusIcon = (status) => {
@@ -146,10 +153,10 @@ export default function Contracts() {
         {/* Header */}
         <div className="mb-6 md:mb-10 text-center">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2 md:mb-3">
-            Smart Contracts
+            {t("contracts.title")}
           </h2>
           <p className="text-sm md:text-base text-gray-600">
-            Create and manage blockchain-based agreements
+            {t("contracts.subtitle")}
           </p>
         </div>
 
@@ -160,20 +167,20 @@ export default function Contracts() {
             <CardHeader className="pb-3 md:pb-4 px-4 md:px-6">
               <CardTitle className="flex items-center space-x-2 text-base md:text-lg">
                 <Plus className="w-4 h-4 md:w-5 md:h-5 text-blue-600" />
-                <span>Create New Contract</span>
+                <span>{t("contracts.createNew")}</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4 md:space-y-6 px-4 md:px-6">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2 md:mb-3">
-                  Farmer *
+                  {t("contracts.farmer")}
                 </label>
                 <Select
                   onValueChange={(value) => handleInputChange("farmer", value)}
                   value={contractForm.farmer}
                 >
                   <SelectTrigger className="h-10 md:h-12 border-gray-200">
-                    <SelectValue placeholder="Choose a farmer" />
+                    <SelectValue placeholder={t("contracts.chooseFarmer")} />
                   </SelectTrigger>
                   <SelectContent>
                     {farmers.map((farmer) => (
@@ -195,10 +202,10 @@ export default function Contracts() {
 
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2 md:mb-3">
-                  Produce Type *
+                  {t("contracts.produceType")}
                 </label>
                 <Input
-                  placeholder="e.g., Organic Tomatoes"
+                  placeholder={t("contracts.producePlaceholder")}
                   className="h-10 md:h-12 border-gray-200"
                   value={contractForm.produce}
                   onChange={(e) => handleInputChange("produce", e.target.value)}
@@ -208,7 +215,7 @@ export default function Contracts() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2 md:mb-3">
-                    Quantity *
+                    {t("contracts.quantity")}
                   </label>
                   <Input
                     placeholder="1000"
@@ -222,14 +229,14 @@ export default function Contracts() {
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2 md:mb-3">
-                    Unit *
+                    {t("contracts.unit")}
                   </label>
                   <Select
                     onValueChange={(value) => handleInputChange("unit", value)}
                     value={contractForm.unit}
                   >
                     <SelectTrigger className="h-10 md:h-12 border-gray-200">
-                      <SelectValue placeholder="Select unit" />
+                      <SelectValue placeholder={t("contracts.selectUnit")} />
                     </SelectTrigger>
                     <SelectContent>
                       {filterOptions.units.map((unit) => (
@@ -244,7 +251,7 @@ export default function Contracts() {
 
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2 md:mb-3">
-                  Price per Unit (₹) *
+                  {t("contracts.pricePerUnit")}
                 </label>
                 <Input
                   placeholder="2.50"
@@ -260,7 +267,7 @@ export default function Contracts() {
 
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2 md:mb-3">
-                  Delivery Date *
+                  {t("contracts.deliveryDate")}
                 </label>
                 <Input
                   type="date"
@@ -278,7 +285,7 @@ export default function Contracts() {
                 onClick={handleCreateContract}
                 disabled={!livePreview.isComplete}
               >
-                Create Contract
+                {t("contracts.createButton")}
               </Button>
             </CardContent>
           </Card>
@@ -289,10 +296,10 @@ export default function Contracts() {
           >
             <CardHeader className="pb-3 md:pb-4 px-4 md:px-6">
               <CardTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-base md:text-lg">
-                <span>Contract Preview</span>
+                <span>{t("contracts.preview")}</span>
                 {livePreview.isComplete && (
                   <Badge className="bg-green-100 text-green-800 mt-2 sm:mt-0">
-                    Ready
+                    {t("contracts.ready")}
                   </Badge>
                 )}
               </CardTitle>
@@ -301,27 +308,36 @@ export default function Contracts() {
               <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 md:p-6 space-y-4 md:space-y-6">
                 <div className="text-center pb-3 md:pb-4 border-b border-blue-100">
                   <h3 className="text-base md:text-lg font-bold text-gray-900">
-                    Smart Contract Agreement
+                    {t("contracts.agreement")}
                   </h3>
                   <p className="text-xs md:text-sm text-blue-600 mt-1">
-                    Contract ID: {livePreview.contractId}
+                    {t("contracts.contractId")}: {livePreview.contractId}
                   </p>
                 </div>
 
                 <div className="space-y-3 md:space-y-4">
                   {[
                     {
-                      label: "Farmer",
+                      label: t("contracts.farmer"),
                       value: livePreview.farmer,
                       location: livePreview.farmerLocation,
                     },
-                    { label: "Produce", value: livePreview.produce },
-                    { label: "Quantity", value: livePreview.quantity },
                     {
-                      label: "Price per Unit",
+                      label: t("contracts.produce"),
+                      value: livePreview.produce,
+                    },
+                    {
+                      label: t("contracts.quantity"),
+                      value: livePreview.quantity,
+                    },
+                    {
+                      label: t("contracts.pricePerUnit"),
                       value: livePreview.pricePerUnit,
                     },
-                    { label: "Delivery Date", value: livePreview.delivery },
+                    {
+                      label: t("contracts.deliveryDate"),
+                      value: livePreview.delivery,
+                    },
                   ].map(({ label, value, location }) => (
                     <div
                       key={label}
@@ -346,7 +362,7 @@ export default function Contracts() {
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center py-3 bg-green-50 px-3 rounded-lg">
                     <span className="text-gray-600 font-medium flex items-center text-sm md:text-base">
                       <IndianRupee className="w-3 h-3 md:w-4 md:h-4 mr-1" />
-                      Total Value:
+                      {t("contracts.totalValue")}:
                     </span>
                     <span className="font-bold text-green-700 text-base md:text-lg mt-1 sm:mt-0">
                       {livePreview.totalValue}
@@ -357,8 +373,8 @@ export default function Contracts() {
                 <div className="border-t border-blue-100 pt-3 md:pt-4">
                   <p className="text-xs md:text-sm text-gray-500 text-center">
                     {livePreview.isComplete
-                      ? "✅ Ready for blockchain"
-                      : "⚠️ Complete all fields"}
+                      ? `✅ ${t("contracts.readyBlockchain")}`
+                      : `⚠️ ${t("contracts.completeFields")}`}
                   </p>
                 </div>
               </div>
@@ -370,9 +386,11 @@ export default function Contracts() {
         <Card className="border-0 shadow-sm">
           <CardHeader className="px-4 md:px-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
-              <CardTitle>Active Contracts ({contractsData.length})</CardTitle>
+              <CardTitle>
+                {t("contracts.activeContracts")} ({contractsData.length})
+              </CardTitle>
               <div className="text-xs md:text-sm text-gray-600 bg-gray-50 px-2 md:px-3 py-1 rounded-full">
-                Total: ₹
+                {t("contracts.total")}: ₹
                 {contractsData
                   .reduce((sum, c) => sum + (c.totalValue || 0), 0)
                   .toLocaleString("en-IN")}
@@ -386,28 +404,28 @@ export default function Contracts() {
                 <thead className="bg-gray-50 border-b">
                   <tr>
                     <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-gray-900">
-                      ID
+                      {t("contracts.table.id")}
                     </th>
                     <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-gray-900">
-                      Farmer
+                      {t("transactions.farmer")}
                     </th>
                     <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-gray-900">
-                      Produce
+                      {t("contracts.produce")}
                     </th>
                     <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-gray-900 hidden lg:table-cell">
-                      Quantity
+                      {t("contracts.quantity")}
                     </th>
                     <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-gray-900">
-                      Value
+                      {t("transactions.amount")}
                     </th>
                     <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-gray-900">
-                      Status
+                      {t("transactions.status")}
                     </th>
                     <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-gray-900 hidden lg:table-cell">
-                      Delivery
+                      {t("contracts.deliveryDate")}
                     </th>
                     <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-gray-900">
-                      Actions
+                      {t("contracts.actions")}
                     </th>
                   </tr>
                 </thead>
@@ -439,7 +457,7 @@ export default function Contracts() {
                           <span
                             className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${getStatusStyle(contract.status)}`}
                           >
-                            {contract.status}
+                            {getStatusLabel(contract.status)}
                           </span>
                         </div>
                       </td>
@@ -484,7 +502,7 @@ export default function Contracts() {
                         <span
                           className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${getStatusStyle(contract.status)}`}
                         >
-                          {contract.status}
+                          {getStatusLabel(contract.status)}
                         </span>
                       </div>
                       <Button
@@ -499,21 +517,29 @@ export default function Contracts() {
                   </div>
                   <div className="grid grid-cols-2 gap-3 text-sm">
                     <div>
-                      <span className="text-gray-500 text-xs">Produce</span>
+                      <span className="text-gray-500 text-xs">
+                        {t("contracts.produce")}
+                      </span>
                       <p className="text-gray-900">{contract.produce}</p>
                     </div>
                     <div>
-                      <span className="text-gray-500 text-xs">Quantity</span>
+                      <span className="text-gray-500 text-xs">
+                        {t("contracts.quantity")}
+                      </span>
                       <p className="text-gray-900">{contract.quantity}</p>
                     </div>
                     <div>
-                      <span className="text-gray-500 text-xs">Value</span>
+                      <span className="text-gray-500 text-xs">
+                        {t("transactions.amount")}
+                      </span>
                       <p className="font-bold text-green-600">
                         ₹{contract.totalValue?.toLocaleString("en-IN")}
                       </p>
                     </div>
                     <div>
-                      <span className="text-gray-500 text-xs">Delivery</span>
+                      <span className="text-gray-500 text-xs">
+                        {t("contracts.deliveryDate")}
+                      </span>
                       <p className="text-gray-900">{contract.delivery}</p>
                     </div>
                   </div>

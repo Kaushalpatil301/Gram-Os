@@ -2,8 +2,10 @@ import React from "react";
 import { BookOpen, TrendingUp, Star, Play, ExternalLink } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useTranslation } from "../../../consumer/i18n/config.jsx";
 
 export default function NptelSection({ courses, showNotification }) {
+  const { t } = useTranslation();
   return (
     <>
       <div className="mb-4 flex items-start justify-between gap-3">
@@ -11,16 +13,15 @@ export default function NptelSection({ courses, showNotification }) {
           <div className="flex items-center gap-2">
             <BookOpen className="w-5 h-5 text-blue-600" />
             <h3 className="text-xl font-semibold text-gray-900">
-              NPTEL Courses
+              {t("villager.nptel.title")}
             </h3>
           </div>
           <p className="text-sm text-gray-600 mt-0.5">
-            Free certified courses from IITs and IIMs — matched to your gig
-            types
+            {t("villager.nptel.subtitle")}
           </p>
         </div>
         <Badge className="bg-blue-50 text-blue-700 border-blue-200 shrink-0 mt-1">
-          Free &amp; Certified
+          {t("villager.nptel.badge")}
         </Badge>
       </div>
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -52,7 +53,7 @@ export default function NptelSection({ courses, showNotification }) {
               </div>
               <div className="mt-3 text-xs text-gray-500 flex items-center gap-1">
                 <TrendingUp className="w-3 h-3 text-emerald-500 shrink-0" />
-                Relevant for: {c.relevance}
+                {t("villager.nptel.relevantFor")}: {c.relevance}
               </div>
               <div className="mt-auto pt-4">
                 <a
@@ -60,12 +61,12 @@ export default function NptelSection({ courses, showNotification }) {
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() =>
-                    showNotification(`Opening: ${c.title}`)
+                    showNotification(t("villager.nptel.opening", { title: c.title }))
                   }
                   className="flex items-center justify-center gap-2 w-full px-3 py-2 rounded-lg border border-blue-200 text-blue-700 text-sm font-medium hover:bg-blue-50 transition-colors"
                 >
                   <Play className="w-3.5 h-3.5" />
-                  Enroll on NPTEL
+                  {t("villager.nptel.enroll")}
                   <ExternalLink className="w-3 h-3 ml-auto" />
                 </a>
               </div>

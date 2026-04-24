@@ -10,6 +10,7 @@ import {
   X, Loader2, IndianRupee, Brain, TrendingUp, Droplets,
   Thermometer, Wind, AlertCircle, ChevronDown, ChevronUp, Info
 } from "lucide-react";
+import { useTranslation } from "../../../consumer/i18n/config.jsx";
 
 const RAZORPAY_KEY_ID = "rzp_test_SbpLusWieguIBI";
 
@@ -117,6 +118,7 @@ function initiateRazorpay({ amount, cartItems, onSuccess, onFailure }) {
 }
 
 function PaymentModal({ status, paymentId, error, onClose }) {
+  const { t } = useTranslation();
   if (!status) return null;
   const isSuccess = status === "success";
   return (
@@ -126,20 +128,20 @@ function PaymentModal({ status, paymentId, error, onClose }) {
         <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-5 ${isSuccess ? "bg-emerald-100" : "bg-red-100"}`}>
           {isSuccess ? <CheckCircle className="w-10 h-10 text-emerald-600" /> : <X className="w-10 h-10 text-red-500" />}
         </div>
-        <h3 className={`text-2xl font-black mb-2 ${isSuccess ? "text-emerald-700" : "text-red-600"}`}>{isSuccess ? "Payment Successful!" : "Payment Failed"}</h3>
+        <h3 className={`text-2xl font-black mb-2 ${isSuccess ? "text-emerald-700" : "text-red-600"}`}>{isSuccess ? t("marketplace.payment.success") : t("marketplace.payment.failed")}</h3>
         {isSuccess ? (
           <>
-            <p className="text-gray-500 text-sm mb-3">Your order has been placed with the vendors.</p>
+            <p className="text-gray-500 text-sm mb-3">{t("marketplace.payment.placed")}</p>
             <div className="bg-gray-50 rounded-xl p-3">
-              <p className="text-xs text-gray-400 uppercase font-semibold">Payment ID</p>
+              <p className="text-xs text-gray-400 uppercase font-semibold">{t("marketplace.payment.id")}</p>
               <p className="text-sm font-mono font-bold text-gray-700 mt-1 break-all">{paymentId}</p>
             </div>
           </>
         ) : (
-          <p className="text-gray-500 text-sm">{error || "Something went wrong."}</p>
+          <p className="text-gray-500 text-sm">{error || t("marketplace.payment.wrong")}</p>
         )}
         <Button onClick={onClose} className={`w-full mt-6 py-5 font-bold cursor-pointer ${isSuccess ? "bg-emerald-600 hover:bg-emerald-700" : "bg-gray-800 hover:bg-gray-900"}`}>
-          {isSuccess ? "Done" : "Try Again"}
+          {isSuccess ? t("marketplace.payment.done") : t("marketplace.payment.tryAgain")}
         </Button>
       </div>
     </div>
@@ -147,6 +149,7 @@ function PaymentModal({ status, paymentId, error, onClose }) {
 }
 
 function OrderSummary({ cartItems, onRemove, onPay, paying, razorpayLoaded }) {
+  const { t } = useTranslation();
   const total = cartItems.reduce((sum, item) => sum + item.rawPrice, 0);
   const gst = Math.round(total * 0.05);
   const grandTotal = total + gst;
@@ -157,8 +160,8 @@ function OrderSummary({ cartItems, onRemove, onPay, paying, razorpayLoaded }) {
         <Card className="border-0 shadow-md">
           <CardContent className="p-12 text-center">
             <ShoppingCart className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-500 font-medium">Your cart is empty</p>
-            <p className="text-sm text-gray-400 mt-1">Browse vendors to add inputs.</p>
+            <p className="text-gray-500 font-medium">{t("marketplace.cart.empty")}</p>
+            <p className="text-sm text-gray-400 mt-1">{t("marketplace.cart.emptyHint")}</p>
           </CardContent>
         </Card>
       ) : (
@@ -169,7 +172,7 @@ function OrderSummary({ cartItems, onRemove, onPay, paying, razorpayLoaded }) {
                 <CardContent className="p-4 flex items-center justify-between">
                   <div>
                     <p className="font-semibold text-gray-800">{item.product}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">from {item.vendor}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">{t("marketplace.cart.fromVendor", { vendor: item.vendor })}</p>
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="font-bold text-emerald-700">{item.price}</span>
@@ -183,23 +186,23 @@ function OrderSummary({ cartItems, onRemove, onPay, paying, razorpayLoaded }) {
           </div>
           <Card className="border-0 shadow-md bg-gray-50">
             <CardContent className="p-5 space-y-3">
-              <h4 className="font-bold text-gray-800 flex items-center gap-2"><IndianRupee className="w-4 h-4 text-emerald-600" /> Bill Summary</h4>
+              <h4 className="font-bold text-gray-800 flex items-center gap-2"><IndianRupee className="w-4 h-4 text-emerald-600" /> {t("marketplace.billSummary")}</h4>
               <div className="space-y-2 text-sm">
-                <div className="flex justify-between text-gray-600"><span>Subtotal ({cartItems.length} items)</span><span>₹{total.toLocaleString("en-IN")}</span></div>
-                <div className="flex justify-between text-gray-600"><span>GST (5%)</span><span>₹{gst.toLocaleString("en-IN")}</span></div>
-                <div className="flex justify-between text-gray-400 text-xs"><span>Delivery</span><span className="text-emerald-600 font-semibold">FREE</span></div>
+                <div className="flex justify-between text-gray-600"><span>{t("marketplace.subtotalItems", { count: cartItems.length })}</span><span>₹{total.toLocaleString("en-IN")}</span></div>
+                <div className="flex justify-between text-gray-600"><span>{t("marketplace.gst5")}</span><span>₹{gst.toLocaleString("en-IN")}</span></div>
+                <div className="flex justify-between text-gray-400 text-xs"><span>{t("marketplace.delivery")}</span><span className="text-emerald-600 font-semibold">{t("marketplace.free")}</span></div>
                 <div className="border-t pt-2 flex justify-between font-black text-gray-900 text-base">
-                  <span>Total Payable</span>
+                  <span>{t("marketplace.totalPayable")}</span>
                   <span className="text-emerald-700">₹{grandTotal.toLocaleString("en-IN")}</span>
                 </div>
               </div>
             </CardContent>
           </Card>
-          {!razorpayLoaded && <p className="text-xs text-amber-600 text-center">⚠ Loading payment SDK…</p>}
+          {!razorpayLoaded && <p className="text-xs text-amber-600 text-center">{t("marketplace.loadingSdk")}</p>}
           <Button disabled={paying || !razorpayLoaded} onClick={() => onPay(grandTotal)} className="w-full py-6 text-base font-bold bg-emerald-600 hover:bg-emerald-700 cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2">
-            {paying ? <><Loader2 className="w-5 h-5 animate-spin" /> Processing…</> : <><CreditCard className="w-5 h-5" /> Pay ₹{grandTotal.toLocaleString("en-IN")} via Razorpay</>}
+            {paying ? <><Loader2 className="w-5 h-5 animate-spin" /> {t("marketplace.processing")}</> : <><CreditCard className="w-5 h-5" /> {t("marketplace.payViaRazorpay", { total: grandTotal.toLocaleString("en-IN") })}</>}
           </Button>
-          <p className="text-xs text-gray-400 text-center">Secured by Razorpay · UPI · Cards · Net Banking</p>
+          <p className="text-xs text-gray-400 text-center">{t("marketplace.securedBy")}</p>
         </>
       )}
     </div>
@@ -321,6 +324,7 @@ function CropRecommendationCard({ rec, index, onBrowseInputs, onBuyBundle }) {
 
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function MarketplaceSection() {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("recommend");
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState("all");
@@ -428,14 +432,14 @@ export default function MarketplaceSection() {
         <div>
           <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
             <div className="p-2 bg-emerald-100 rounded-xl"><ShoppingCart className="w-5 h-5 text-emerald-700" /></div>
-            Input Marketplace
+            {t("marketplace.title")}
           </h2>
-          <p className="text-gray-500 mt-1 text-sm">AI crop recommendations + verified input vendors for your next season.</p>
+          <p className="text-gray-500 mt-1 text-sm">{t("marketplace.subtitle")}</p>
         </div>
         {cartItems.length > 0 && (
           <button onClick={() => setActiveTab("cart")} className="cursor-pointer">
             <Badge className="bg-emerald-600 text-white px-3 py-1.5 hover:bg-emerald-700 transition-colors">
-              🛒 {cartItems.length} in cart
+              {t("marketplace.itemsInCart", { count: cartItems.length })}
             </Badge>
           </button>
         )}
@@ -444,9 +448,9 @@ export default function MarketplaceSection() {
       {/* Tabs */}
       <div className="flex gap-2 bg-gray-100 rounded-xl p-1.5">
         {[
-          { id: "recommend", label: "🤖 AI Advisor" },
-          { id: "vendors", label: "🛒 Vendors" },
-          { id: "cart", label: `📦 Orders (${cartItems.length})` },
+          { id: "recommend", label: t("marketplace.tab.aiAdvisor") },
+          { id: "vendors", label: t("marketplace.tab.vendors") },
+          { id: "cart", label: t("marketplace.tab.orders", { count: cartItems.length }) },
         ].map(tab => (
           <button key={tab.id} onClick={() => setActiveTab(tab.id)}
             className={`flex-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-all cursor-pointer ${activeTab === tab.id ? "bg-white text-emerald-700 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}>
@@ -463,7 +467,7 @@ export default function MarketplaceSection() {
           <div className="bg-gradient-to-r from-purple-50 to-emerald-50 border border-purple-100 rounded-2xl p-4">
             <div className="flex items-center gap-2 mb-3">
               <Brain className="w-4 h-4 text-purple-600" />
-              <span className="text-xs font-bold text-purple-700 uppercase tracking-wide">AI analysed your farm profile</span>
+              <span className="text-xs font-bold text-purple-700 uppercase tracking-wide">{t("marketplace.aiAnalyzedProfile")}</span>
             </div>
             <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
               {[
@@ -501,13 +505,13 @@ export default function MarketplaceSection() {
           <div className="flex gap-3">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <Input placeholder="Search vendors or products..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-10" />
+              <Input placeholder={t("marketplace.searchVendors")} value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-10" />
             </div>
             <select value={filterType} onChange={e => setFilterType(e.target.value)} className="h-10 rounded-md border border-gray-200 px-3 text-sm bg-white">
-              <option value="all">All Types</option>
-              <option value="Seeds">Seeds</option>
-              <option value="Fertilizer">Fertilizer</option>
-              <option value="Pesticides">Pesticides</option>
+              <option value="all">{t("marketplace.filter.allTypes")}</option>
+              <option value="Seeds">{t("marketplace.filter.seeds")}</option>
+              <option value="Fertilizer">{t("marketplace.filter.fertilizer")}</option>
+              <option value="Pesticides">{t("marketplace.filter.pesticides")}</option>
             </select>
           </div>
 
@@ -531,7 +535,7 @@ export default function MarketplaceSection() {
                       </div>
                     </div>
                   </div>
-                  {vendor.fairPrice && <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-xs shrink-0">Fair Price ✓</Badge>}
+                  {vendor.fairPrice && <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-xs shrink-0">{t("marketplace.fairPrice")}</Badge>}
                 </div>
                 <div className="mt-4 space-y-2">
                   {vendor.products.map((product, pi) => (
@@ -542,7 +546,7 @@ export default function MarketplaceSection() {
                       </div>
                       <Button size="sm" variant="outline" className="text-xs cursor-pointer hover:bg-emerald-50"
                         onClick={() => addToCart(vendor, product, vendor.prices[pi], vendor.rawPrices[pi])}>
-                        + Add
+                        {t("marketplace.add")}
                       </Button>
                     </div>
                   ))}

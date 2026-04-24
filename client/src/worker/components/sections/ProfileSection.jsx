@@ -3,8 +3,10 @@ import { MapPin, BadgeCheck, Award } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { fmtMoney } from "../../lib/data";
+import { useTranslation } from "../../../consumer/i18n/config.jsx";
 
 export default function ProfileSection({ villagerProfile }) {
+  const { t } = useTranslation();
   const displayName = "Profile";
 
   return (
@@ -49,20 +51,20 @@ export default function ProfileSection({ villagerProfile }) {
               <div className="text-3xl font-bold text-gray-900">
                 {villagerProfile.gigScore}
               </div>
-              <div className="text-xs text-gray-500 mt-0.5">Gig Score</div>
+              <div className="text-xs text-gray-500 mt-0.5">{t("worker.profile.gigScore")}</div>
             </div>
             <div>
               <div className="text-3xl font-bold text-gray-900">
                 {villagerProfile.gigsCompleted}
               </div>
-              <div className="text-xs text-gray-500 mt-0.5">Gigs Done</div>
+              <div className="text-xs text-gray-500 mt-0.5">{t("worker.profile.gigsDone")}</div>
             </div>
             <div>
               <div className="text-2xl font-bold text-gray-900">
                 {fmtMoney(villagerProfile.seasonEarnings)}
               </div>
               <div className="text-xs text-gray-500 mt-0.5">
-                Season Earnings
+                {t("worker.profile.earnings")}
               </div>
             </div>
           </div>

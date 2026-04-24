@@ -1,38 +1,47 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { X, Flag, Send, Upload } from "lucide-react";
+import { useTranslation } from "../../consumer/i18n/config.jsx";
 
 export default function ReportIssuePopup({ isOpen, onClose, onSubmit }) {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     issueType: "",
     productId: "",
     image: null,
-    description: ""
+    description: "",
   });
   const modalRef = useRef(null);
   const fileInputRef = useRef(null);
 
-  const handleKeyDown = useCallback((event) => {
-    if (event.key === 'Escape') onClose();
-  }, [onClose]);
+  const handleKeyDown = useCallback(
+    (event) => {
+      if (event.key === "Escape") onClose();
+    },
+    [onClose],
+  );
 
-  const handleClickOutside = useCallback((event) => {
-    if (modalRef.current && !modalRef.current.contains(event.target)) onClose();
-  }, [onClose]);
+  const handleClickOutside = useCallback(
+    (event) => {
+      if (modalRef.current && !modalRef.current.contains(event.target))
+        onClose();
+    },
+    [onClose],
+  );
 
   useEffect(() => {
     if (isOpen) {
-      document.addEventListener('keydown', handleKeyDown);
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("keydown", handleKeyDown);
+      document.addEventListener("mousedown", handleClickOutside);
       return () => {
-        document.removeEventListener('keydown', handleKeyDown);
-        document.removeEventListener('mousedown', handleClickOutside);
+        document.removeEventListener("keydown", handleKeyDown);
+        document.removeEventListener("mousedown", handleClickOutside);
       };
     }
   }, [isOpen, handleKeyDown, handleClickOutside]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleImageUpload = (e) => {
@@ -40,13 +49,13 @@ export default function ReportIssuePopup({ isOpen, onClose, onSubmit }) {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setFormData(prev => ({ 
-          ...prev, 
+        setFormData((prev) => ({
+          ...prev,
           image: {
             file: file,
             preview: reader.result,
-            name: file.name
-          }
+            name: file.name,
+          },
         }));
       };
       reader.readAsDataURL(file);
@@ -54,9 +63,9 @@ export default function ReportIssuePopup({ isOpen, onClose, onSubmit }) {
   };
 
   const handleRemoveImage = () => {
-    setFormData(prev => ({ ...prev, image: null }));
+    setFormData((prev) => ({ ...prev, image: null }));
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
   };
 
@@ -64,7 +73,12 @@ export default function ReportIssuePopup({ isOpen, onClose, onSubmit }) {
     e.preventDefault();
     if (formData.description.trim()) {
       onSubmit(formData);
-      setFormData({ issueType: "", productId: "", image: null, description: "" });
+      setFormData({
+        issueType: "",
+        productId: "",
+        image: null,
+        description: "",
+      });
       onClose();
     }
   };
@@ -73,26 +87,38 @@ export default function ReportIssuePopup({ isOpen, onClose, onSubmit }) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div ref={modalRef} className="bg-white rounded-xl shadow-xl w-full max-w-sm md:max-w-md max-h-[90vh] overflow-y-auto">
-        
+      <div
+        ref={modalRef}
+        className="bg-white rounded-xl shadow-xl w-full max-w-sm md:max-w-md max-h-[90vh] overflow-y-auto"
+      >
         {/* Header */}
         <div className="flex items-center justify-between p-4 md:p-6 border-b">
           <div className="flex items-center gap-2 md:gap-3">
             <Flag className="h-4 w-4 md:h-5 md:w-5 text-red-500" />
-            <h2 className="text-base md:text-lg font-semibold text-gray-900">Report Issue</h2>
+            <h2 className="text-base md:text-lg font-semibold text-gray-900">
+              {t("issue.report")}
+            </h2>
           </div>
-          <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded-lg">
+          <button
+            onClick={onClose}
+            className="p-1 hover:bg-gray-100 rounded-lg"
+          >
             <X className="h-4 w-4 md:h-5 md:w-5 text-gray-500" />
           </button>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-4 md:p-6 space-y-4 md:space-y-6">
-          
+        <form
+          onSubmit={handleSubmit}
+          className="p-4 md:p-6 space-y-4 md:space-y-6"
+        >
           {/* Issue Type (Optional) */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Issue Type <span className="text-gray-400 text-xs">(Optional)</span>
+              {t("issue.type")}{" "}
+              <span className="text-gray-400 text-xs">
+                ({t("common.optional")})
+              </span>
             </label>
             <select
               name="issueType"
@@ -100,29 +126,32 @@ export default function ReportIssuePopup({ isOpen, onClose, onSubmit }) {
               onChange={handleInputChange}
               className="w-full p-2.5 md:p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm md:text-base"
             >
-              <option value="">Select issue type</option>
-              <option value="quality">Product Quality Issue</option>
-              <option value="authenticity">Authenticity Concern</option>
-              <option value="supply-chain">Supply Chain Problem</option>
-              <option value="labeling">Incorrect Labeling</option>
-              <option value="contamination">Contamination</option>
-              <option value="payment">Payment Issue</option>
-              <option value="fraud">Suspected Fraud</option>
-              <option value="other">Other</option>
+              <option value="">{t("issue.selectType")}</option>
+              <option value="quality">{t("issue.productQuality")}</option>
+              <option value="authenticity">{t("issue.authenticity")}</option>
+              <option value="supply-chain">{t("issue.supplyChain")}</option>
+              <option value="labeling">{t("issue.labeling")}</option>
+              <option value="contamination">{t("issue.contamination")}</option>
+              <option value="payment">{t("issue.payment")}</option>
+              <option value="fraud">{t("issue.fraud")}</option>
+              <option value="other">{t("issue.other")}</option>
             </select>
           </div>
 
           {/* Product ID (Optional) */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Product ID <span className="text-gray-400 text-xs">(Optional)</span>
+              {t("issue.productId")}{" "}
+              <span className="text-gray-400 text-xs">
+                ({t("common.optional")})
+              </span>
             </label>
             <input
               type="text"
               name="productId"
               value={formData.productId}
               onChange={handleInputChange}
-              placeholder="Enter product ID or scan code"
+              placeholder={t("issue.productPlaceholder")}
               className="w-full p-2.5 md:p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm md:text-base"
             />
           </div>
@@ -130,9 +159,12 @@ export default function ReportIssuePopup({ isOpen, onClose, onSubmit }) {
           {/* Upload Image (Optional) */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Upload Image <span className="text-gray-400 text-xs">(Optional)</span>
+              {t("issue.uploadImage")}{" "}
+              <span className="text-gray-400 text-xs">
+                ({t("common.optional")})
+              </span>
             </label>
-            
+
             {!formData.image ? (
               <div className="relative">
                 <input
@@ -148,8 +180,10 @@ export default function ReportIssuePopup({ isOpen, onClose, onSubmit }) {
                   className="w-full p-3 md:p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-red-400 hover:bg-red-50 transition-colors flex flex-col items-center gap-2 text-sm md:text-base"
                 >
                   <Upload className="h-6 w-6 md:h-8 md:w-8 text-gray-400" />
-                  <span className="text-gray-600">Click to upload image</span>
-                  <span className="text-xs text-gray-400">PNG, JPG, GIF up to 10MB</span>
+                  <span className="text-gray-600">{t("issue.uploadHint")}</span>
+                  <span className="text-xs text-gray-400">
+                    {t("issue.uploadTypes")}
+                  </span>
                 </button>
               </div>
             ) : (
@@ -178,7 +212,7 @@ export default function ReportIssuePopup({ isOpen, onClose, onSubmit }) {
           {/* Description (Required) */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Description *
+              {t("issue.description")}
             </label>
             <textarea
               name="description"
@@ -186,7 +220,7 @@ export default function ReportIssuePopup({ isOpen, onClose, onSubmit }) {
               onChange={handleInputChange}
               required
               rows={4}
-              placeholder="Please describe the issue in detail..."
+              placeholder={t("issue.descriptionPlaceholder")}
               className="w-full p-2.5 md:p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none text-sm md:text-base"
             />
           </div>
@@ -198,14 +232,14 @@ export default function ReportIssuePopup({ isOpen, onClose, onSubmit }) {
               onClick={onClose}
               className="flex-1 py-2.5 px-4 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm md:text-base"
             >
-              Cancel
+              {t("common.cancel")}
             </button>
             <button
               type="submit"
               className="flex-1 py-2.5 px-4 bg-red-500 text-white rounded-lg hover:bg-red-600 flex items-center justify-center gap-2 transition-colors text-sm md:text-base"
             >
               <Send className="h-4 w-4" />
-              Submit Report
+              {t("issue.submit")}
             </button>
           </div>
         </form>

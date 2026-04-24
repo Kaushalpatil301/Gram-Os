@@ -2,8 +2,10 @@ import React from "react";
 import { Briefcase, BarChart2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { fmtMoney, MONTHLY_EARNINGS } from "../../lib/data";
+import { useTranslation } from "../../../consumer/i18n/config.jsx";
 
 function EarningsChart({ data }) {
+  const { t } = useTranslation();
   const max = Math.max(...data.map((d) => d.amount));
   return (
     <div className="flex items-end gap-2 h-24 mt-5">
@@ -21,12 +23,14 @@ function EarningsChart({ data }) {
 }
 
 export default function EarningsSection({ earnings }) {
+  const { t } = useTranslation();
+
   return (
     <>
       <div className="mb-4">
-        <h3 className="text-xl font-semibold text-gray-900">Earnings</h3>
+        <h3 className="text-xl font-semibold text-gray-900">{t("villager.earnings.title")}</h3>
         <p className="text-sm text-gray-600">
-          Your income and financial standing this season
+          {t("villager.earnings.subtitle")}
         </p>
       </div>
       <div className="grid md:grid-cols-3 gap-4">
@@ -37,23 +41,23 @@ export default function EarningsSection({ earnings }) {
                 <div className="text-2xl font-bold text-gray-900">
                   {fmtMoney(earnings.weekly)}
                 </div>
-                <div className="text-xs text-gray-500 mt-0.5">This Week</div>
+                <div className="text-xs text-gray-500 mt-0.5">{t("villager.earnings.thisWeek")}</div>
               </div>
               <div>
                 <div className="text-2xl font-bold text-gray-900">
                   {fmtMoney(earnings.seasonTotal)}
                 </div>
                 <div className="text-xs text-gray-500 mt-0.5">
-                  Season Total
+                  {t("villager.earnings.seasonTotal")}
                 </div>
               </div>
               <div>
                 <div className="text-2xl font-bold text-gray-900">
                   {fmtMoney(earnings.avgDaily)}
                 </div>
-                <div className="text-xs text-gray-500 mt-0.5">Avg Daily</div>
+                <div className="text-xs text-gray-500 mt-0.5">{t("villager.earnings.avgDaily")}</div>
                 <div className="text-xs text-gray-400">
-                  District: {fmtMoney(earnings.districtAvg)}
+                  {t("villager.earnings.district")}: {fmtMoney(earnings.districtAvg)}
                 </div>
               </div>
               <div>
@@ -61,7 +65,7 @@ export default function EarningsSection({ earnings }) {
                   {earnings.creditScore}
                 </div>
                 <div className="text-xs text-gray-500 mt-0.5">
-                  Credit Score
+                  {t("villager.earnings.creditScore")}
                 </div>
                 <div
                   className={`mt-1 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs ${
@@ -71,7 +75,7 @@ export default function EarningsSection({ earnings }) {
                   }`}
                 >
                   <Briefcase className="w-3 h-3" />
-                  {earnings.loanEligible ? "Loan Eligible" : "Not Eligible"}
+                  {earnings.loanEligible ? t("villager.earnings.loanEligible") : t("villager.earnings.notEligible")}
                 </div>
               </div>
             </div>
@@ -83,24 +87,24 @@ export default function EarningsSection({ earnings }) {
           <CardContent className="p-6">
             <div className="flex items-center gap-2 mb-4">
               <BarChart2 className="w-4 h-4 text-emerald-600" />
-              <h4 className="font-semibold text-gray-900">Season Stats</h4>
+              <h4 className="font-semibold text-gray-900">{t("villager.earnings.seasonStats")}</h4>
             </div>
             {[
               {
-                label: "Gigs completed",
+                label: t("villager.earnings.gigsCompleted"),
                 val: 126,
                 max: 150,
                 color: "bg-emerald-500",
               },
               {
-                label: "On-time rate",
+                label: t("villager.earnings.onTimeRate"),
                 val: 94,
                 max: 100,
                 color: "bg-green-400",
                 suffix: "%",
               },
               {
-                label: "Quality rating",
+                label: t("villager.earnings.qualityRating"),
                 val: 4.6,
                 max: 5,
                 color: "bg-amber-400",

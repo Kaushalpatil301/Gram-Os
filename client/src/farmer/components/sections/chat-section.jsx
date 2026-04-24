@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import { Send, User, Search, Store, Video } from "lucide-react";
+import { useTranslation } from "../../../consumer/i18n/config.jsx";
 
 export default function ChatSection({ activeChats }) {
+  const { t } = useTranslation();
   const [selectedChat, setSelectedChat] = useState(
     activeChats?.length > 0 ? activeChats[activeChats.length - 1] : null
   );
@@ -9,7 +11,7 @@ export default function ChatSection({ activeChats }) {
   const [messages, setMessages] = useState({
     // Pre-populate with some initial greetings
     FreshMart: [
-      { sender: "Retailer", text: "Hello! We are interested in your organic tomatoes.", time: "10:00 AM" }
+      { sender: "Retailer", text: t("chat.seedGreeting"), time: "10:00 AM" }
     ]
   });
 
@@ -35,8 +37,8 @@ export default function ChatSection({ activeChats }) {
     return (
       <div className="bg-white rounded-3xl shadow-xl border border-green-100 p-12 text-center mt-6">
         <Store className="w-16 h-16 text-emerald-200 mx-auto mb-4" />
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">No Active Chats</h2>
-        <p className="text-gray-500">Accept requests from the notification menu to start chatting with retailers.</p>
+        <h2 className="text-2xl font-bold text-gray-800 mb-2">{t("chat.noActive")}</h2>
+        <p className="text-gray-500">{t("chat.noActiveDesc")}</p>
       </div>
     );
   }
@@ -56,13 +58,13 @@ export default function ChatSection({ activeChats }) {
               </div>
               <div>
                 <h2 className="text-lg font-bold text-gray-900">{selectedChat.name}</h2>
-                <p className="text-xs font-medium text-emerald-600">Online • Retailer</p>
+                <p className="text-xs font-medium text-emerald-600">{t("chat.onlineFarmer")}</p>
               </div>
             </div>
             <button 
               onClick={handleJitsiCall}
               className="p-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm"
-              title="Start Video Call"
+              title={t("chat.startVideoCall")}
             >
               <Video className="w-5 h-5" />
             </button>
@@ -73,7 +75,7 @@ export default function ChatSection({ activeChats }) {
             {!messages[selectedChat.name]?.length && (
               <div className="text-center mt-10">
                 <div className="inline-block bg-white border border-gray-100 rounded-xl p-3 shadow-sm">
-                  <p className="text-gray-500 text-sm font-medium mt-1">Connection accepted! Send a message to start.</p>
+                  <p className="text-gray-500 text-sm font-medium mt-1">{t("chat.ready")}</p>
                 </div>
               </div>
             )}
@@ -95,7 +97,7 @@ export default function ChatSection({ activeChats }) {
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                placeholder="Type a message..." 
+                placeholder={t("chat.typeMessage")} 
                 className="flex-1 px-5 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-colors text-sm font-medium"
               />
               <button 
@@ -110,19 +112,19 @@ export default function ChatSection({ activeChats }) {
       ) : (
         <div className="w-2/3 flex flex-col items-center justify-center bg-gray-50/50 border-r border-gray-100">
           <Store className="w-16 h-16 text-gray-300 mb-4" />
-          <p className="text-gray-500 font-medium">Select a chat to begin messaging.</p>
+          <p className="text-gray-500 font-medium">{t("chat.selectToStart")}</p>
         </div>
       )}
 
       {/* Right Sidebar - Chat List (Moved from left) */}
       <div className="w-1/3 flex flex-col bg-gray-50/50">
         <div className="p-5 border-b border-gray-100 bg-white">
-          <h2 className="text-xl font-bold text-gray-900">Retailers</h2>
+          <h2 className="text-xl font-bold text-gray-900">{t("chat.farmers")}</h2>
           <div className="mt-4 relative">
             <Search className="w-4 h-4 absolute left-3 top-2.5 text-gray-400" />
             <input 
               type="text" 
-              placeholder="Search active chats..." 
+              placeholder={t("chat.searchActive")} 
               className="w-full pl-9 pr-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors"
             />
           </div>
