@@ -76,6 +76,11 @@ const productSchema = new Schema(
       enum: ["available", "sold", "reserved"],
       default: "available",
     },
+
+    aiPredictedPrice: {
+      type: Number,
+      default: null,
+    },
   },
   {
     timestamps: true,

@@ -6,6 +6,7 @@ import inventoryRouter from "./routes/inventory.routes.js";
 import loanRouter from "./routes/loan.routes.js";
 import profileRouter from "./routes/profile.routes.js";
 import jobRouter from "./routes/job.routes.js";
+import marketplaceRouter from "./routes/marketplace.routes.js";
 import cookieParser from "cookie-parser";
 
 const app = express();
@@ -30,6 +31,7 @@ app.use("/api/v1/inventory", inventoryRouter);
 app.use("/api/v1/loans", loanRouter);
 app.use("/api/v1/profile", profileRouter);
 app.use("/api/v1/jobs", jobRouter);
+app.use("/api/v1/marketplace", marketplaceRouter);
 
 import twilio from "twilio";
 
