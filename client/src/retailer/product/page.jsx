@@ -160,6 +160,7 @@ Farm Size: ${product.farmSize || "5 acres"}
 Certification: ${product.certification || "Organic"}
 Quantity Available: ${product.quantity} kg
 Farmer's Base Price: ₹${product.basePrice}/kg
+Market Predicted Wholesale Price (AI): ₹${product.aiPredictedPrice || "N/A"}/kg
 Days Since Harvest: ${Math.floor((Date.now() - new Date(product.harvestDate || product.createdAt)) / 86400000)}
 Freshness Score: 9.2/10
 
@@ -369,14 +370,6 @@ Return this JSON:
       />
 
       <div className="max-w-6xl mx-auto px-6 py-12">
-        {/* QR Scan Confirmation */}
-        <div className="mb-8 text-center">
-          <div className="inline-flex items-center justify-center bg-green-100 rounded-full px-4 py-2 mb-4">
-            <span className="text-green-600 font-semibold text-sm">
-              ✓ QR Successfully Scanned — Full Journey Verified
-            </span>
-          </div>
-        </div>
 
         {/* Main Product Card */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">

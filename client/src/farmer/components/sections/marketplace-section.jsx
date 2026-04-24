@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import axios from "axios";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -214,7 +215,7 @@ function OrderSummary({ cartItems, onRemove, onPay, paying, razorpayLoaded }) {
 }
 
 // ── AI Explainability Card ────────────────────────────────────────────────────
-function CropRecommendationCard({ rec, index, onBrowseInputs }) {
+function CropRecommendationCard({ rec, index, onBrowseInputs, onBuyBundle }) {
   const [expanded, setExpanded] = useState(index === 0);
 
   const rankColors = ["border-l-emerald-500", "border-l-blue-400", "border-l-amber-400"];
@@ -316,7 +317,7 @@ function CropRecommendationCard({ rec, index, onBrowseInputs }) {
 
             {/* CTA */}
             <div className="flex gap-2">
-              <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 cursor-pointer">Plan This Crop</Button>
+              <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 cursor-pointer" onClick={onBuyBundle}>Buy Full Bundle</Button>
               <Button size="sm" variant="outline" className="cursor-pointer" onClick={onBrowseInputs}>Browse Inputs →</Button>
             </div>
           </div>
@@ -344,26 +345,64 @@ export default function MarketplaceSection() {
   });
 
   const addToCart = (vendor, product, price, rawPrice) => {
-    setCartItems(prev => [...prev, { vendor: vendor.name, product, price, rawPrice, id: Date.now() }]);
+    setCartItems(prev => [...prev, { vendor: vendor.name, product, price, rawPrice, id: Date.now() + Math.random() }]);
   };
 
   const removeFromCart = (id) => setCartItems(prev => prev.filter(c => c.id !== id));
 
-  const handlePay = (amount) => {
+  const handleBuyBundle = (rec) => {
+    const items = [
+      { vendor: "KrishiMart Nashik", product: `${rec.crop} Seeds`, price: "₹450/packet", rawPrice: 450, id: Date.now() + 1 },
+      { vendor: "Agro Inputs Pune", product: "DAP Fertilizer (50kg)", price: "₹1,350/bag", rawPrice: 1350, id: Date.now() + 2 },
+      { vendor: "GreenShield Agri", product: "Neem Oil 1L", price: "₹320/L", rawPrice: 320, id: Date.now() + 3 }
+    ];
+    setCartItems(prev => [...prev, ...items]);
+    setActiveTab("cart");
+  };
+
+  const handlePay = async (amount) => {
     setPaying(true);
-    initiateRazorpay({
-      amount,
-      cartItems,
-      onSuccess: (response) => {
+    try {
+      const orderRes = await axios.post("http://localhost:8000/api/v1/marketplace/create-order", { amount });
+      const order = orderRes.data.data;
+
+      const options = {
+        key: RAZORPAY_KEY_ID,
+        amount: order.amount,
+        currency: order.currency,
+        name: "KisanBazaar",
+        description: "Input Marketplace Order",
+        order_id: order.id,
+        handler: async (response) => {
+          try {
+            await axios.post("http://localhost:8000/api/v1/marketplace/verify-payment", response);
+            setPaying(false);
+            setPaymentModal({ status: "success", paymentId: response.razorpay_payment_id });
+            setCartItems([]);
+          } catch (error) {
+            setPaying(false);
+            setPaymentModal({ status: "failure", error: "Payment verification failed" });
+          }
+        },
+        prefill: {
+          name: "Farmer",
+          email: "farmer@agrichain.com",
+          contact: "9999999999"
+        },
+        theme: { color: "#059669" },
+        modal: { ondismiss: () => { setPaying(false); if (paymentModal?.error !== "dismissed") setPaymentModal({ status: "failure", error: "dismissed" }); } },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.on("payment.failed", (r) => {
         setPaying(false);
-        setPaymentModal({ status: "success", paymentId: response.razorpay_payment_id });
-        setCartItems([]);
-      },
-      onFailure: (reason) => {
-        setPaying(false);
-        if (reason !== "dismissed") setPaymentModal({ status: "failure", error: reason });
-      },
-    });
+        setPaymentModal({ status: "failure", error: r.error.description });
+      });
+      rzp.open();
+    } catch (error) {
+      setPaying(false);
+      setPaymentModal({ status: "failure", error: "Failed to initialize payment" });
+    }
   };
 
   return (
@@ -443,6 +482,7 @@ export default function MarketplaceSection() {
               rec={rec}
               index={i}
               onBrowseInputs={() => setActiveTab("vendors")}
+              onBuyBundle={() => handleBuyBundle(rec)}
             />
           ))}
         </div>

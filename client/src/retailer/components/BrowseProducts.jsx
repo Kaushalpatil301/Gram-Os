@@ -10,6 +10,8 @@ import {
   Package,
   ChevronRight,
   User,
+  Brain,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
@@ -125,12 +127,29 @@ const mockProducts = [
 
 const categories = ["All", "Vegetables", "Fruits", "Grains"];
 
+const getAiInsight = (product) => {
+  const hash = (product.name || "").length + (product.price || product.basePrice || 10);
+  const profitMargin = (hash % 35) + 15; // 15% to 50%
+  const reasons = [
+    "High urban demand this week",
+    "Low supply in local mandis",
+    "Export quality yields high margin",
+    "Trending seasonal crop",
+    "Predicted price surge in 3 days"
+  ];
+  return {
+    margin: profitMargin,
+    reason: reasons[hash % reasons.length]
+  };
+};
+
 export default function BrowseProducts() {
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
+  const [isAiMode, setIsAiMode] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -161,7 +180,7 @@ export default function BrowseProducts() {
   }, []);
 
   // Filter logic
-  const filteredProducts = products.filter((product) => {
+  let filteredProducts = products.filter((product) => {
     const matchesSearch =
       product.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       product.location?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -176,6 +195,12 @@ export default function BrowseProducts() {
 
     return matchesSearch && matchesCategory;
   });
+
+  if (isAiMode) {
+    filteredProducts = filteredProducts
+      .map(p => ({ ...p, ai: getAiInsight(p) }))
+      .sort((a, b) => b.ai.margin - a.ai.margin);
+  }
 
   const handleOpenModal = (product) => {
     setSelectedProduct(product);
@@ -200,20 +225,34 @@ export default function BrowseProducts() {
             />
           </div>
 
-          <div className="flex bg-gray-50 p-1 rounded-xl w-full md:w-auto overflow-x-auto hide-scrollbar">
-            {categories.map((category) => (
-              <button
-                key={category}
-                onClick={() => setActiveCategory(category)}
-                className={`py-2 px-6 rounded-lg font-medium text-sm transition-all whitespace-nowrap ${
-                  activeCategory === category
-                    ? "bg-white text-emerald-700 shadow-sm border border-gray-200"
-                    : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
-                }`}
-              >
-                {category}
-              </button>
-            ))}
+          <div className="flex flex-col md:flex-row gap-2 bg-gray-50 p-1 rounded-xl w-full md:w-auto overflow-x-auto hide-scrollbar">
+            <div className="flex">
+              {categories.map((category) => (
+                <button
+                  key={category}
+                  onClick={() => setActiveCategory(category)}
+                  className={`py-2 px-6 rounded-lg font-medium text-sm transition-all whitespace-nowrap ${
+                    activeCategory === category
+                      ? "bg-white text-emerald-700 shadow-sm border border-gray-200"
+                      : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+                  }`}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
+            <div className="w-px bg-gray-200 hidden md:block my-1"></div>
+            <button
+              onClick={() => setIsAiMode(!isAiMode)}
+              className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-bold text-sm transition-all whitespace-nowrap ${
+                isAiMode
+                  ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md"
+                  : "bg-white text-purple-600 border border-purple-200 hover:bg-purple-50"
+              }`}
+            >
+              <Sparkles className="w-4 h-4" />
+              {isAiMode ? "AI Profit Mode On" : "AI Profit Finder"}
+            </button>
           </div>
         </div>
 
@@ -280,6 +319,22 @@ export default function BrowseProducts() {
 
                 {/* Content */}
                 <div className="p-5 flex flex-col flex-1 border-t border-gray-50">
+                  {isAiMode && product.ai && (
+                    <div className="mb-3 p-2.5 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg border border-purple-100">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-bold text-purple-700 flex items-center gap-1">
+                          <Sparkles className="w-3 h-3" /> AI Suggestion
+                        </span>
+                        <span className="text-xs font-black text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded-full">
+                          {product.ai.margin}% Margin
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-gray-600 leading-snug">
+                        {product.ai.reason}
+                      </p>
+                    </div>
+                  )}
+
                   <div className="flex justify-between items-start mb-2">
                     <h3 className="font-bold text-gray-900 text-lg leading-tight line-clamp-2">
                       {product.name}
@@ -332,18 +387,12 @@ export default function BrowseProducts() {
                       </span>
                     </div>
 
-                    <div className="flex gap-2 w-full mt-2">
-                      <Button
-                        onClick={() => handleOpenModal(product)}
-                        className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl py-6 transition-all shadow-md text-sm"
-                      >
-                        Batch Details
-                      </Button>
+                    <div className="w-full mt-2">
                       <Button
                         onClick={() =>
                           navigate(`/retailer/product/${product._id}`)
                         }
-                        className="flex-1 bg-white border-2 border-emerald-600 text-emerald-600 hover:bg-emerald-50 font-semibold rounded-xl py-6 transition-all shadow-sm text-sm"
+                        className="w-full bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-semibold rounded-xl py-2.5 transition-all text-sm shadow-sm"
                       >
                         View More
                       </Button>

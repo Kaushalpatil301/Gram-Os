@@ -53,27 +53,15 @@ export default function RetailerDashboard() {
   const [notifications, setNotifications] = useState([
     {
       id: 1,
-      type: "accept",
+      type: "order_accepted",
       farmerName: "Ram Singh",
-      topic: "Organic Tomatoes supply accepted. You can chat now."
+      topic: "Accepted your order for 500kg Organic Tomatoes"
     },
     {
       id: 2,
-      type: "accept",
-      farmerName: "Suresh Kumar",
-      topic: "Premium Wheat connection accepted."
-    },
-    {
-      id: 3,
-      type: "connect",
-      farmerName: "Aman Gupta",
-      topic: "New inquiry for bulk Basmati Rice."
-    },
-    {
-      id: 4,
-      type: "accept",
-      farmerName: "Vikash Farm",
-      topic: "Contract terms for Golden Onions accepted."
+      type: "job_accepted",
+      workerName: "Sunita Pawar",
+      topic: "Accepted your job offer for Warehouse Sorting"
     }
   ]);
 
@@ -250,16 +238,30 @@ export default function RetailerDashboard() {
                     {notifications.map(notif => (
                       <div key={notif.id} className="p-4 border-b border-gray-50 transition-colors hover:bg-emerald-50/30 cursor-pointer">
                         <div className="flex gap-3">
-                          <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-emerald-100">
-                            <User className="w-5 h-5 text-emerald-600" />
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${notif.type === 'order_accepted' ? 'bg-emerald-100' : 'bg-blue-100'}`}>
+                            {notif.type === 'order_accepted' ? <Package className="w-5 h-5 text-emerald-600" /> : <Users className="w-5 h-5 text-blue-600" />}
                           </div>
                           <div>
                             <p className="text-sm font-medium text-gray-900">
-                              Farmer <span className="font-bold text-emerald-700">{notif.farmerName}</span> accepted your request
+                              {notif.type === 'order_accepted' ? (
+                                <>Farmer <span className="font-bold text-emerald-700">{notif.farmerName}</span> accepted order</>
+                              ) : (
+                                <>Worker <span className="font-bold text-blue-700">{notif.workerName}</span> accepted job</>
+                              )}
                             </p>
                             <p className="text-xs text-gray-500 mt-1">{notif.topic}</p>
                             <div className="flex gap-2 mt-3">
-                              <button onClick={() => handleAcceptConnect(notif)} className="text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-1.5 rounded-lg shadow-sm font-semibold transition-colors cursor-pointer">Chat Now</button>
+                              {notif.type === 'order_accepted' ? (
+                                <button onClick={() => {
+                                  setNotifications(prev => prev.filter(n => n.id !== notif.id));
+                                  goTo("contracts");
+                                }} className="text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-1.5 rounded-lg shadow-sm font-semibold transition-colors cursor-pointer">View Order</button>
+                              ) : (
+                                <button onClick={() => {
+                                  setNotifications(prev => prev.filter(n => n.id !== notif.id));
+                                  goTo("workforce");
+                                }} className="text-xs bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-lg shadow-sm font-semibold transition-colors cursor-pointer">View Job</button>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -270,12 +272,7 @@ export default function RetailerDashboard() {
               )}
             </div>
 
-            <button 
-              onClick={() => goTo("chat")}
-              className={`relative p-2 hover:bg-gray-100 rounded-xl transition-colors focus:outline-none ${activeSection === "chat" ? "text-blue-600 bg-blue-50" : "text-gray-600"}`}
-            >
-              <MessageSquare className="w-6 h-6" />
-            </button>
+
           </div>
         </header>
 

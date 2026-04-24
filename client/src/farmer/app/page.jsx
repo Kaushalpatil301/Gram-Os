@@ -46,33 +46,21 @@ export default function FarmerPage({ onLogout }) {
   const [notifications, setNotifications] = useState([
     {
       id: 1,
-      type: "connect",
+      type: "order_request",
       retailerName: "FreshMart",
-      topic: "Regarding Organic Tomatoes supply"
+      topic: "Requesting to buy 500kg of Organic Tomatoes"
     },
     {
       id: 2,
-      type: "order",
-      retailerName: "AgroCorp",
-      topic: "Order for 500kg Wheat has been finalized."
+      type: "job_applicant",
+      applicantName: "Sunita Pawar",
+      topic: "Applied for Onion Harvest Job"
     },
     {
       id: 3,
-      type: "connect",
-      retailerName: "GreenGrocers",
-      topic: "Interested in monthly Mango supply"
-    },
-    {
-      id: 4,
-      type: "connect",
+      type: "order_request",
       retailerName: "Reliance Fresh",
-      topic: "Bulk purchasing for Sona Masuri Rice"
-    },
-    {
-      id: 5,
-      type: "connect",
-      retailerName: "Local Mandi Buyer",
-      topic: "Looking for fresh red onions"
+      topic: "Requesting to buy 1000kg of Sona Masuri Rice"
     }
   ]);
 
@@ -285,25 +273,29 @@ export default function FarmerPage({ onLogout }) {
                       <div className="p-6 text-center text-gray-500 text-sm font-medium">No new notifications</div>
                     )}
                     {notifications.map(notif => (
-                      <div key={notif.id} className={`p-4 border-b border-gray-50 transition-colors ${notif.type === 'connect' ? 'hover:bg-emerald-50/30' : 'hover:bg-blue-50/30'}`}>
+                      <div key={notif.id} className={`p-4 border-b border-gray-50 transition-colors ${notif.type === 'order_request' ? 'hover:bg-emerald-50/30' : 'hover:bg-blue-50/30'}`}>
                         <div className="flex gap-3">
-                          <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${notif.type === 'connect' ? 'bg-emerald-100' : notif.type === 'loan' ? (notif.status === 'accepted' ? 'bg-emerald-100' : 'bg-red-100') : 'bg-blue-100'}`}>
-                            {notif.type === 'connect' ? <User className="w-5 h-5 text-emerald-600" /> : notif.type === 'loan' ? <DollarSign className={`w-5 h-5 ${notif.status === 'accepted' ? 'text-emerald-600' : 'text-red-600'}`} /> : <Package className="w-5 h-5 text-blue-600" />}
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${notif.type === 'order_request' ? 'bg-emerald-100' : 'bg-blue-100'}`}>
+                            {notif.type === 'order_request' ? <Package className="w-5 h-5 text-emerald-600" /> : <Users className="w-5 h-5 text-blue-600" />}
                           </div>
                           <div>
                             <p className="text-sm font-medium text-gray-900">
-                              {notif.type === 'connect' ? 
-                                <>Retailer <span className="font-bold text-emerald-700">{notif.retailerName}</span> wants to connect</> : 
-                                notif.type === 'loan' ? <>{notif.title}</> :
-                                <>New Purchase Order</>
+                              {notif.type === 'order_request' ? 
+                                <>Retailer <span className="font-bold text-emerald-700">{notif.retailerName}</span> wants to buy</> : 
+                                <><span className="font-bold text-blue-700">{notif.applicantName}</span> applied for a job</>
                               }
                             </p>
-                            <p className="text-xs text-gray-500 mt-1">{notif.type === 'loan' ? notif.message : notif.topic}</p>
+                            <p className="text-xs text-gray-500 mt-1">{notif.topic}</p>
                             <div className="flex gap-2 mt-3">
-                              {notif.type === 'connect' ? (
-                                <button onClick={() => handleAcceptConnect(notif)} className="text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-1.5 rounded-lg shadow-sm font-semibold transition-colors cursor-pointer">Accept & Chat</button>
+                              {notif.type === 'order_request' ? (
+                                <button onClick={() => {
+                                  setNotifications(prev => prev.filter(n => n.id !== notif.id));
+                                }} className="text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-1.5 rounded-lg shadow-sm font-semibold transition-colors cursor-pointer">Accept Order</button>
                               ) : (
-                                <button className="text-xs bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-lg shadow-sm font-semibold transition-colors cursor-pointer">View Order</button>
+                                <button onClick={() => {
+                                  setNotifications(prev => prev.filter(n => n.id !== notif.id));
+                                  goTo("workforce");
+                                }} className="text-xs bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-lg shadow-sm font-semibold transition-colors cursor-pointer">View Applicant</button>
                               )}
                             </div>
                           </div>
@@ -315,12 +307,7 @@ export default function FarmerPage({ onLogout }) {
               )}
             </div>
 
-            <button 
-              onClick={() => goTo("chat")}
-              className={`relative p-2 hover:bg-gray-100 rounded-xl transition-colors focus:outline-none ${activeSection === "chat" ? "text-blue-600 bg-blue-50" : "text-gray-600"}`}
-            >
-              <MessageSquare className="w-6 h-6" />
-            </button>
+
           </div>
         </header>
 

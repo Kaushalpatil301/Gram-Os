@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-export default function ProductDetails({ product }) {
+export default function ProductDetails({ product, hideFarmerDetails = false }) {
   const [isImageLoading, setIsImageLoading] = useState(true);
 
   if (!product) {
@@ -121,25 +121,27 @@ export default function ProductDetails({ product }) {
         </div>
 
         {/* Farmer Info */}
-        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-          <div className="bg-purple-50 px-4 py-3 border-b flex items-center">
-            <svg className="w-4 h-4 text-purple-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
-            <h3 className="text-sm font-bold text-purple-800">Farmer Details</h3>
-          </div>
-          <div className="p-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
-                <span className="text-purple-600 font-semibold">{farmerEmail?.[0]?.toUpperCase() || 'F'}</span>
-              </div>
-              <div>
-                <p className="font-medium text-gray-800">{farmerEmail || 'Unknown Farmer'}</p>
-                <p className="text-sm text-gray-500">Listed on {createdAt ? new Date(createdAt).toLocaleDateString() : 'N/A'}</p>
+        {!hideFarmerDetails && (
+          <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div className="bg-purple-50 px-4 py-3 border-b flex items-center">
+              <svg className="w-4 h-4 text-purple-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+              <h3 className="text-sm font-bold text-purple-800">Farmer Details</h3>
+            </div>
+            <div className="p-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                  <span className="text-purple-600 font-semibold">{farmerEmail?.[0]?.toUpperCase() || 'F'}</span>
+                </div>
+                <div>
+                  <p className="font-medium text-gray-800">{farmerEmail || 'Unknown Farmer'}</p>
+                  <p className="text-sm text-gray-500">Listed on {createdAt ? new Date(createdAt).toLocaleDateString() : 'N/A'}</p>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
