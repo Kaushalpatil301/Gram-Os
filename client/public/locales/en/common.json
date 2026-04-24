@@ -1,7 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
-
-// Base English translations (source language)
-const baseTranslations = {
+{
   "header.title": "AgriChain",
   "header.subtitle": "Supply Chain Transparency",
   "header.scans": "Scans",
@@ -15,8 +12,7 @@ const baseTranslations = {
   "consumer.scans.count": "{{count}} Scans",
   "header.logoutSuccess": "You have been logged out successfully ✅",
   "scan.title": "QR Code Scanner",
-  "scan.subtitle":
-    "Verify authenticity and trace your product's complete journey from farm to table",
+  "scan.subtitle": "Verify authenticity and trace your product's complete journey from farm to table",
   "scan.button": "Scan QR Code",
   "scan.history": "Recent Scans",
   "scan.noScans": "No scans yet. Start by scanning your first product!",
@@ -79,20 +75,20 @@ const baseTranslations = {
   "common.optional": "Optional",
   "common.edit": "Edit",
   "common.refresh": "Refresh",
-   "common.export": "Export",
-   "common.copy": "Copy",
-   "common.copied": "Copied",
-   "credit.loading": "GramOS AI is analyzing your profile...",
-   "credit.eligible": "Eligible",
-   "credit.buildActivity": "Build activity to improve your score",
-   "credit.nextMilestone": "Next Milestone",
-   "credit.scoreNeeded": "{{score}} points needed",
-   "credit.scoreBreakdown": "Score Breakdown",
-   "credit.weightContribution": "Weight: {{weight}} · Points: {{points}}",
-   "credit.scoreHistory": "Score History",
-   "credit.tooltip.score": "Score",
-   "credit.tipsTitle": "Tips to Improve Your Score",
-   "common.connect": "Connect",
+  "common.export": "Export",
+  "common.copy": "Copy",
+  "common.copied": "Copied",
+  "credit.loading": "GramOS AI is analyzing your profile...",
+  "credit.eligible": "Eligible",
+  "credit.buildActivity": "Build activity to improve your score",
+  "credit.nextMilestone": "Next Milestone",
+  "credit.scoreNeeded": "{{score}} points needed",
+  "credit.scoreBreakdown": "Score Breakdown",
+  "credit.weightContribution": "Weight: {{weight}} · Points: {{points}}",
+  "credit.scoreHistory": "Score History",
+  "credit.tooltip.score": "Score",
+  "credit.tipsTitle": "Tips to Improve Your Score",
+  "common.connect": "Connect",
   "common.retry": "Retry",
   "status.active": "Active",
   "status.pending": "Pending",
@@ -257,13 +253,13 @@ const baseTranslations = {
   "farmer.nav.map": "Price Map",
   "farmer.nav.credit": "Credit Score",
   "farmer.nav.loans": "Loan Requests",
-   "farmer.nav.schemes": "Govt Schemes",
-   "farmer.nav.home": "Home",
-   "farmer.nav.localMarket": "Local Market",
-   "farmer.nav.queries": "Queries",
-   "farmer.nav.reports": "Reports",
-   "farmer.dashboard.title": "Farmer Dashboard",
-   "farmer.profile.nameFallback": "Farmer",
+  "farmer.nav.schemes": "Govt Schemes",
+  "farmer.nav.home": "Home",
+  "farmer.nav.localMarket": "Local Market",
+  "farmer.nav.queries": "Queries",
+  "farmer.nav.reports": "Reports",
+  "farmer.dashboard.title": "Farmer Dashboard",
+  "farmer.profile.nameFallback": "Farmer",
   "farmer.notifications.title": "Notifications",
   "farmer.notifications.new": "New",
   "farmer.notifications.none": "No new notifications",
@@ -462,7 +458,6 @@ const baseTranslations = {
   "retailer.analytics.recentActivity.title": "Recent Activity",
   "retailer.analytics.recentActivity.subtitle": "Latest updates from your farm supply network",
 
-  // Retailer Dashboard translations
   "retailer.dashboard.charts.monthlyTransactions.title": "Monthly Transactions",
   "retailer.dashboard.charts.monthlyTransactions.subtitle": "Revenue trend over time",
   "retailer.dashboard.charts.produceCategories.title": "Produce Categories",
@@ -500,7 +495,6 @@ const baseTranslations = {
   "retailer.dashboard.time.ago.days": "{{count}} days ago",
   "retailer.dashboard.time.ago.day": "{{count}} day ago",
 
-  // Inventory/Smart Inventory translations
   "retailer.inventory.title": "Smart Inventory",
   "retailer.inventory.subtitle": "AI-powered stock management, demand forecasting & waste prevention",
   "retailer.inventory.loading": "Loading inventory intelligence...",
@@ -538,14 +532,13 @@ const baseTranslations = {
   "retailer.inventory.dataset.reorderPoint": "Reorder Point",
   "retailer.inventory.dataset.forecastedDemand": "Forecasted Demand",
   "retailer.inventory.dataset.daysOfStock": "Days of Stock",
-   "retailer.inventory.recommendations.title": "AI Recommendations — {{product}}",
+  "retailer.inventory.recommendations.title": "AI Recommendations — {{product}}",
   "retailer.inventory.risk.waste": "Waste Risk",
   "retailer.inventory.risk.lowStock": "Low Stock",
   "retailer.inventory.badge.mlModel": "ML Model",
   "retailer.inventory.toast.loadError": "Failed to load inventory data",
   "retailer.inventory.toast.refreshSuccess": "Data refreshed",
 
-  // Issue report translations
   "issue.report": "Report Issue",
   "issue.type": "Issue Type",
   "issue.productId": "Product ID (Optional)",
@@ -581,17 +574,14 @@ const baseTranslations = {
   "filter.units.tons": "Tons",
   "filter.units.boxes": "Boxes",
 
-  // Navigation items (data.js)
   "nav.browse": "Browse Products",
   "nav.analytics": "Analytics",
   "nav.network": "Network",
   "nav.contracts": "Contracts",
   "nav.qr": "QR Scanner",
 
-  // Common UI
   "common.select.placeholder": "Select an option...",
 
-  // Months
   "months.jan": "Jan",
   "months.feb": "Feb",
   "months.mar": "Mar",
@@ -599,17 +589,14 @@ const baseTranslations = {
   "months.may": "May",
   "months.jun": "Jun",
 
-  // Categories
   "category.organic": "Organic",
   "category.dairy": "Dairy",
 
-  // Units
   "common.units.kilograms": "kg",
   "common.units.pounds": "lbs",
   "common.units.tons": "tons",
   "common.units.boxes": "boxes",
 
-  // Retailer Inventory risk labels
   "retailer.inventory.risk.waste": "Waste Risk",
   "retailer.inventory.risk.lowStock": "Low Stock",
   "retailer.inventory.badge.mlModel": "ML Model",
@@ -629,8 +616,7 @@ const baseTranslations = {
   "browse.aiProfitFinder": "AI Profit Finder",
   "browse.loading": "Loading fresh produce marketplace...",
   "browse.emptyTitle": "No products found",
-  "browse.emptyDesc":
-    "We couldn't find any produce matching your current filters.",
+  "browse.emptyDesc": "We couldn't find any produce matching your current filters.",
   "browse.clearFilters": "Clear Filters",
   "browse.organic": "ORGANIC",
   "browse.highDemand": "High Demand",
@@ -648,7 +634,7 @@ const baseTranslations = {
   "category.vegetables": "Vegetables",
   "category.fruits": "Fruits",
   "category.grains": "Grains",
-  // QR Scanner translations
+
   "qr.title": "QR Scanner",
   "qr.subtitle": "Scan QR codes to verify authenticity and trace your product's complete journey from farm to table",
   "qr.scanCode": "Scan QR Code",
@@ -661,8 +647,7 @@ const baseTranslations = {
   "qr.cameraError": "Failed to start camera",
   "qr.noCodeImage": "No QR code found in this image.",
   "network.title": "Network",
-  "network.subtitle":
-    "Manage your agricultural partners and track payment history",
+  "network.subtitle": "Manage your agricultural partners and track payment history",
   "network.tab.farmers": "Farmers",
   "network.tab.history": "History",
   "farmers.searchPlaceholder": "Search farmers by name or produce...",
@@ -715,8 +700,7 @@ const baseTranslations = {
   "transactions.report": "Report",
   "transactions.reportSubmitted": "Report submitted!",
   "chat.noActive": "No Active Chats",
-  "chat.noActiveDesc":
-    "Farmers who accept your connection requests will appear here.",
+  "chat.noActiveDesc": "Farmers who accept your connection requests will appear here.",
   "chat.onlineFarmer": "Online • Farmer",
   "chat.startVideoCall": "Start Video Call",
   "chat.ready": "Chat is ready. Send a message!",
@@ -795,52 +779,52 @@ const baseTranslations = {
   "farmer.cropHistory.soldTo": "Sold To",
   "farmer.cropHistory.revenue": "Revenue",
   "farmer.cropHistory.rating": "Rating",
-   "produce.title": "My Produce",
-   "produce.subtitle": "Manage your products and track your inventory",
-   "produce.add": "Add Product",
-   "produce.view.cards": "Cards",
-   "produce.view.table": "Table",
-   "produce.loadingProducts": "Loading your products...",
-   "produce.emptyCards": "No products yet. Add your first produce!",
-   "produce.field.name": "Name",
-   "produce.field.type": "Type",
-   "produce.field.quantity": "Quantity",
-   "produce.field.price": "Price",
-   "produce.field.locality": "Locality",
-   "produce.field.farmId": "Farm ID",
-   "produce.field.actions": "Actions",
-   "produce.emptyTable": "No products found.",
-   "produce.past.totalYield": "Total Yield",
-   "produce.past.avgPrice": "Avg Price",
-   "produce.past.harvested": "Harvested",
-   "produce.past.seasonCompleted": "Season completed",
-   "produce.qr.title": "Product QR Code",
-   "produce.qr.description": "Scan to view product journey and verify authenticity",
-   "produce.qr.scanToView": "Scan to view {{name}}'s journey",
-   "produce.dialog.editTitle": "Edit Product",
-   "produce.dialog.addTitle": "Add New Product",
-   "produce.dialog.description": "Form to add or edit product details.",
-   "produce.field.nameRequired": "Product name is required.",
-   "produce.field.cropCategoryRequired": "Please select a crop category.",
-   "produce.toast.fillBasic": "Please fill in produce name, type, and quantity to get AI price prediction.",
-   "produce.toast.aiPredicted": "AI suggested ₹{{price}}/kg as optimal selling price.",
-   "produce.toast.aiFailedManual": "AI couldn't determine price. Please enter manually.",
-   "produce.toast.predictFailed": "Failed to get AI prediction. Please try again.",
-   "produce.toast.loadFailed": "Failed to load your products. Please try again.",
-   "produce.toast.fillRequired": "Please fill in all required fields.",
-   "produce.toast.userNotFound": "User not found. Please log in again.",
-   "produce.toast.updated": "Product updated successfully!",
-   "produce.toast.added": "Product added successfully!",
-   "produce.toast.uploadFailed": "Image upload failed: {{message}}",
-   "produce.confirmDelete": "Are you sure you want to delete this product?",
-   "produce.toast.deleted": "Product deleted successfully!",
-   "produce.action.viewMore": "View More",
-   "produce.action.showQr": "Show QR",
-   "produce.action.delete": "Delete",
-   "produce.placeholder.tomatoes": "e.g., Tomatoes, Onions",
-   "produce.placeholder.selectCategory": "Select category...",
-   "produce.button.addProduct": "Add Product",
-   "map.stable": "Stable",
+  "produce.title": "My Produce",
+  "produce.subtitle": "Manage your products and track your inventory",
+  "produce.add": "Add Product",
+  "produce.view.cards": "Cards",
+  "produce.view.table": "Table",
+  "produce.loadingProducts": "Loading your products...",
+  "produce.emptyCards": "No products yet. Add your first produce!",
+  "produce.field.name": "Name",
+  "produce.field.type": "Type",
+  "produce.field.quantity": "Quantity",
+  "produce.field.price": "Price",
+  "produce.field.locality": "Locality",
+  "produce.field.farmId": "Farm ID",
+  "produce.field.actions": "Actions",
+  "produce.emptyTable": "No products found.",
+  "produce.past.totalYield": "Total Yield",
+  "produce.past.avgPrice": "Avg Price",
+  "produce.past.harvested": "Harvested",
+  "produce.past.seasonCompleted": "Season completed",
+  "produce.qr.title": "Product QR Code",
+  "produce.qr.description": "Scan to view product journey and verify authenticity",
+  "produce.qr.scanToView": "Scan to view {{name}}'s journey",
+  "produce.dialog.editTitle": "Edit Product",
+  "produce.dialog.addTitle": "Add New Product",
+  "produce.dialog.description": "Form to add or edit product details.",
+  "produce.field.nameRequired": "Product name is required.",
+  "produce.field.cropCategoryRequired": "Please select a crop category.",
+  "produce.toast.fillBasic": "Please fill in produce name, type, and quantity to get AI price prediction.",
+  "produce.toast.aiPredicted": "AI suggested ₹{{price}}/kg as optimal selling price.",
+  "produce.toast.aiFailedManual": "AI couldn't determine price. Please enter manually.",
+  "produce.toast.predictFailed": "Failed to get AI prediction. Please try again.",
+  "produce.toast.loadFailed": "Failed to load your products. Please try again.",
+  "produce.toast.fillRequired": "Please fill in all required fields.",
+  "produce.toast.userNotFound": "User not found. Please log in again.",
+  "produce.toast.updated": "Product updated successfully!",
+  "produce.toast.added": "Product added successfully!",
+  "produce.toast.uploadFailed": "Image upload failed: {{message}}",
+  "produce.confirmDelete": "Are you sure you want to delete this product?",
+  "produce.toast.deleted": "Product deleted successfully!",
+  "produce.action.viewMore": "View More",
+  "produce.action.showQr": "Show QR",
+  "produce.action.delete": "Delete",
+  "produce.placeholder.tomatoes": "e.g., Tomatoes, Onions",
+  "produce.placeholder.selectCategory": "Select category...",
+  "produce.button.addProduct": "Add Product",
+  "map.stable": "Stable",
   "map.signal.sellNow": "Sell Now",
   "map.signal.holdStock": "Hold Stock",
   "map.signal.monitor": "Monitor",
@@ -867,7 +851,6 @@ const baseTranslations = {
   "map.legend.lowPrice": "Low Price (<=₹35/kg)",
   "map.legend.averagePrice": "Average (₹36-43/kg)",
   "map.legend.highPrice": "High Price (>=₹44/kg)",
-  // Marketplace translations
   "marketplace.title": "Input Marketplace",
   "marketplace.subtitle": "AI crop recommendations + verified input vendors for your next season.",
   "marketplace.itemsInCart": "🛒 {{count}} in cart",
@@ -1006,7 +989,6 @@ const baseTranslations = {
   "retailer.product.youSave": "You Save",
   "retailer.product.belowMarket": "Below market - buy advantage",
   "retailer.product.transportPlan": "Simplified Transport Plan",
-  // Product Modal translations
   "productModal.organicCertified": "Organic Certified",
   "productModal.produce": "Produce",
   "productModal.askPrice": "Ask Price",
@@ -1189,132 +1171,5 @@ const baseTranslations = {
   "farmer.product.youFarmer": "You (Farmer)",
   "farmer.product.baseAskingPrice": "Base Asking Price",
   "farmer.product.quantityHarvested": "Quantity Harvested",
-  "farmer.product.qtyKg": "{{qty}} kg",
-};
-
-// Language Context
-const LanguageContext = createContext();
-
-export const useTranslation = () => {
-  const context = useContext(LanguageContext);
-  if (!context) {
-    throw new Error("useTranslation must be used within a LanguageProvider");
-  }
-  return context;
-};
-
-export const LanguageProvider = ({ children }) => {
-  const [currentLanguage, setCurrentLanguage] = useState(() => {
-    return localStorage.getItem("preferred-language") || "en";
-  });
-
-  const [translations, setTranslations] = useState({ en: baseTranslations });
-  const [isLoading, setIsLoading] = useState(false);
-
-   // Load cached translations on mount
-   useEffect(() => {
-     const loadCachedTranslations = () => {
-       const availableLanguages = ["hi", "mr", "ta", "te", "bn", "gu"];
-       const cachedTranslations = { en: baseTranslations };
-
-       availableLanguages.forEach((lang) => {
-         const cached = localStorage.getItem(`translations_${lang}`);
-         if (cached) {
-           try {
-             cachedTranslations[lang] = JSON.parse(cached);
-           } catch (e) {
-             console.error(`Failed to parse cached translations for ${lang}`);
-           }
-         }
-       });
-
-       setTranslations(cachedTranslations);
-     };
-
-     loadCachedTranslations();
-   }, []);
-
-   // Load translations from JSON when language changes
-   useEffect(() => {
-     const loadLanguage = async () => {
-       // Already loaded (e.g., English or already in state)
-       if (translations[currentLanguage]) {
-         return;
-       }
-
-       setIsLoading(true);
-
-       try {
-         // Try localStorage first
-         const cached = localStorage.getItem(`translations_${currentLanguage}`);
-         if (cached) {
-           const parsed = JSON.parse(cached);
-           setTranslations((prev) => ({
-             ...prev,
-             [currentLanguage]: parsed,
-           }));
-           return;
-         }
-
-         // Fetch from JSON file
-         const response = await fetch(`/locales/${currentLanguage}/common.json`);
-         if (!response.ok) {
-           throw new Error(`Failed to load ${currentLanguage} translations`);
-         }
-         const data = await response.json();
-
-         // Update state
-         setTranslations((prev) => ({
-           ...prev,
-           [currentLanguage]: data,
-         }));
-
-         // Cache for offline use
-         localStorage.setItem(`translations_${currentLanguage}`, JSON.stringify(data));
-       } catch (error) {
-         console.error("Translation loading failed:", error);
-       } finally {
-         setIsLoading(false);
-       }
-     };
-
-     loadLanguage();
-   }, [currentLanguage]);
-
-  // Translation function with fallback
-  const t = (key, params = {}) => {
-    const langTranslations = translations[currentLanguage];
-    const template = langTranslations?.[key] || baseTranslations[key] || key;
-
-    return Object.entries(params).reduce((text, [paramKey, value]) => {
-      return text.replaceAll(`{{${paramKey}}}`, String(value));
-    }, template);
-  };
-
-  const changeLanguage = (langCode) => {
-    setCurrentLanguage(langCode);
-    localStorage.setItem("preferred-language", langCode);
-  };
-
-  const value = {
-    currentLanguage,
-    changeLanguage,
-    t,
-    isLoading, // Show loading indicator while translating
-    availableLanguages: [
-      { code: "en", name: "English", flag: "🇺🇸" },
-      { code: "hi", name: "हिंदी", flag: "🇮🇳" },
-      { code: "mr", name: "मराठी", flag: "🇮🇳" },
-      { code: "ta", name: "தமிழ்", flag: "🇮🇳" },
-      { code: "te", name: "తెలుగు", flag: "🇮🇳" },
-      { code: "bn", name: "বাংলা", flag: "🇧🇩" },
-      { code: "gu", name: "ગુજરાતી", flag: "🇮🇳" },
-    ],
-  };
-
-  return (
-    <LanguageContext.Provider value={value}>
-      {children}
-    </LanguageContext.Provider>
-  );
-};
+  "farmer.product.qtyKg": "{{qty}} kg"
+}

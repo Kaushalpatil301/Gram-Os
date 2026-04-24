@@ -1,4 +1,6 @@
-// i18n/translationService.js - API Translation Service
+// i18n/translationService.js
+// Dynamic translation service for user-generated or changing content.
+// Static UI translations are loaded from JSON files in public/locales/.
 
 class TranslationService {
   constructor() {
