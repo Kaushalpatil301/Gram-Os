@@ -7,6 +7,7 @@ import {
   Users, Briefcase, Plus, X, MapPin, Clock, ChevronDown, ChevronUp,
   CheckCircle2, XCircle, Search, Phone, Loader2, Send
 } from "lucide-react";
+import { useTranslation } from "../../../consumer/i18n/config.jsx";
 
 const INITIALS = (name = "") => name.split(" ").map(n => n[0]).join("").toUpperCase() || "?";
 const COLORS = ["bg-orange-100 text-orange-700","bg-blue-100 text-blue-700","bg-emerald-100 text-emerald-700","bg-purple-100 text-purple-700","bg-rose-100 text-rose-700"];
@@ -15,7 +16,16 @@ const colorFor = (str = "") => COLORS[str.charCodeAt(0) % COLORS.length];
 // ─── Shared badge helper ──────────────────────────────────────────────────────
 const StatusBadge = ({ status }) => {
   const map = { open:"bg-emerald-100 text-emerald-700", filled:"bg-blue-100 text-blue-700", closed:"bg-gray-100 text-gray-500", pending:"bg-amber-100 text-amber-700", hired:"bg-emerald-100 text-emerald-700", rejected:"bg-red-100 text-red-600" };
-  return <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${map[status] || "bg-gray-100 text-gray-500"}`}>{status}</span>;
+  const { t } = useTranslation();
+  const key = `workforce.status.${String(status || "").toLowerCase()}`;
+  const label = t(key);
+  return (
+    <span
+      className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${map[status] || "bg-gray-100 text-gray-500"}`}
+    >
+      {label === key ? status : label}
+    </span>
+  );
 };
 
 const MOCK_JOBS = [
@@ -25,6 +35,7 @@ const MOCK_JOBS = [
 
 // ─── Post Job Modal ──────────────────────────────────────────────────────────
 function PostJobModal({ onClose, onCreated, role }) {
+  const { t } = useTranslation();
   const [form, setForm] = useState({ title:"", type:"", skills:"", location:"", pay:"", workers:1, duration:"", description:"" });
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
@@ -38,28 +49,46 @@ function PostJobModal({ onClose, onCreated, role }) {
       });
       onCreated(data.data);
       onClose();
-    } catch (e) { setErr(e.message || "Failed to post job"); }
+    } catch (e) { setErr(e.message || t("workforce.postJob.error")); }
     finally { setLoading(false); }
   };
 
   const f = (k) => (e) => setForm(p => ({ ...p, [k]: e.target.value }));
 
-  const placeholders = role === "retailer" ? {
-    title: "e.g. Warehouse Sorter", type: "e.g. Logistics, Retail", skills: "e.g. Packing, Inventory", pay: "e.g. ₹500/day"
-  } : {
-    title: "e.g. Tomato Harvesting", type: "e.g. Harvesting, Irrigation", skills: "e.g. Sorting, Lifting", pay: "e.g. ₹450/day"
-  };
+  const placeholders = role === "retailer"
+    ? {
+        title: t("workforce.postJob.placeholder.retailer.title"),
+        type: t("workforce.postJob.placeholder.retailer.type"),
+        skills: t("workforce.postJob.placeholder.retailer.skills"),
+        pay: t("workforce.postJob.placeholder.retailer.pay"),
+      }
+    : {
+        title: t("workforce.postJob.placeholder.farmer.title"),
+        type: t("workforce.postJob.placeholder.farmer.type"),
+        skills: t("workforce.postJob.placeholder.farmer.skills"),
+        pay: t("workforce.postJob.placeholder.farmer.pay"),
+      };
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-5 border-b">
-          <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2"><Briefcase className="w-5 h-5 text-orange-600"/>Post a New Job</h3>
+          <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+            <Briefcase className="w-5 h-5 text-orange-600"/>
+            {t("workforce.postJob.modalTitle")}
+          </h3>
           <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-lg"><X className="w-5 h-5 text-gray-500"/></button>
         </div>
         <form onSubmit={submit} className="p-5 space-y-4">
           {err && <p className="text-sm text-red-600 bg-red-50 p-3 rounded-xl">{err}</p>}
-          {[["title","Job Title",placeholders.title],["type","Job Type",placeholders.type],["skills","Skills Needed (comma-separated)",placeholders.skills],["pay","Daily Pay",placeholders.pay],["location","Location","Village / District"],["duration","Duration","e.g. 3 days"]].map(([k,label,ph]) => (
+          {[
+            ["title", t("workforce.postJob.field.title"), placeholders.title],
+            ["type", t("workforce.postJob.field.type"), placeholders.type],
+            ["skills", t("workforce.postJob.field.skills"), placeholders.skills],
+            ["pay", t("workforce.postJob.field.pay"), placeholders.pay],
+            ["location", t("workforce.postJob.field.location"), t("workforce.postJob.field.location.placeholder")],
+            ["duration", t("workforce.postJob.field.duration"), t("workforce.postJob.field.duration.placeholder")],
+          ].map(([k,label,ph]) => (
             <div key={k}>
               <label className="block text-xs font-bold text-gray-600 mb-1">{label}</label>
               <input required={["title","type","pay"].includes(k)} value={form[k]} onChange={f(k)} placeholder={ph} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"/>
@@ -67,17 +96,17 @@ function PostJobModal({ onClose, onCreated, role }) {
           ))}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-gray-600 mb-1">Workers Needed</label>
+              <label className="block text-xs font-bold text-gray-600 mb-1">{t("workforce.postJob.field.workers")}</label>
               <input type="number" min={1} value={form.workers} onChange={f("workers")} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"/>
             </div>
           </div>
           <div>
-            <label className="block text-xs font-bold text-gray-600 mb-1">Description</label>
-            <textarea value={form.description} onChange={f("description")} rows={3} placeholder="Any extra details…" className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none"/>
+            <label className="block text-xs font-bold text-gray-600 mb-1">{t("workforce.postJob.field.description")}</label>
+            <textarea value={form.description} onChange={f("description")} rows={3} placeholder={t("workforce.postJob.field.description.placeholder")} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none"/>
           </div>
           <button type="submit" disabled={loading} className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-colors disabled:opacity-60">
             {loading ? <Loader2 className="w-4 h-4 animate-spin"/> : <Send className="w-4 h-4"/>}
-            {loading ? "Posting…" : "Post Job"}
+            {loading ? t("workforce.postJob.state.posting") : t("workforce.postJob.state.post")}
           </button>
         </form>
       </div>
@@ -87,6 +116,7 @@ function PostJobModal({ onClose, onCreated, role }) {
 
 // ─── Job Details Modal (Villager) ───────────────────────────────────────────
 function JobDetailsModal({ job, onClose, onApplied, alreadyApplied }) {
+  const { t } = useTranslation();
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
@@ -106,7 +136,7 @@ function JobDetailsModal({ job, onClose, onApplied, alreadyApplied }) {
       await apiFetch(`/jobs/${job._id}/apply`, { method:"POST", body: JSON.stringify({ message }) });
       onApplied(job._id);
       onClose();
-    } catch (e) { setErr(e.message || "Failed to apply"); }
+    } catch (e) { setErr(e.message || t("workforce.apply.error")); }
     finally { setLoading(false); }
   };
 
@@ -114,42 +144,45 @@ function JobDetailsModal({ job, onClose, onApplied, alreadyApplied }) {
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-5 border-b">
-          <h3 className="text-lg font-bold text-gray-900">Job Details</h3>
+          <h3 className="text-lg font-bold text-gray-900">{t("workforce.jobDetails.title")}</h3>
           <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-lg"><X className="w-5 h-5 text-gray-500"/></button>
         </div>
         <div className="p-6">
           <h2 className="text-xl font-bold text-gray-900">{job.title}</h2>
-          <p className="text-sm text-gray-500 mt-1 mb-4">{job.type} · Posted by @{job.postedBy?.username || "farmer"}</p>
+          <p className="text-sm text-gray-500 mt-1 mb-4">
+            {job.type} ·{" "}
+            {t("workforce.jobDetails.postedBy", { username: job.postedBy?.username || t("workforce.jobDetails.defaultPoster") })}
+          </p>
           
           <div className="grid grid-cols-2 gap-4 mb-6">
             <div className="bg-emerald-50 rounded-xl p-3 border border-emerald-100">
-              <p className="text-[10px] uppercase font-bold text-emerald-600 mb-1">Pay</p>
+              <p className="text-[10px] uppercase font-bold text-emerald-600 mb-1">{t("workforce.jobDetails.pay")}</p>
               <p className="font-bold text-emerald-900">{job.pay}</p>
             </div>
             <div className="bg-blue-50 rounded-xl p-3 border border-blue-100">
-              <p className="text-[10px] uppercase font-bold text-blue-600 mb-1">Location</p>
-              <p className="font-bold text-blue-900">{job.location || "N/A"}</p>
+              <p className="text-[10px] uppercase font-bold text-blue-600 mb-1">{t("workforce.jobDetails.location")}</p>
+              <p className="font-bold text-blue-900">{job.location || t("workforce.jobDetails.na")}</p>
             </div>
             <div className="bg-orange-50 rounded-xl p-3 border border-orange-100">
-              <p className="text-[10px] uppercase font-bold text-orange-600 mb-1">Duration</p>
-              <p className="font-bold text-orange-900">{job.duration || "N/A"}</p>
+              <p className="text-[10px] uppercase font-bold text-orange-600 mb-1">{t("workforce.jobDetails.duration")}</p>
+              <p className="font-bold text-orange-900">{job.duration || t("workforce.jobDetails.na")}</p>
             </div>
             <div className="bg-purple-50 rounded-xl p-3 border border-purple-100">
-              <p className="text-[10px] uppercase font-bold text-purple-600 mb-1">Workers Needed</p>
+              <p className="text-[10px] uppercase font-bold text-purple-600 mb-1">{t("workforce.jobDetails.workersNeeded")}</p>
               <p className="font-bold text-purple-900">{job.workers}</p>
             </div>
           </div>
           
           {job.description && (
             <div className="mb-6">
-              <h4 className="text-xs font-bold text-gray-900 uppercase mb-2">Description</h4>
+              <h4 className="text-xs font-bold text-gray-900 uppercase mb-2">{t("workforce.jobDetails.description")}</h4>
               <p className="text-sm text-gray-600 leading-relaxed bg-gray-50 p-4 rounded-xl">{job.description}</p>
             </div>
           )}
 
           {job.skills?.length > 0 && (
             <div className="mb-6">
-              <h4 className="text-xs font-bold text-gray-900 uppercase mb-2">Required Skills</h4>
+              <h4 className="text-xs font-bold text-gray-900 uppercase mb-2">{t("workforce.jobDetails.requiredSkills")}</h4>
               <div className="flex flex-wrap gap-2">
                 {job.skills.map(s => <span key={s} className="text-xs font-bold bg-gray-100 text-gray-700 px-3 py-1 rounded-full">{s}</span>)}
               </div>
@@ -160,18 +193,18 @@ function JobDetailsModal({ job, onClose, onApplied, alreadyApplied }) {
           
           {alreadyApplied ? (
             <div className="bg-blue-50 text-blue-700 font-bold p-4 rounded-xl text-center">
-              You have already applied for this job! ✓
+              {t("workforce.jobDetails.appliedAlready")}
             </div>
           ) : (
             <form onSubmit={submit} className="space-y-4">
               {err && <p className="text-sm text-red-600 bg-red-50 p-3 rounded-xl">{err}</p>}
               <div>
-                <label className="block text-xs font-bold text-gray-600 mb-1">Message to Employer (optional)</label>
-                <textarea value={message} onChange={e=>setMessage(e.target.value)} rows={3} placeholder="Tell them why you're a good fit…" className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"/>
+                <label className="block text-xs font-bold text-gray-600 mb-1">{t("workforce.jobDetails.messageLabel")}</label>
+                <textarea value={message} onChange={e=>setMessage(e.target.value)} rows={3} placeholder={t("workforce.jobDetails.messagePlaceholder")} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"/>
               </div>
               <button type="submit" disabled={loading} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 transition-colors disabled:opacity-60 text-lg">
                 {loading ? <Loader2 className="w-5 h-5 animate-spin"/> : <Send className="w-5 h-5"/>}
-                {loading ? "Applying…" : "Submit Application"}
+                {loading ? t("workforce.apply.state.applying") : t("workforce.apply.submit")}
               </button>
             </form>
           )}
@@ -183,6 +216,7 @@ function JobDetailsModal({ job, onClose, onApplied, alreadyApplied }) {
 
 // ─── Job Card (Employer view) ─────────────────────────────────────────────────
 function EmployerJobCard({ job, onStatusChange, onClose }) {
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
   const [actionLoading, setActionLoading] = useState(null);
 
@@ -216,19 +250,22 @@ function EmployerJobCard({ job, onStatusChange, onClose }) {
           <div className="flex items-center gap-2 shrink-0">
             <StatusBadge status={job.status}/>
             {job.status === "open" && (
-              <button onClick={closeJob} className="text-[10px] text-gray-400 hover:text-red-500 border border-gray-200 rounded px-1.5 py-0.5 transition-colors">Close</button>
+              <button onClick={closeJob} className="text-[10px] text-gray-400 hover:text-red-500 border border-gray-200 rounded px-1.5 py-0.5 transition-colors">{t("workforce.employer.close")}</button>
             )}
           </div>
         </div>
         <div className="flex gap-4 text-xs text-gray-500 mb-3">
-          <span className="flex items-center gap-1"><Users className="w-3.5 h-3.5"/> {hired.length}/{job.workers} hired</span>
-          <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5"/> {job.duration || "—"}</span>
-          <span className="text-amber-600 font-bold">{pending.length} pending</span>
+          <span className="flex items-center gap-1">
+            <Users className="w-3.5 h-3.5"/>{" "}
+            {t("workforce.employer.hiredCount", { hired: hired.length, total: job.workers })}
+          </span>
+          <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5"/> {job.duration || t("workforce.jobDetails.na")}</span>
+          <span className="text-amber-600 font-bold">{t("workforce.employer.pendingCount", { count: pending.length })}</span>
         </div>
         {job.applications?.length > 0 && (
           <button onClick={()=>setExpanded(!expanded)} className="w-full text-xs font-bold text-blue-600 flex items-center justify-center gap-1 py-2 bg-blue-50 rounded-xl hover:bg-blue-100 transition-colors">
             {expanded ? <ChevronUp className="w-3.5 h-3.5"/> : <ChevronDown className="w-3.5 h-3.5"/>}
-            {expanded ? "Hide" : `View ${job.applications.length} applicant(s)`}
+            {expanded ? t("workforce.employer.hide") : t("workforce.employer.viewApplicants", { count: job.applications.length })}
           </button>
         )}
         {expanded && (
@@ -240,7 +277,7 @@ function EmployerJobCard({ job, onStatusChange, onClose }) {
                     {INITIALS(app.applicant?.username || "?")}
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-gray-900">{app.applicant?.username || "Unknown"}</p>
+                    <p className="text-sm font-bold text-gray-900">{app.applicant?.username || t("workforce.employer.unknownUser")}</p>
                     {app.message && <p className="text-xs text-gray-500 italic">"{app.message}"</p>}
                   </div>
                 </div>
@@ -268,6 +305,7 @@ function EmployerJobCard({ job, onStatusChange, onClose }) {
 
 // ─── Villager Job Browse Card ────────────────────────────────────────────────
 function VillagerJobCard({ job, alreadyApplied, onApply }) {
+  const { t } = useTranslation();
   return (
     <Card className="border border-gray-200 shadow-sm hover:shadow-lg transition-all group overflow-hidden">
       <CardContent className="p-5 flex flex-col gap-3">
@@ -285,17 +323,22 @@ function VillagerJobCard({ job, alreadyApplied, onApply }) {
           ))}
         </div>
         <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
-          <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5 text-gray-400"/>{job.location || "—"}</span>
-          <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5 text-gray-400"/>{job.duration || "—"}</span>
+          <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5 text-gray-400"/>{job.location || t("workforce.jobDetails.na")}</span>
+          <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5 text-gray-400"/>{job.duration || t("workforce.jobDetails.na")}</span>
         </div>
         <div className="flex items-center justify-between pt-2 border-t border-gray-100 mt-auto">
           <span className="text-base font-black text-emerald-700">{job.pay}</span>
           {alreadyApplied
-            ? <button onClick={()=>onApply(job)} className="text-sm font-bold text-blue-600 bg-blue-50 px-4 py-1.5 rounded-xl">View Applied ✓</button>
-            : <button onClick={()=>onApply(job)} className="text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-xl transition-colors">View Details</button>
+            ? <button onClick={()=>onApply(job)} className="text-sm font-bold text-blue-600 bg-blue-50 px-4 py-1.5 rounded-xl">{t("workforce.villager.viewApplied")}</button>
+            : <button onClick={()=>onApply(job)} className="text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-xl transition-colors">{t("workforce.villager.viewDetails")}</button>
           }
         </div>
-        <p className="text-[10px] text-gray-400">{job.applicationCount ?? (job.applications?.length ?? 0)} applied · Posted by @{job.postedBy?.username || "farmer"}</p>
+        <p className="text-[10px] text-gray-400">
+          {t("workforce.villager.appliedLine", {
+            count: job.applicationCount ?? (job.applications?.length ?? 0),
+            username: job.postedBy?.username || t("workforce.jobDetails.defaultPoster"),
+          })}
+        </p>
       </CardContent>
     </Card>
   );
@@ -303,6 +346,7 @@ function VillagerJobCard({ job, alreadyApplied, onApply }) {
 
 // ─── Worker Browse Card (Employer view) ──────────────────────────────────────
 function WorkerCard({ worker }) {
+  const { t } = useTranslation();
   return (
     <Card className="border border-gray-200 shadow-sm hover:shadow-md transition-all">
       <CardContent className="p-4 flex items-center gap-4">
@@ -314,10 +358,10 @@ function WorkerCard({ worker }) {
         <div className="flex-1 min-w-0">
           <p className="font-bold text-gray-900 truncate">@{worker.username}</p>
           <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
-            <MapPin className="w-3 h-3"/>{worker.location?.city || worker.location?.address || "Location N/A"}
+            <MapPin className="w-3 h-3"/>{worker.location?.city || worker.location?.address || t("workforce.worker.locationNA")}
           </p>
         </div>
-        <span className="text-[10px] font-bold bg-emerald-50 text-emerald-700 px-2 py-1 rounded-full shrink-0">Villager</span>
+        <span className="text-[10px] font-bold bg-emerald-50 text-emerald-700 px-2 py-1 rounded-full shrink-0">{t("workforce.worker.roleLabel")}</span>
       </CardContent>
     </Card>
   );
@@ -325,10 +369,17 @@ function WorkerCard({ worker }) {
 
 // ─── MAIN COMPONENT ──────────────────────────────────────────────────────────
 export default function WorkforceSection() {
+  const { t } = useTranslation();
   const { user } = useProfile();
   const rawRole = user?.role || "farmer";
   const role = rawRole === "worker" ? "villager" : rawRole;
   const isEmployer = role === "farmer" || role === "retailer";
+  const sectionTitleKey =
+    role === "farmer"
+      ? "farmer.nav.workforce"
+      : role === "retailer"
+        ? "retailer.nav.workforce"
+        : "villager.nav.jobs";
 
   const [tab, setTab] = useState(isEmployer ? "my-jobs" : "browse");
   const [jobs, setJobs] = useState([]);
@@ -384,8 +435,11 @@ export default function WorkforceSection() {
   );
 
   const TABS = isEmployer
-    ? [{ id:"my-jobs", label:"My Posted Jobs" }, { id:"workers", label:"Browse Workers" }]
-    : [{ id:"browse", label:"Browse Jobs" }];
+    ? [
+        { id: "my-jobs", label: t("workforce.tabs.myJobs") },
+        { id: "workers", label: t("workforce.tabs.browseWorkers") },
+      ]
+    : [{ id: "browse", label: t("workforce.tabs.browseJobs") }];
 
   return (
     <div className="space-y-6">
@@ -394,15 +448,17 @@ export default function WorkforceSection() {
         <div>
           <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
             <div className="p-2 bg-orange-100 rounded-xl"><Users className="w-5 h-5 text-orange-700"/></div>
-            Workforce Hub
+            {t(sectionTitleKey)}
           </h2>
           <p className="text-gray-500 mt-1 text-sm">
-            {isEmployer ? "Post jobs and manage your workforce." : "Browse jobs posted by farmers & retailers and apply instantly."}
+            {isEmployer
+              ? t("retailer.section.workforce.subtitle.employer")
+              : t("retailer.section.workforce.subtitle.worker")}
           </p>
         </div>
         {isEmployer && (
           <button onClick={()=>setShowPostModal(true)} className="flex items-center gap-2 bg-orange-600 hover:bg-orange-700 text-white font-bold px-4 py-2.5 rounded-xl transition-colors shadow-md">
-            <Plus className="w-4 h-4"/> Post New Job
+            <Plus className="w-4 h-4"/> {t("workforce.postJob.button")}
           </button>
         )}
       </div>
@@ -419,7 +475,12 @@ export default function WorkforceSection() {
       {/* Search */}
       <div className="relative max-w-md">
         <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"/>
-        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder={tab==="workers" ? "Search workers by name or location…" : "Search jobs by title, type, location…"} className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 bg-white"/>
+        <input
+          value={search}
+          onChange={e=>setSearch(e.target.value)}
+          placeholder={tab==="workers" ? t("workforce.search.workers") : t("workforce.search.jobs")}
+          className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 bg-white"
+        />
       </div>
 
       {/* Content */}
@@ -429,7 +490,7 @@ export default function WorkforceSection() {
         </div>
       ) : tab === "workers" ? (
         filteredWorkers.length === 0
-          ? <p className="text-gray-500 italic py-10 text-center">No workers found.</p>
+          ? <p className="text-gray-500 italic py-10 text-center">{t("workforce.empty.workers")}</p>
           : <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredWorkers.map(w => <WorkerCard key={w._id} worker={w}/>)}
             </div>
@@ -437,15 +498,15 @@ export default function WorkforceSection() {
         filteredJobs.length === 0
           ? <div className="text-center py-16 space-y-2">
               <Briefcase className="w-10 h-10 text-gray-300 mx-auto"/>
-              <p className="text-gray-500 font-medium">No jobs posted yet.</p>
-              <button onClick={()=>setShowPostModal(true)} className="text-sm text-orange-600 font-bold hover:underline">Post your first job →</button>
+              <p className="text-gray-500 font-medium">{t("workforce.empty.myJobs.title")}</p>
+              <button onClick={()=>setShowPostModal(true)} className="text-sm text-orange-600 font-bold hover:underline">{t("workforce.empty.myJobs.cta")}</button>
             </div>
           : <div className="space-y-4">
               {filteredJobs.map(j => <EmployerJobCard key={j._id} job={j} onStatusChange={handleStatusChange} onClose={handleJobClose}/>)}
             </div>
       ) : (
         filteredJobs.length === 0
-          ? <p className="text-gray-500 italic py-10 text-center">No open jobs right now. Check back soon!</p>
+          ? <p className="text-gray-500 italic py-10 text-center">{t("workforce.empty.browseJobs")}</p>
           : <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredJobs.map(j => <VillagerJobCard key={j._id} job={j} alreadyApplied={appliedIds.includes(j._id)} onApply={setApplyTarget}/>)}
             </div>

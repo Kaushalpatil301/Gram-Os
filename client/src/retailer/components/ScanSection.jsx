@@ -1,7 +1,9 @@
 import React from "react";
 import { QrCode, History, Package, CheckCircle } from "lucide-react";
+import { useTranslation } from "../../consumer/i18n/config.jsx";
 
 export default function ScanSection({ scanHistory, onScanClick }) {
+  const { t } = useTranslation();
   return (
     <>
       {/* QR Scanner Card */}
@@ -10,20 +12,17 @@ export default function ScanSection({ scanHistory, onScanClick }) {
           <QrCode className="h-10 w-10 text-green-600" />
         </div>
         <h3 className="text-3xl font-bold text-gray-900 mb-4">
-          Product Scanner
+          {t("qr.title")}
         </h3>
-        <p className="text-gray-600 mb-8 text-lg">
-          Scan product QR codes to verify authenticity and trace origin
-        </p>
+        <p className="text-gray-600 mb-8 text-lg">{t("qr.subtitle")}</p>
         <button
           onClick={onScanClick}
           className="w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white py-4 px-8 rounded-xl text-lg font-semibold hover:from-green-600 hover:to-emerald-600 transition-all shadow-lg"
         >
           <QrCode className="inline mr-3 h-6 w-6" />
-          Scan QR Code
+          {t("qr.scanCode")}
         </button>
       </div>
-
     </>
   );
 }

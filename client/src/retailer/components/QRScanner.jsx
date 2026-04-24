@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import ScanModal from "./ScanModal";
 import ScanSection from "./ScanSection";
+import { useTranslation } from "../../consumer/i18n/config.jsx";
 
 export default function QRScanner() {
+  const { t } = useTranslation();
   const [showScanModal, setShowScanModal] = useState(false);
   const [scanHistory, setScanHistory] = useState([]);
 
@@ -26,15 +28,17 @@ export default function QRScanner() {
   };
 
   return (
-    <section id="qr" className="bg-white rounded-3xl shadow-xl overflow-hidden mb-12 border border-green-100" style={{ scrollMarginTop: "30px" }}>
+    <section
+      id="qr"
+      className="bg-white rounded-3xl shadow-xl overflow-hidden mb-12 border border-green-100"
+      style={{ scrollMarginTop: "30px" }}
+    >
       <div className="p-6 md:p-10">
         <div className="mb-10 text-center">
           <h2 className="text-3xl font-bold text-gray-900 mb-3">
-            Product Scanner
+            {t("qr.title")}
           </h2>
-          <p className="text-gray-600">
-            Scan product QR codes to verify authenticity and trace origin
-          </p>
+          <p className="text-gray-600">{t("qr.subtitle")}</p>
         </div>
 
         <div className="max-w-2xl mx-auto">

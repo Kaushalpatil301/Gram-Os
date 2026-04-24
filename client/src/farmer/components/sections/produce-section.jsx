@@ -39,6 +39,7 @@ import {
 } from "../../../components/ui/tabs";
 import { QRCodeSVG } from "qrcode.react";
 import { emptyProduce, produceTypes } from "../../lib/data";
+import { useTranslation } from "../../../consumer/i18n/config.jsx";
 
 const API_URL = "http://localhost:8000/api/v1/products";
 
@@ -49,6 +50,7 @@ const PAST_PRODUCE = [
 ];
 
 export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [products, setProducts] = useState([]);
@@ -109,7 +111,7 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
 
   const handlePredictPriceForAdd = async () => {
     if (!form.name || !form.type || !form.quantity) {
-      toast.error("Please fill in basic crop details first (Name, Type, Quantity).");
+      toast.error(t("produce.toast.fillBasic"));
       return;
     }
     setIsAiPredictingAdd(true);
@@ -137,13 +139,13 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
       if (predicted) {
         setForm(f => ({ ...f, basePrice: predicted }));
         setHasPredictedPrice(true);
-        toast.success(`AI Predicted an optimal price of ₹${predicted}/kg`);
+        toast.success(t("produce.toast.aiPredicted", { price: predicted }));
       } else {
-        toast.error("AI couldn't predict the price. Try entering it manually.");
+        toast.error(t("produce.toast.aiFailedManual"));
       }
     } catch (error) {
       console.error("AI Prediction Error:", error);
-      toast.error(error.response?.data?.message || "Failed to predict price.");
+      toast.error(error.response?.data?.message || t("produce.toast.predictFailed"));
     } finally {
       setIsAiPredictingAdd(false);
     }
@@ -161,7 +163,7 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
       }
     } catch (error) {
       console.error("Error fetching products:", error);
-      toast.error("Failed to load products");
+      toast.error(t("produce.toast.loadFailed"));
     } finally {
       setIsLoading(false);
     }
@@ -207,14 +209,14 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
         !form.basePrice ||
         !form.locality
       ) {
-        toast.error("Please fill in all required fields.");
+        toast.error(t("produce.toast.fillRequired"));
         setIsUploading(false);
         return;
       }
 
       // Check if user data is available
       if (!user || !user.email) {
-        toast.error("User information not found. Please login again.");
+        toast.error(t("produce.toast.userNotFound"));
         console.error("User data missing:", user);
         setIsUploading(false);
         return;
@@ -261,11 +263,11 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
           `${API_URL}/${editing._id}`,
           formData
         );
-        toast.success("Product updated successfully!");
+        toast.success(t("produce.toast.updated"));
       } else {
         // Create new product
         const response = await axios.post(API_URL, formData);
-        toast.success("Product added successfully!");
+        toast.success(t("produce.toast.added"));
       }
 
       setOpen(false);
@@ -278,7 +280,7 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
       const errorMessage = error.response?.data?.message || 
                           error.response?.data?.error || 
                           error.message;
-      toast.error(`Upload failed: ${errorMessage}`);
+      toast.error(t("produce.toast.uploadFailed", { message: errorMessage }));
     } finally {
       setIsUploading(false);
     }
@@ -290,12 +292,12 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
 
   // Delete product from database
   const handleDeleteProduct = async (productId) => {
-    if (!window.confirm("Are you sure you want to delete this product?"))
+    if (!window.confirm(t("produce.confirmDelete")))
       return;
 
     try {
       await axios.delete(`${API_URL}/${productId}`);
-      toast.success("Product deleted successfully.");
+      toast.success(t("produce.toast.deleted"));
       fetchProducts();
     } catch (error) {
       console.error("Delete error:", error);
@@ -321,9 +323,9 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
       {/* Header */}
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold">My Produce</h2>
+          <h2 className="text-2xl font-bold">{t("produce.title")}</h2>
           <p className="text-muted-foreground">
-            Manage your listed items and certificates.
+            {t("produce.subtitle")}
           </p>
         </div>
         <div className="flex gap-2">
@@ -331,7 +333,7 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
             onClick={startAdd}
             className="bg-emerald-600 hover:bg-emerald-700 cursor-pointer"
           >
-            Add Produce
+            {t("produce.add")}
           </Button>
         </div>
       </div>
@@ -340,19 +342,19 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
       {/* Views */}
       <Tabs defaultValue="cards" className="mt-6">
         <TabsList className="flex gap-4 bg-emerald-50/50 p-2 rounded-xl">
-          <TabsTrigger value="cards">Card View</TabsTrigger>
-          <TabsTrigger value="table">Table View</TabsTrigger>
+          <TabsTrigger value="cards">{t("produce.view.cards")}</TabsTrigger>
+          <TabsTrigger value="table">{t("produce.view.table")}</TabsTrigger>
         </TabsList>
 
         {/* Card View */}
         <TabsContent value="cards" className="mt-6">
           {isLoading ? (
             <div className="text-center py-10 text-gray-500">
-              Loading products...
+              {t("produce.loadingProducts")}
             </div>
           ) : products.length === 0 ? (
             <div className="text-center py-10 text-gray-500">
-              No products found. Add your first produce!
+              {t("produce.emptyCards")}
             </div>
           ) : (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -374,19 +376,19 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
                     )}
                     <div className="space-y-1 text-sm">
                       <div>
-                        <span className="font-medium">Quantity:</span>{" "}
+                        <span className="font-medium">{t("produce.field.quantity")}:</span>{" "}
                         {p.quantity} kg
                       </div>
                       <div>
-                        <span className="font-medium">Price:</span> ₹
+                        <span className="font-medium">{t("produce.field.price")}:</span> ₹
                         {p.basePrice}/kg
                       </div>
                       <div>
-                        <span className="font-medium">Locality:</span>{" "}
+                        <span className="font-medium">{t("produce.field.locality")}:</span>{" "}
                         {p.locality}
                       </div>
                       <div>
-                        <span className="font-medium">Farm ID:</span> {p.farmId}
+                        <span className="font-medium">{t("produce.field.farmId")}:</span> {p.farmId}
                       </div>
                     </div>
                   </CardContent>
@@ -397,7 +399,7 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
                         size="sm"
                         variant="outline"
                       >
-                        View More
+                        {t("produce.action.viewMore")}
                       </Button>
                     </Link>
                     <Button
@@ -405,7 +407,7 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
                       className="cursor-pointer bg-emerald-600 text-white hover:bg-emerald-700"
                       onClick={() => handleShowQR(p)}
                     >
-                      Show QR
+                      {t("produce.action.showQr")}
                     </Button>
                     <Button
                       className="cursor-pointer"
@@ -413,7 +415,7 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
                       variant="destructive"
                       onClick={() => handleDeleteProduct(p._id)}
                     >
-                      Delete
+                      {t("produce.action.delete")}
                     </Button>
                   </CardFooter>
                 </Card>
@@ -428,26 +430,26 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
             <Table>
               <TableHeader className="bg-emerald-50">
                 <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Quantity</TableHead>
-                  <TableHead>Price</TableHead>
-                  <TableHead>Locality</TableHead>
-                  <TableHead>Farm ID</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>{t("produce.field.name")}</TableHead>
+                  <TableHead>{t("produce.field.type")}</TableHead>
+                  <TableHead>{t("produce.field.quantity")}</TableHead>
+                  <TableHead>{t("produce.field.price")}</TableHead>
+                  <TableHead>{t("produce.field.locality")}</TableHead>
+                  <TableHead>{t("produce.field.farmId")}</TableHead>
+                  <TableHead className="text-right">{t("produce.field.actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading ? (
                   <TableRow>
                     <TableCell colSpan={7} className="text-center py-10">
-                      Loading...
+                      {t("common.loading")}
                     </TableCell>
                   </TableRow>
                 ) : products.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} className="text-center py-10">
-                      No products found
+                      {t("produce.emptyTable")}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -468,7 +470,7 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
                               size="sm"
                               variant="outline"
                             >
-                              View More
+                              {t("produce.action.viewMore")}
                             </Button>
                           </Link>
                           <Button
@@ -476,14 +478,14 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
                             className="bg-emerald-600 text-white hover:bg-emerald-700"
                             onClick={() => handleShowQR(p)}
                           >
-                            Show QR
+                            {t("produce.action.showQr")}
                           </Button>
                           <Button
                             size="sm"
                             variant="destructive"
                             onClick={() => handleDeleteProduct(p._id)}
                           >
-                            Delete
+                            {t("produce.action.delete")}
                           </Button>
                         </div>
                       </TableCell>
@@ -499,7 +501,7 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
       {/* Past Produce Section */}
       <div className="mt-12">
         <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-          🕒 Past Produce History
+          🕒 {t("produce.pastHistory")}
         </h2>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 opacity-80">
           {PAST_PRODUCE.map((p) => (
@@ -518,18 +520,18 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
                 />
                 <div className="space-y-1 text-sm text-gray-500">
                   <div>
-                    <span className="font-medium text-gray-600">Total Yield:</span> {p.quantity} kg
+                    <span className="font-medium text-gray-600">{t("produce.past.totalYield")}:</span> {p.quantity} kg
                   </div>
                   <div>
-                    <span className="font-medium text-gray-600">Avg. Price Sold:</span> ₹{p.basePrice}/kg
+                    <span className="font-medium text-gray-600">{t("produce.past.avgPrice")}:</span> ₹{p.basePrice}/kg
                   </div>
                   <div>
-                    <span className="font-medium text-gray-600">Harvested:</span> {p.harvestDate}
+                    <span className="font-medium text-gray-600">{t("produce.past.harvested")}:</span> {p.harvestDate}
                   </div>
                 </div>
               </CardContent>
               <CardFooter className="bg-gray-50 rounded-b-2xl py-3 border-t">
-                <p className="text-xs text-gray-500 font-semibold w-full text-center">✓ Season Completed</p>
+                <p className="text-xs text-gray-500 font-semibold w-full text-center">✓ {t("produce.past.seasonCompleted")}</p>
               </CardFooter>
             </Card>
           ))}
@@ -540,8 +542,8 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
       <Dialog open={qrOpen} onOpenChange={setQrOpen}>
         <DialogContent className="flex flex-col items-center gap-4">
           <DialogHeader>
-            <DialogTitle>Product QR Code</DialogTitle>
-            <DialogDescription className="sr-only">Scan this QR code to view the product details.</DialogDescription>
+            <DialogTitle>{t("produce.qr.title")}</DialogTitle>
+            <DialogDescription className="sr-only">{t("produce.qr.description")}</DialogDescription>
           </DialogHeader>
           {qrProduct && (
             <>
@@ -552,7 +554,7 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
                 includeMargin
               />
               <p className="text-sm text-gray-600">
-                Scan to view {qrProduct.name}
+                {t("produce.qr.scanToView", { name: qrProduct.name })}
               </p>
             </>
           )}
@@ -560,7 +562,7 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
             onClick={() => setQrOpen(false)}
             className="bg-emerald-600 text-white"
           >
-            Close
+            {t("common.close")}
           </Button>
         </DialogContent>
       </Dialog>
@@ -570,21 +572,21 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>
-              {editing ? "Edit Produce" : "Add Produce"}
+              {editing ? t("produce.dialog.editTitle") : t("produce.dialog.addTitle")}
             </DialogTitle>
-            <DialogDescription className="sr-only">Form to add or edit product details.</DialogDescription>
+            <DialogDescription className="sr-only">{t("produce.dialog.description")}</DialogDescription>
           </DialogHeader>
           <div className="grid gap-3">
-            <LabeledInput label="Name *">
+            <LabeledInput label={t("produce.field.nameRequired")}>
               <Input
                 value={form.name}
                 onChange={(e) =>
                   setForm((f) => ({ ...f, name: e.target.value }))
                 }
-                placeholder="Tomatoes"
+                placeholder={t("produce.placeholder.tomatoes")}
               />
             </LabeledInput>
-            <LabeledInput label="Crop Category *">
+            <LabeledInput label={t("produce.field.cropCategoryRequired")}>
               <select
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 value={form.type}
@@ -592,7 +594,7 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
                   setForm((f) => ({ ...f, type: e.target.value }))
                 }
               >
-                <option value="">Select category...</option>
+                <option value="">{t("produce.placeholder.selectCategory")}</option>
                 {produceTypes.map((t) => (
                   <option key={t} value={t}>
                     {t}

@@ -7,9 +7,13 @@ import {
   getCachedTrustLoanData,
   prefetchTrustLoanData,
 } from "../../../lib/trustLoanCache";
+import { useTranslation } from "../../../consumer/i18n/config.jsx";
+import translationService from "../../../consumer/i18n/translationService";
 
 export default function LoanSection() {
+  const { t, currentLanguage } = useTranslation();
   const [banks, setBanks] = useState([]);
+  const [translatedBanks, setTranslatedBanks] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const { user, profile } = useProfile();
@@ -47,6 +51,59 @@ export default function LoanSection() {
     };
   }, [user, profile]);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    const translateBanks = async () => {
+      if (!banks?.length) {
+        setTranslatedBanks([]);
+        return;
+      }
+      if (!currentLanguage || currentLanguage === "en") {
+        setTranslatedBanks(banks);
+        return;
+      }
+
+      const payload = {};
+      banks.forEach((bank, i) => {
+        if (bank?.name) payload[`bank_name_${i}`] = bank.name;
+        if (bank?.description) {
+          payload[`bank_description_${i}`] = bank.description;
+        }
+      });
+
+      const translated = await translationService.batchTranslate(
+        payload,
+        currentLanguage,
+        "google",
+      );
+      if (cancelled) return;
+
+      setTranslatedBanks(
+        banks.map((bank, i) => ({
+          ...bank,
+          name: translated[`bank_name_${i}`] || bank.name,
+          description:
+            translated[`bank_description_${i}`] || bank.description,
+        })),
+      );
+    };
+
+    translateBanks();
+    return () => {
+      cancelled = true;
+    };
+  }, [banks, currentLanguage]);
+
+  const displayedBanks = translatedBanks?.length ? translatedBanks : banks;
+
+  const formatRoleLabel = (r) => {
+    if (r === "farmer") return t("loan.roles.farmer");
+    if (r === "retailer") return t("loan.roles.retailer");
+    if (r === "villager") return t("loan.roles.villager");
+    return r;
+  };
+
   return (
     <div className="space-y-8">
       <div className="space-y-6">
@@ -63,7 +120,7 @@ export default function LoanSection() {
           <div className="space-y-10">
             {/* Eligible Banks Grouped */}
             {(() => {
-              const eligible = banks.filter(
+              const eligible = displayedBanks.filter(
                 (b) =>
                   (b.minScore || 0) <= credit.score &&
                   (
@@ -75,7 +132,7 @@ export default function LoanSection() {
                   <Card className="border-0 shadow-md">
                     <CardContent className="p-10 text-center">
                       <p className="text-gray-500 italic">
-                        No banks available for your current score.
+                        {t("loan.empty.noBanksForScore")}
                       </p>
                     </CardContent>
                   </Card>
@@ -85,7 +142,7 @@ export default function LoanSection() {
               const groups = [
                 {
                   id: "qr",
-                  label: "📱 QR & Cash Advances",
+                  label: t("loan.group.qr"),
                   items: eligible.filter((b) => b.type === "qr"),
                   classes: {
                     title: "text-emerald-600",
@@ -95,7 +152,7 @@ export default function LoanSection() {
                 },
                 {
                   id: "growth",
-                  label: "🚀 Growth & Expansion",
+                  label: t("loan.group.growth"),
                   items: eligible.filter((b) => b.type === "growth"),
                   classes: {
                     title: "text-blue-600",
@@ -105,7 +162,7 @@ export default function LoanSection() {
                 },
                 {
                   id: "standard",
-                  label: "🏦 Standard Loans",
+                  label: t("loan.group.standard"),
                   items: eligible.filter(
                     (b) => b.type === "standard" || !b.type,
                   ),
@@ -145,13 +202,15 @@ export default function LoanSection() {
                                     variant="secondary"
                                     className="mt-1.5 bg-gray-100 text-gray-600 hover:bg-gray-200 font-medium border-0"
                                   >
-                                    Interest from {bank.interestRate}%
+                                    {t("loan.interestFrom", {
+                                      rate: bank.interestRate,
+                                    })}
                                   </Badge>
                                 </div>
                               </div>
 
                               <p className="text-sm text-gray-600 flex-grow leading-relaxed mb-6">
-                                {bank.description || "Standard loan product."}
+                                {bank.description || t("loan.standardProduct")}
                               </p>
 
                               {bank.applyLink && (
@@ -161,7 +220,7 @@ export default function LoanSection() {
                                   rel="noopener noreferrer"
                                   className={`w-full text-sm font-bold flex items-center justify-center gap-2 py-3 rounded-xl transition-colors ${group.classes.btnText}`}
                                 >
-                                  Apply Direct{" "}
+                                  {t("loan.applyDirect")}{" "}
                                   <ExternalLink className="w-4 h-4" />
                                 </a>
                               )}
@@ -178,17 +237,14 @@ export default function LoanSection() {
             <div className="pt-8 border-t border-gray-200 space-y-4">
               <div>
                 <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider">
-                  Improve Credit Score to Unlock
+                  {t("loan.improveTitle")}
                 </h3>
                 <p className="text-xs text-gray-500 mt-1">
-                  Loan eligibility is directly based on your Trust & Reliability
-                  Score. A good score demonstrates high credibility,
-                  significantly increasing your chances of loan approval.
-                  Improve your score to unlock these financial products.
+                  {t("loan.improveDescription")}
                 </p>
               </div>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {banks
+                {displayedBanks
                   .filter(
                     (b) =>
                       (b.minScore || 0) > credit.score ||
@@ -219,8 +275,14 @@ export default function LoanSection() {
                               </p>
                               <p className="text-xs text-red-500 font-bold mt-1.5">
                                 {roleMismatch
-                                  ? `Only available to: ${allowedRoles.join(", ")}`
-                                  : `Requires Trust Score of ${bank.minScore || 0}`}
+                                  ? t("loan.onlyAvailableTo", {
+                                      roles: allowedRoles
+                                        .map(formatRoleLabel)
+                                        .join(", "),
+                                    })
+                                  : t("loan.requiresScore", {
+                                      score: bank.minScore || 0,
+                                    })}
                               </p>
                             </div>
                           </div>

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DEFAULT_PROFILE } from "../lib/data.js";
 import { useProfile } from "../../contexts/useProfile.js";
+import { useTranslation } from "../../consumer/i18n/config.jsx";
 
 const SKILL_OPTIONS = ["Harvesting", "Pesticide Use", "Irrigation Setup", "Drip Line", "Sorting & Grading", "Transplanting", "Land Preparation", "Spraying"];
 const LANGUAGE_OPTIONS = ["Marathi", "Hindi", "English", "Kannada", "Telugu"];
@@ -13,6 +14,7 @@ function loadLS(key, fallback) {
 }
 
 export default function VillagerProfileModal({ isOpen, onClose }) {
+  const { t } = useTranslation();
   const { profile: dbProfile, user: dbUser, loading, saving, saveProfile } = useProfile();
 
   const userRaw      = dbUser || loadLS("user", {});
@@ -157,15 +159,15 @@ export default function VillagerProfileModal({ isOpen, onClose }) {
         <div className="bg-gradient-to-r from-emerald-600 to-green-700 text-white px-6 py-4 shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <h2 className="text-xl font-bold">Profile Settings</h2>
+              <h2 className="text-xl font-bold">{t("villager.profileModal.title")}</h2>
               {loading && <Loader2 className="w-4 h-4 animate-spin opacity-70" />}
             </div>
-            <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-lg transition-colors" aria-label="Close">
+            <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-lg transition-colors" aria-label={t("worker.profile.closeAria")}>
               <X className="w-5 h-5" />
             </button>
           </div>
           <div className="flex gap-1 mt-4">
-            {[{ id: "settings", label: "Basic Info" }, { id: "villager", label: "Villager Profile" }].map(tab => (
+            {[{ id: "settings", label: t("villager.profileModal.tab.basicInfo") }, { id: "villager", label: t("villager.profileModal.tab.villagerProfile") }].map(tab => (
               <button key={tab.id} onClick={() => { setActiveTab(tab.id); setIsEditing(false); }}
                 className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${activeTab === tab.id ? "bg-white text-emerald-700" : "text-white/70 hover:text-white hover:bg-white/10"}`}>
                 {tab.label}
@@ -178,8 +180,8 @@ export default function VillagerProfileModal({ isOpen, onClose }) {
         {saveStatus && (
           <div className={`px-6 py-2 text-sm font-medium flex items-center gap-2 shrink-0 ${saveStatus === "success" ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"}`}>
             {saveStatus === "success"
-              ? <><CheckCircle className="w-4 h-4" /> Profile saved to database!</>
-              : <><AlertCircle className="w-4 h-4" /> Saved locally — database sync failed.</>}
+              ? <><CheckCircle className="w-4 h-4" /> {t("villager.profileModal.savedDb")}</>
+              : <><AlertCircle className="w-4 h-4" /> {t("villager.profileModal.savedLocal")}</>}
           </div>
         )}
 
@@ -211,35 +213,35 @@ export default function VillagerProfileModal({ isOpen, onClose }) {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-gray-700 flex items-center gap-2"><User className="w-4 h-4" />Full Name</label>
+                  <label className="text-sm font-medium text-gray-700 flex items-center gap-2"><User className="w-4 h-4" />{t("profile.fullName")}</label>
                   <input value={shared.name} onChange={e => upShared("name", e.target.value)} disabled={!isEditing} className={inputCls} />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-gray-700 flex items-center gap-2"><Mail className="w-4 h-4" />Email Address</label>
+                  <label className="text-sm font-medium text-gray-700 flex items-center gap-2"><Mail className="w-4 h-4" />{t("profile.email")}</label>
                   <input type="email" value={basic.email} onChange={e => upBasic("email", e.target.value)} disabled={!isEditing} className={inputCls} />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-gray-700 flex items-center gap-2"><Phone className="w-4 h-4" />Phone Number</label>
+                  <label className="text-sm font-medium text-gray-700 flex items-center gap-2"><Phone className="w-4 h-4" />{t("profile.phone")}</label>
                   <input type="tel" value={shared.phone} onChange={e => upShared("phone", e.target.value)} disabled={!isEditing} className={inputCls} />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-gray-700 flex items-center gap-2"><MapPin className="w-4 h-4" />Location</label>
+                  <label className="text-sm font-medium text-gray-700 flex items-center gap-2"><MapPin className="w-4 h-4" />{t("profile.location")}</label>
                   <input value={shared.location} onChange={e => upShared("location", e.target.value)} disabled={!isEditing} className={inputCls} />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-gray-700">Specialization</label>
+                  <label className="text-sm font-medium text-gray-700">{t("profile.specialization")}</label>
                   <input value={basic.specialization} onChange={e => upBasic("specialization", e.target.value)} disabled={!isEditing} className={inputCls} />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-gray-700">Experience</label>
+                  <label className="text-sm font-medium text-gray-700">{t("villager.profileModal.experience")}</label>
                   <input value={basic.experience} onChange={e => upBasic("experience", e.target.value)} disabled={!isEditing} className={inputCls} />
                 </div>
               </div>
 
               <div className="space-y-1">
-                <label className="text-sm font-medium text-gray-700">About Me</label>
+                <label className="text-sm font-medium text-gray-700">{t("villager.profileModal.aboutMe")}</label>
                 <textarea value={basic.bio} onChange={e => upBasic("bio", e.target.value)} disabled={!isEditing} rows={3}
-                  className={`${inputCls} resize-none`} placeholder="Tell about your work experience and skills..." />
+                  className={`${inputCls} resize-none`} placeholder={t("villager.profileModal.aboutPlaceholder")} />
               </div>
             </>
           )}
@@ -275,10 +277,10 @@ export default function VillagerProfileModal({ isOpen, onClose }) {
                   {/* Stats */}
                   <div className="grid grid-cols-2 gap-2 shrink-0">
                     {[
-                      { label: "Gig Score",  value: villager.gigScore },
-                      { label: "Gigs Done",  value: villager.gigsCompleted },
-                      { label: "Credit",     value: villager.creditScore },
-                      { label: "Earnings",   value: `₹${(villager.seasonEarnings/1000).toFixed(0)}K` },
+                      { label: t("worker.profile.gigScore"),  value: villager.gigScore },
+                      { label: t("worker.profile.gigsDone"),  value: villager.gigsCompleted },
+                      { label: t("worker.profile.credit"),     value: villager.creditScore },
+                      { label: t("worker.profile.earnings"),   value: `₹${(villager.seasonEarnings/1000).toFixed(0)}K` },
                     ].map((s, i) => (
                       <div key={i} className="bg-white/10 rounded-xl px-3 py-2 text-center">
                         <div className="text-base font-bold">{s.value}</div>
@@ -292,7 +294,7 @@ export default function VillagerProfileModal({ isOpen, onClose }) {
               {/* Badges earned */}
               <div className="bg-gray-50 rounded-2xl p-5">
                 <h4 className="text-sm font-bold text-gray-700 flex items-center gap-2 mb-3">
-                  <Award className="w-4 h-4 text-emerald-600" /> Earned Badges
+                  <Award className="w-4 h-4 text-emerald-600" /> {t("villager.profileModal.earnedBadges")}
                 </h4>
                 <div className="flex flex-wrap gap-2">
                   {villager.badges.map(b => (
@@ -308,7 +310,7 @@ export default function VillagerProfileModal({ isOpen, onClose }) {
               {/* Skills */}
               <div className="bg-gray-50 rounded-2xl p-5">
                 <h4 className="text-sm font-bold text-gray-700 flex items-center gap-2 mb-3">
-                  <Briefcase className="w-4 h-4 text-emerald-600" /> Skills
+                  <Briefcase className="w-4 h-4 text-emerald-600" /> {t("villager.profileModal.skills")}
                 </h4>
                 <div className="flex flex-wrap gap-2">
                   {SKILL_OPTIONS.map(skill => (
@@ -329,17 +331,17 @@ export default function VillagerProfileModal({ isOpen, onClose }) {
               {/* Identity fields */}
               <div className="grid lg:grid-cols-2 gap-5">
                 <div className="bg-gray-50 rounded-2xl p-5 space-y-4">
-                  <h4 className="text-sm font-bold text-gray-700 flex items-center gap-2"><User className="w-4 h-4 text-emerald-600" />Personal Details</h4>
+                  <h4 className="text-sm font-bold text-gray-700 flex items-center gap-2"><User className="w-4 h-4 text-emerald-600" />{t("villager.profileModal.personalDetails")}</h4>
 
-                  <div><label className={labelCls}>Full Name</label>
+                  <div><label className={labelCls}>{t("profile.fullName")}</label>
                     <input value={shared.name} onChange={e => upShared("name", e.target.value)} disabled={!isEditing} className={inputCls} /></div>
-                  <div><label className={labelCls}>Phone Number</label>
+                  <div><label className={labelCls}>{t("profile.phone")}</label>
                     <input value={shared.phone} onChange={e => upShared("phone", e.target.value)} disabled={!isEditing} className={inputCls} /></div>
-                  <div><label className={labelCls}>Location</label>
+                  <div><label className={labelCls}>{t("profile.location")}</label>
                     <input value={shared.location} onChange={e => upShared("location", e.target.value)} disabled={!isEditing} className={inputCls} /></div>
-                  <div><label className={labelCls}>Aadhaar Number</label>
+                  <div><label className={labelCls}>{t("villager.profileModal.aadhaar")}</label>
                     <input value={villager.aadhaarNumber} onChange={e => upWorker("aadhaarNumber", e.target.value)} disabled={!isEditing} className={inputCls} /></div>
-                  <div><label className={labelCls}>Language Preference</label>
+                  <div><label className={labelCls}>{t("villager.profileModal.languagePreference")}</label>
                     <select value={villager.language} onChange={e => upWorker("language", e.target.value)} disabled={!isEditing} className={inputCls}>
                       {LANGUAGE_OPTIONS.map(l => <option key={l} value={l.toLowerCase()}>{l}</option>)}
                     </select>
@@ -348,22 +350,22 @@ export default function VillagerProfileModal({ isOpen, onClose }) {
 
                 {/* Work info */}
                 <div className="bg-gray-50 rounded-2xl p-5 space-y-4">
-                  <h4 className="text-sm font-bold text-gray-700 flex items-center gap-2"><Briefcase className="w-4 h-4 text-emerald-600" />Work Details</h4>
-                  <div><label className={labelCls}>Specialization</label>
+                  <h4 className="text-sm font-bold text-gray-700 flex items-center gap-2"><Briefcase className="w-4 h-4 text-emerald-600" />{t("villager.profileModal.workDetails")}</h4>
+                  <div><label className={labelCls}>{t("profile.specialization")}</label>
                     <input value={basic.specialization} onChange={e => upBasic("specialization", e.target.value)} disabled={!isEditing} className={inputCls} /></div>
-                  <div><label className={labelCls}>Experience</label>
+                  <div><label className={labelCls}>{t("villager.profileModal.experience")}</label>
                     <input value={basic.experience} onChange={e => upBasic("experience", e.target.value)} disabled={!isEditing} className={inputCls} /></div>
-                  <div><label className={labelCls}>Gig Score</label>
+                  <div><label className={labelCls}>{t("villager.profileModal.gigScore")}</label>
                     <input type="number" value={villager.gigScore} onChange={e => upWorker("gigScore", Number(e.target.value))} disabled={!isEditing} className={inputCls} /></div>
-                  <div><label className={labelCls}>Loan Eligible</label>
+                  <div><label className={labelCls}>{t("villager.profileModal.loanEligible")}</label>
                     <div className={`mt-1 flex items-center gap-2 px-3 py-2 rounded-lg border text-sm ${villager.loanEligible ? "bg-green-50 border-green-200 text-green-700" : "bg-gray-50 border-gray-200 text-gray-500"}`}>
                       <BadgeCheck className={`w-4 h-4 ${villager.loanEligible ? "text-green-600" : "text-gray-400"}`} />
-                      {villager.loanEligible ? "Eligible for rural micro-loan" : "Not yet eligible"}
+                      {villager.loanEligible ? t("villager.profileModal.eligibleLoan") : t("villager.profileModal.notEligibleLoan")}
                     </div>
                   </div>
-                  <div><label className={labelCls}>About Me</label>
+                  <div><label className={labelCls}>{t("villager.profileModal.aboutMe")}</label>
                     <textarea value={basic.bio} onChange={e => upBasic("bio", e.target.value)} disabled={!isEditing} rows={3}
-                      className={`${inputCls} resize-none`} placeholder="Tell about your skills..." />
+                      className={`${inputCls} resize-none`} placeholder={t("villager.profileModal.skillsPlaceholder")} />
                   </div>
                 </div>
               </div>
@@ -377,16 +379,16 @@ export default function VillagerProfileModal({ isOpen, onClose }) {
             <div className="flex gap-3">
               <Button onClick={handleSave} disabled={saving} className="bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-2">
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                {saving ? "Saving…" : "Save Changes"}
+                {saving ? t("villager.profileModal.saving") : t("profile.saveChanges")}
               </Button>
-              <Button onClick={() => setIsEditing(false)} variant="outline" className="border-gray-300 text-gray-700">Cancel</Button>
+              <Button onClick={() => setIsEditing(false)} variant="outline" className="border-gray-300 text-gray-700">{t("common.cancel")}</Button>
             </div>
           ) : (
             <Button onClick={() => setIsEditing(true)} className="bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-2">
-              <Edit2 className="w-4 h-4" /> Edit Profile
+              <Edit2 className="w-4 h-4" /> {t("profile.editProfile")}
             </Button>
           )}
-          <Button onClick={onClose} variant="outline" className="border-gray-300 text-gray-700">Close</Button>
+          <Button onClick={onClose} variant="outline" className="border-gray-300 text-gray-700">{t("common.close")}</Button>
         </div>
       </div>
     </div>

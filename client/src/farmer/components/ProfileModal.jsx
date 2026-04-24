@@ -3,6 +3,7 @@ import { X, User, Mail, Phone, MapPin, Camera, Save, Edit2, Shield, Wheat, Chevr
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useProfile } from "../../contexts/useProfile.js";
+import { useTranslation } from "../../consumer/i18n/config.jsx";
 
 const SOIL_TYPES = ["Black Cotton", "Red Soil", "Alluvial", "Laterite", "Sandy", "Clay", "Loamy"];
 const IRRIGATION_TYPES = ["Drip", "Sprinkler", "Canal", "Well", "Rainfed", "Borewell"];
@@ -20,6 +21,7 @@ function loadLS(key, fallback) {
 }
 
 export default function ProfileModal({ isOpen, onClose }) {
+  const { t } = useTranslation();
   const { profile: dbProfile, user: dbUser, loading, saving, saveProfile } = useProfile();
 
   // dbUser is the authoritative User document from MongoDB (or localStorage fallback)
@@ -162,7 +164,7 @@ export default function ProfileModal({ isOpen, onClose }) {
         <div className="bg-gradient-to-r from-emerald-600 to-green-700 text-white px-6 py-4 shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <h2 className="text-xl font-bold">Profile Settings</h2>
+              <h2 className="text-xl font-bold">{t("farmer.profileModal.title")}</h2>
               {loading && <Loader2 className="w-4 h-4 animate-spin opacity-70" />}
             </div>
             <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-lg transition-colors" aria-label="Close">
@@ -170,7 +172,7 @@ export default function ProfileModal({ isOpen, onClose }) {
             </button>
           </div>
           <div className="flex gap-1 mt-4">
-            {[{ id: "settings", label: "Basic Info" }, { id: "identity", label: "Farm Identity" }].map(tab => (
+            {[{ id: "settings", label: t("farmer.profileModal.tab.basicInfo") }, { id: "identity", label: t("farmer.profileModal.tab.farmIdentity") }].map(tab => (
               <button key={tab.id} onClick={() => { setActiveTab(tab.id); setIsEditing(false); }}
                 className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${activeTab === tab.id ? "bg-white text-emerald-700" : "text-white/70 hover:text-white hover:bg-white/10"}`}>
                 {tab.label}
@@ -183,8 +185,8 @@ export default function ProfileModal({ isOpen, onClose }) {
         {saveStatus && (
           <div className={`px-6 py-2 text-sm font-medium flex items-center gap-2 shrink-0 ${saveStatus === "success" ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"}`}>
             {saveStatus === "success"
-              ? <><CheckCircle className="w-4 h-4" /> Profile saved to database successfully!</>
-              : <><AlertCircle className="w-4 h-4" /> Saved locally — database sync failed. Changes are preserved.</>}
+              ? <><CheckCircle className="w-4 h-4" /> {t("farmer.profileModal.savedDb")}</>
+              : <><AlertCircle className="w-4 h-4" /> {t("farmer.profileModal.savedLocal")}</>}
           </div>
         )}
 
@@ -211,34 +213,34 @@ export default function ProfileModal({ isOpen, onClose }) {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-gray-700 flex items-center gap-2"><User className="w-4 h-4" />Full Name</label>
+                  <label className="text-sm font-medium text-gray-700 flex items-center gap-2"><User className="w-4 h-4" />{t("profile.fullName")}</label>
                   <input value={shared.name} onChange={e => upShared("name", e.target.value)} disabled={!isEditing} className={inputCls} />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-gray-700 flex items-center gap-2"><Mail className="w-4 h-4" />Email Address</label>
+                  <label className="text-sm font-medium text-gray-700 flex items-center gap-2"><Mail className="w-4 h-4" />{t("profile.email")}</label>
                   <input type="email" value={basic.email} onChange={e => upBasic("email", e.target.value)} disabled={!isEditing} className={inputCls} />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-gray-700 flex items-center gap-2"><Phone className="w-4 h-4" />Phone Number</label>
+                  <label className="text-sm font-medium text-gray-700 flex items-center gap-2"><Phone className="w-4 h-4" />{t("profile.phone")}</label>
                   <input type="tel" value={shared.phone} onChange={e => upShared("phone", e.target.value)} disabled={!isEditing} className={inputCls} />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-gray-700 flex items-center gap-2"><MapPin className="w-4 h-4" />Location</label>
+                  <label className="text-sm font-medium text-gray-700 flex items-center gap-2"><MapPin className="w-4 h-4" />{t("profile.location")}</label>
                   <input value={shared.location} onChange={e => upShared("location", e.target.value)} disabled={!isEditing} className={inputCls} />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-gray-700">Farm Size</label>
+                  <label className="text-sm font-medium text-gray-700">{t("profileModal.farmSize")}</label>
                   <input value={basic.farmSize} onChange={e => upBasic("farmSize", e.target.value)} disabled={!isEditing} className={inputCls} />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-gray-700">Primary Crops</label>
+                  <label className="text-sm font-medium text-gray-700">{t("profileModal.primaryCrops")}</label>
                   <input value={basic.crops} onChange={e => upBasic("crops", e.target.value)} disabled={!isEditing} className={inputCls} />
                 </div>
               </div>
 
               <div className="space-y-1">
-                <label className="text-sm font-medium text-gray-700">Bio</label>
-                <textarea name="bio" value={basic.bio} onChange={e => upBasic("bio", e.target.value)} disabled={!isEditing} rows={3} className={`${inputCls} resize-none`} placeholder="Tell about your farming experience..." />
+                <label className="text-sm font-medium text-gray-700">{t("profile.bio")}</label>
+                <textarea name="bio" value={basic.bio} onChange={e => upBasic("bio", e.target.value)} disabled={!isEditing} rows={3} className={`${inputCls} resize-none`} placeholder={t("profileModal.bioPlaceholder")} />
               </div>
             </>
           )}
@@ -353,16 +355,16 @@ export default function ProfileModal({ isOpen, onClose }) {
             <div className="flex gap-3">
               <Button onClick={handleSave} disabled={saving} className="bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-2">
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                {saving ? "Saving…" : "Save Changes"}
+                {saving ? t("villager.profileModal.saving") : t("profile.saveChanges")}
               </Button>
-              <Button onClick={() => setIsEditing(false)} variant="outline" className="border-gray-300 text-gray-700">Cancel</Button>
+              <Button onClick={() => setIsEditing(false)} variant="outline" className="border-gray-300 text-gray-700">{t("common.cancel")}</Button>
             </div>
           ) : (
             <Button onClick={() => setIsEditing(true)} className="bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-2">
-              <Edit2 className="w-4 h-4" /> Edit Profile
+              <Edit2 className="w-4 h-4" /> {t("profile.editProfile")}
             </Button>
           )}
-          <Button onClick={onClose} variant="outline" className="border-gray-300 text-gray-700">Close</Button>
+          <Button onClick={onClose} variant="outline" className="border-gray-300 text-gray-700">{t("common.close")}</Button>
         </div>
       </div>
     </div>

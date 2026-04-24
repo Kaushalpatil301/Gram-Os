@@ -9,6 +9,10 @@ import ProductDetails from "../../product/components/ProductDetails.jsx";
 import Notification from "../../product/components/Notification.jsx";
 import Chatbot from "../../consumer/app/Chatbot.jsx";
 import {
+  LanguageProvider,
+  useTranslation,
+} from "../../consumer/i18n/config.jsx";
+import {
   TrendingUp, TrendingDown, Brain, Store, Wheat,
   MessageSquare, CheckCircle, XCircle, Clock, IndianRupee,
   MapPin, AlertTriangle, ChevronRight, Star, Package, BarChart3, Activity
@@ -42,7 +46,8 @@ function Sparkline({ values }) {
   );
 }
 
-export default function FarmerProductPage({ onLogout }) {
+function FarmerProductPageContent({ onLogout }) {
+  const { t } = useTranslation();
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -76,7 +81,9 @@ export default function FarmerProductPage({ onLogout }) {
           }
           
           setCurrentProduct(product);
-          setNotification(`✅ Viewing: ${product.name}`);
+          setNotification(
+            t("farmer.product.viewing", { name: product.name }),
+          );
           
           // Generate dynamic buyer offers based on product details
           const targetPrice = product.aiPredictedPrice || product.basePrice * 1.2;
@@ -102,8 +109,8 @@ export default function FarmerProductPage({ onLogout }) {
             }
           ]);
         } catch (err) {
-          setError("Product not found or failed to load");
-          setNotification("❌ Failed to load product");
+          setError(t("farmer.product.errorNotFound"));
+          setNotification(t("farmer.product.errorLoad"));
         } finally {
           setLoading(false);
         }
@@ -117,11 +124,22 @@ export default function FarmerProductPage({ onLogout }) {
   const handleBidAction = (bidId, action) => {
     setBids(prev => prev.map(b => b.id === bidId ? { ...b, status: action } : b));
     const bid = bids.find(b => b.id === bidId);
-    if (action === "accepted") setNotification(`✅ Accepted bid from ${bid.name} at ₹${bid.offeredPrice}/qtl`);
-    if (action === "rejected") setNotification(`❌ Rejected bid from ${bid.name}`);
+    if (action === "accepted") {
+      setNotification(
+        t("farmer.product.bidAccepted", {
+          name: bid.name,
+          price: bid.offeredPrice,
+        }),
+      );
+    }
+    if (action === "rejected") {
+      setNotification(t("farmer.product.bidRejected", { name: bid.name }));
+    }
     if (action === "countered") {
       const cp = counterPrice[bidId] || bid.offeredPrice;
-      setNotification(`🔄 Counter offer ₹${cp}/qtl sent to ${bid.name}`);
+      setNotification(
+        t("farmer.product.bidCountered", { price: cp, name: bid.name }),
+      );
     }
   };
 
@@ -130,8 +148,8 @@ export default function FarmerProductPage({ onLogout }) {
       <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-lime-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-green-600 mx-auto mb-6" />
-          <h3 className="text-xl font-semibold text-green-800 mb-2">Loading Product Details</h3>
-          <p className="text-green-600">Fetching product information...</p>
+          <h3 className="text-xl font-semibold text-green-800 mb-2">{t("farmer.product.loadingTitle")}</h3>
+          <p className="text-green-600">{t("farmer.product.loadingSubtitle")}</p>
         </div>
       </div>
     );
@@ -141,10 +159,10 @@ export default function FarmerProductPage({ onLogout }) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-lime-50 flex items-center justify-center">
         <div className="text-center">
-          <h3 className="text-xl font-semibold text-red-600 mb-2">{error || "Product not found"}</h3>
-          <p className="text-gray-600 mb-4">Please check the product ID and try again.</p>
+          <h3 className="text-xl font-semibold text-red-600 mb-2">{error || t("farmer.product.notFound")}</h3>
+          <p className="text-gray-600 mb-4">{t("farmer.product.checkProductId")}</p>
           <button onClick={() => navigate("/dashboard/farmer")} className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700">
-            Go to Farmer Dashboard
+            {t("farmer.product.goDashboard")}
           </button>
         </div>
       </div>
@@ -166,8 +184,8 @@ export default function FarmerProductPage({ onLogout }) {
       { mandi: "APMC Mumbai",    price: Math.round(target * 1.05), distance: "148 km", trend: "up"  },
       { mandi: "Solapur APMC",   price: Math.round(target * 0.92), distance: "95 km", trend: "down" },
     ],
-    bestTimeToSell: "Next 10–14 days",
-    aiTip: "Prices typically spike in the 2nd & 3rd week of the month due to wholesale demand. Holding 40–50% of produce for 1–2 more weeks could yield higher returns.",
+    bestTimeToSell: t("farmer.product.bestTimeToSell"),
+    aiTip: t("farmer.product.aiTip"),
     weeklyTrend: [base, base * 1.02, base * 1.05, target * 0.95, target * 0.98, target, target * 1.02].map(Math.round),
   };
 
@@ -176,11 +194,11 @@ export default function FarmerProductPage({ onLogout }) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-lime-50">
       <Header
-        onLogout={() => { setNotification("Logged out ✅"); if (onLogout) onLogout(); }}
+        onLogout={() => { setNotification(t("header.logoutSuccess")); if (onLogout) onLogout(); }}
         productId={id}
         showBackButton={true}
-        title="Farmer Portal"
-        subtitle="Product Analytics & Market Intelligence"
+        title={t("farmer.product.portalTitle")}
+        subtitle={t("farmer.product.portalSubtitle")}
       />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
@@ -193,9 +211,9 @@ export default function FarmerProductPage({ onLogout }) {
         {/* ── Tab bar ── */}
         <div className="flex gap-2 border-b border-gray-200 pb-0">
           {[
-            { id: "predictions", label: "AI Predictions", icon: <Brain className="w-4 h-4" /> },
-            { id: "buyers",      label: "Buyer Offers",   icon: <Store className="w-4 h-4" />, badge: bids.filter(b => b.status === "pending").length },
-            { id: "journey",     label: "Journey",        icon: <Activity className="w-4 h-4" /> },
+            { id: "predictions", label: t("farmer.product.tab.predictions"), icon: <Brain className="w-4 h-4" /> },
+            { id: "buyers",      label: t("farmer.product.tab.buyers"),   icon: <Store className="w-4 h-4" />, badge: bids.filter(b => b.status === "pending").length },
+            { id: "journey",     label: t("farmer.product.tab.journey"),        icon: <Activity className="w-4 h-4" /> },
           ].map(tab => (
             <button
               key={tab.id}
@@ -226,10 +244,10 @@ export default function FarmerProductPage({ onLogout }) {
             {/* Summary cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
-                { label: "Your Base Rate",   value: `₹${currentProduct?.basePrice}`, sub: "per kg", icon: <IndianRupee className="w-5 h-5" />, color: "text-gray-700",    bg: "bg-gray-50"    },
-                { label: "AI Predicted Price", value: currentProduct?.aiPredictedPrice ? `₹${currentProduct.aiPredictedPrice}` : "Calculating...", sub: currentProduct?.aiPredictedPrice ? `${currentProduct.aiPredictedPrice >= currentProduct.basePrice ? "+" : ""}₹${currentProduct.aiPredictedPrice - currentProduct.basePrice} vs base` : "Checking market", icon: <TrendingUp className="w-5 h-5" />, color: "text-emerald-700", bg: "bg-emerald-50" },
-                { label: "30-Day Forecast",  value: `₹${currentProduct?.aiPredictedPrice ? (currentProduct.aiPredictedPrice * 1.1).toFixed(2) : "..."}`, sub: "Best case", icon: <BarChart3 className="w-5 h-5" />, color: "text-blue-700",    bg: "bg-blue-50"    },
-                { label: "AI Confidence",    value: `${pred.confidence}%`, sub: "model accuracy", icon: <Brain className="w-5 h-5" />, color: "text-purple-700", bg: "bg-purple-50"  },
+                { label: t("farmer.product.baseRate"),   value: `₹${currentProduct?.basePrice}`, sub: t("farmer.product.perKg"), icon: <IndianRupee className="w-5 h-5" />, color: "text-gray-700",    bg: "bg-gray-50"    },
+                { label: t("farmer.product.aiPredictedPrice"), value: currentProduct?.aiPredictedPrice ? `₹${currentProduct.aiPredictedPrice}` : t("farmer.product.calculating"), sub: currentProduct?.aiPredictedPrice ? `${currentProduct.aiPredictedPrice >= currentProduct.basePrice ? "+" : ""}₹${currentProduct.aiPredictedPrice - currentProduct.basePrice} ${t("farmer.product.vsBase")}` : t("farmer.product.checkingMarket"), icon: <TrendingUp className="w-5 h-5" />, color: "text-emerald-700", bg: "bg-emerald-50" },
+                { label: t("farmer.product.forecast30"),  value: `₹${currentProduct?.aiPredictedPrice ? (currentProduct.aiPredictedPrice * 1.1).toFixed(2) : "..."}`, sub: t("farmer.product.bestCase"), icon: <BarChart3 className="w-5 h-5" />, color: "text-blue-700",    bg: "bg-blue-50"    },
+                { label: t("farmer.product.aiConfidence"),    value: `${pred.confidence}%`, sub: t("farmer.product.modelAccuracy"), icon: <Brain className="w-5 h-5" />, color: "text-purple-700", bg: "bg-purple-50"  },
               ].map((c, i) => (
                 <div key={i} className={`${cardCls} flex flex-col gap-2`}>
                   <div className={`w-9 h-9 ${c.bg} rounded-xl flex items-center justify-center ${c.color}`}>{c.icon}</div>
@@ -244,29 +262,29 @@ export default function FarmerProductPage({ onLogout }) {
             <div className="grid md:grid-cols-2 gap-5">
               <div className={cardCls}>
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-bold text-gray-800 flex items-center gap-2"><TrendingUp className="w-4 h-4 text-emerald-600" />Weekly Price Trend</h3>
+                  <h3 className="font-bold text-gray-800 flex items-center gap-2"><TrendingUp className="w-4 h-4 text-emerald-600" />{t("farmer.product.weeklyTrend")}</h3>
                   <span className="text-xs bg-emerald-50 text-emerald-700 px-2 py-1 rounded-full font-semibold flex items-center gap-1">
-                    <TrendingUp className="w-3 h-3" /> Bullish
+                    <TrendingUp className="w-3 h-3" /> {t("farmer.product.bullish")}
                   </span>
                 </div>
                 <Sparkline values={pred.weeklyTrend} />
                 <div className="mt-3 flex justify-between text-xs text-gray-400">
-                  <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+                  <span>{t("analytics.day.mon")}</span><span>{t("analytics.day.tue")}</span><span>{t("analytics.day.wed")}</span><span>{t("analytics.day.thu")}</span><span>{t("analytics.day.fri")}</span><span>{t("analytics.day.sat")}</span><span>{t("analytics.day.sun")}</span>
                 </div>
                 <div className="mt-4 p-3 bg-amber-50 rounded-xl border border-amber-100">
-                  <p className="text-xs font-semibold text-amber-700 flex items-center gap-1 mb-1"><Clock className="w-3 h-3" />Best Time to Sell</p>
+                  <p className="text-xs font-semibold text-amber-700 flex items-center gap-1 mb-1"><Clock className="w-3 h-3" />{t("farmer.product.bestTimeLabel")}</p>
                   <p className="text-sm font-bold text-amber-800">{pred.bestTimeToSell}</p>
                 </div>
               </div>
 
               <div className={cardCls}>
-                <h3 className="font-bold text-gray-800 flex items-center gap-2 mb-4"><Brain className="w-4 h-4 text-purple-600" />AI Recommendation</h3>
+                <h3 className="font-bold text-gray-800 flex items-center gap-2 mb-4"><Brain className="w-4 h-4 text-purple-600" />{t("farmer.product.aiRecommendation")}</h3>
                 <div className="p-4 bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl border border-purple-100">
                   <p className="text-sm text-gray-700 leading-relaxed">{pred.aiTip}</p>
                 </div>
                 <div className="mt-4 space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-500">Hold confidence</span>
+                    <span className="text-gray-500">{t("farmer.product.holdConfidence")}</span>
                     <span className="font-semibold text-purple-700">{pred.confidence}%</span>
                   </div>
                   <div className="w-full bg-gray-100 rounded-full h-2">
@@ -279,13 +297,13 @@ export default function FarmerProductPage({ onLogout }) {
             {/* Mandi prices */}
             <div className={cardCls}>
               <h3 className="font-bold text-gray-800 flex items-center gap-2 mb-4">
-                <MapPin className="w-4 h-4 text-emerald-600" />Live Mandi Prices
+                <MapPin className="w-4 h-4 text-emerald-600" />{t("farmer.product.liveMandiPrices")}
               </h3>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b text-left text-gray-400 text-xs">
-                      {["Mandi", "₹/Quintal", "Distance", "Trend", "Action"].map(h => (
+                      {[t("farmer.product.table.mandi"), t("farmer.product.table.rate"), t("farmer.product.table.distance"), t("farmer.product.table.trend"), t("farmer.product.table.action")].map(h => (
                         <th key={h} className="pb-2 pr-4 font-semibold uppercase tracking-wider">{h}</th>
                       ))}
                     </tr>
@@ -300,12 +318,12 @@ export default function FarmerProductPage({ onLogout }) {
                         <td className="py-3 pr-4 text-gray-500">{m.distance}</td>
                         <td className="py-3 pr-4">
                           {m.trend === "up"
-                            ? <span className="flex items-center gap-1 text-emerald-600 text-xs font-semibold"><TrendingUp className="w-3 h-3" />Rising</span>
-                            : <span className="flex items-center gap-1 text-red-500 text-xs font-semibold"><TrendingDown className="w-3 h-3" />Falling</span>}
+                            ? <span className="flex items-center gap-1 text-emerald-600 text-xs font-semibold"><TrendingUp className="w-3 h-3" />{t("farmer.product.rising")}</span>
+                            : <span className="flex items-center gap-1 text-red-500 text-xs font-semibold"><TrendingDown className="w-3 h-3" />{t("farmer.product.falling")}</span>}
                         </td>
                         <td className="py-3">
                           <button className="text-xs px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full border border-emerald-200 hover:bg-emerald-100 transition-colors font-semibold">
-                            Get Route
+                            {t("farmer.product.getRoute")}
                           </button>
                         </td>
                       </tr>
@@ -323,9 +341,9 @@ export default function FarmerProductPage({ onLogout }) {
         {activeTab === "buyers" && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <p className="text-sm text-gray-500">{bids.filter(b => b.status === "pending").length} active offers from retailers & wholesalers</p>
+              <p className="text-sm text-gray-500">{t("farmer.product.activeOffers", { count: bids.filter(b => b.status === "pending").length })}</p>
               <span className="text-xs bg-amber-50 text-amber-700 border border-amber-100 px-3 py-1 rounded-full font-semibold flex items-center gap-1">
-                <AlertTriangle className="w-3 h-3" /> Offers expire soon — act fast
+                <AlertTriangle className="w-3 h-3" /> {t("farmer.product.offersExpire")}
               </span>
             </div>
 
@@ -340,8 +358,8 @@ export default function FarmerProductPage({ onLogout }) {
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
                         <h4 className="font-bold text-gray-900">{bid.name}</h4>
-                        {bid.verified && <span className="text-[10px] bg-blue-50 text-blue-700 border border-blue-100 px-2 py-0.5 rounded-full font-semibold flex items-center gap-1"><CheckCircle className="w-3 h-3" />Verified</span>}
-                        <span className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full capitalize">{bid.type}</span>
+                        {bid.verified && <span className="text-[10px] bg-blue-50 text-blue-700 border border-blue-100 px-2 py-0.5 rounded-full font-semibold flex items-center gap-1"><CheckCircle className="w-3 h-3" />{t("farmer.product.verified")}</span>}
+                        <span className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full capitalize">{bid.type === "retailer" ? t("farmer.product.typeRetailer") : t("farmer.product.typeWholesaler")}</span>
                       </div>
                       <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1"><MapPin className="w-3 h-3" />{bid.location}</p>
                       <div className="flex items-center gap-1 mt-1">
@@ -355,9 +373,9 @@ export default function FarmerProductPage({ onLogout }) {
                   {/* Offer price */}
                   <div className="shrink-0 text-right">
                     <div className="text-3xl font-black text-emerald-700">₹{bid.offeredPrice}</div>
-                    <div className="text-xs text-gray-400">/quintal · {bid.qty}</div>
+                    <div className="text-xs text-gray-400">{t("farmer.product.perQuintalQty", { qty: bid.qty })}</div>
                     <div className="flex items-center gap-1 text-xs text-red-500 font-semibold mt-1 justify-end">
-                      <Clock className="w-3 h-3" /> Expires in {bid.validTill}
+                      <Clock className="w-3 h-3" /> {t("farmer.product.expiresIn", { time: bid.validTill })}
                     </div>
                   </div>
                 </div>
@@ -368,15 +386,15 @@ export default function FarmerProductPage({ onLogout }) {
                     <div className="flex gap-2 flex-1">
                       <button onClick={() => handleBidAction(bid.id, "accepted")}
                         className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 text-white text-sm font-semibold rounded-xl hover:bg-emerald-700 transition-colors">
-                        <CheckCircle className="w-4 h-4" /> Accept
+                        <CheckCircle className="w-4 h-4" /> {t("farmer.product.accept")}
                       </button>
                       <button onClick={() => handleBidAction(bid.id, "rejected")}
                         className="flex items-center gap-1.5 px-4 py-2 bg-red-50 text-red-700 text-sm font-semibold rounded-xl hover:bg-red-100 border border-red-200 transition-colors">
-                        <XCircle className="w-4 h-4" /> Reject
+                        <XCircle className="w-4 h-4" /> {t("farmer.product.reject")}
                       </button>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-gray-400">Counter ₹</span>
+                      <span className="text-xs text-gray-400">{t("farmer.product.counter")}</span>
                       <input
                         type="number"
                         value={counterPrice[bid.id] || bid.offeredPrice}
@@ -385,15 +403,15 @@ export default function FarmerProductPage({ onLogout }) {
                       />
                       <button onClick={() => handleBidAction(bid.id, "countered")}
                         className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 text-amber-700 text-sm font-semibold rounded-xl hover:bg-amber-100 border border-amber-200 transition-colors">
-                        <MessageSquare className="w-4 h-4" /> Send Counter
+                        <MessageSquare className="w-4 h-4" /> {t("farmer.product.sendCounter")}
                       </button>
                     </div>
                   </div>
                 ) : (
                   <div className={`mt-4 pt-4 border-t border-gray-100 text-sm font-semibold flex items-center gap-2 ${bid.status === "accepted" ? "text-emerald-600" : bid.status === "rejected" ? "text-red-500" : "text-amber-600"}`}>
-                    {bid.status === "accepted" && <><CheckCircle className="w-4 h-4" /> Accepted — awaiting confirmation from buyer</>}
-                    {bid.status === "rejected" && <><XCircle className="w-4 h-4" /> Rejected</>}
-                    {bid.status === "countered" && <><MessageSquare className="w-4 h-4" /> Counter offer sent at ₹{counterPrice[bid.id]}</>}
+                    {bid.status === "accepted" && <><CheckCircle className="w-4 h-4" /> {t("farmer.product.acceptedAwaiting")}</>}
+                    {bid.status === "rejected" && <><XCircle className="w-4 h-4" /> {t("farmer.product.rejected")}</>}
+                    {bid.status === "countered" && <><MessageSquare className="w-4 h-4" /> {t("farmer.product.counterSent", { price: counterPrice[bid.id] })}</>}
                   </div>
                 )}
               </div>
@@ -406,30 +424,30 @@ export default function FarmerProductPage({ onLogout }) {
         ════════════════════════════════════════════════════════════ */}
         {activeTab === "journey" && (
           <div className="space-y-6">
-            <h2 className="text-xl font-bold text-gray-800">Supply Chain Traceability (Projected)</h2>
+            <h2 className="text-xl font-bold text-gray-800">{t("farmer.product.traceabilityProjected")}</h2>
             <div className="relative border-l-2 border-emerald-200 ml-4 space-y-8 pb-4">
               
               {/* Consumer Node */}
               <div className="relative pl-8">
                 <div className="absolute -left-2.5 bg-blue-500 w-5 h-5 rounded-full border-4 border-white shadow-sm" />
                 <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 opacity-60">
-                  <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-full border border-blue-100">End Consumer (Projected)</span>
+                  <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-full border border-blue-100">{t("farmer.product.endConsumerProjected")}</span>
                   <div className="mt-3 grid grid-cols-2 gap-4">
                     <div>
-                      <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Stakeholder</p>
-                      <p className="text-sm font-semibold text-gray-800">Urban Shoppers</p>
+                      <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">{t("farmer.product.stakeholder")}</p>
+                      <p className="text-sm font-semibold text-gray-800">{t("farmer.product.urbanShoppers")}</p>
                     </div>
                     <div>
-                      <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Location</p>
-                      <p className="text-sm font-semibold text-gray-800 flex items-center gap-1"><MapPin className="w-3 h-3 text-gray-400" /> Mumbai City</p>
+                      <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">{t("farmer.product.location")}</p>
+                      <p className="text-sm font-semibold text-gray-800 flex items-center gap-1"><MapPin className="w-3 h-3 text-gray-400" /> {t("farmer.product.mumbaiCity")}</p>
                     </div>
                     <div>
-                      <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Retail Price</p>
+                      <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">{t("farmer.product.retailPrice")}</p>
                       <p className="text-sm font-bold text-emerald-600 flex items-center gap-1"><IndianRupee className="w-3 h-3" />{Math.round((currentProduct?.aiPredictedPrice || (currentProduct?.basePrice || 100) * 1.2) * 1.4)}/kg</p>
                     </div>
                     <div>
-                      <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Quantity</p>
-                      <p className="text-sm font-semibold text-gray-800 flex items-center gap-1"><Package className="w-3 h-3 text-gray-400" /> Retail lots</p>
+                      <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">{t("farmer.product.quantity")}</p>
+                      <p className="text-sm font-semibold text-gray-800 flex items-center gap-1"><Package className="w-3 h-3 text-gray-400" /> {t("farmer.product.retailLots")}</p>
                     </div>
                   </div>
                 </div>
@@ -439,23 +457,23 @@ export default function FarmerProductPage({ onLogout }) {
               <div className="relative pl-8">
                 <div className="absolute -left-2.5 bg-purple-500 w-5 h-5 rounded-full border-4 border-white shadow-sm" />
                 <div className="bg-white p-5 rounded-xl shadow-sm border border-emerald-100 ring-1 ring-emerald-50">
-                  <span className="text-xs font-bold text-purple-600 bg-purple-50 px-2 py-1 rounded-full border border-purple-100">Current Phase: Bidding</span>
+                  <span className="text-xs font-bold text-purple-600 bg-purple-50 px-2 py-1 rounded-full border border-purple-100">{t("farmer.product.currentPhaseBidding")}</span>
                   <div className="mt-3 grid grid-cols-2 gap-4">
                     <div>
-                      <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Stakeholder</p>
-                      <p className="text-sm font-semibold text-gray-800">Marketplace Buyers</p>
+                      <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">{t("farmer.product.stakeholder")}</p>
+                      <p className="text-sm font-semibold text-gray-800">{t("farmer.product.marketplaceBuyers")}</p>
                     </div>
                     <div>
-                      <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Location</p>
-                      <p className="text-sm font-semibold text-gray-800 flex items-center gap-1"><MapPin className="w-3 h-3 text-gray-400" /> Nationwide</p>
+                      <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">{t("farmer.product.location")}</p>
+                      <p className="text-sm font-semibold text-gray-800 flex items-center gap-1"><MapPin className="w-3 h-3 text-gray-400" /> {t("farmer.product.nationwide")}</p>
                     </div>
                     <div>
-                      <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Market Value</p>
+                      <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">{t("farmer.product.marketValue")}</p>
                       <p className="text-sm font-bold text-emerald-600 flex items-center gap-1"><IndianRupee className="w-3 h-3" />{currentProduct?.aiPredictedPrice || Math.round((currentProduct?.basePrice || 100) * 1.2)}/kg</p>
                     </div>
                     <div>
-                      <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Quantity</p>
-                      <p className="text-sm font-semibold text-gray-800 flex items-center gap-1"><Package className="w-3 h-3 text-gray-400" /> {currentProduct?.quantity} kg (Full Batch)</p>
+                      <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">{t("farmer.product.quantity")}</p>
+                      <p className="text-sm font-semibold text-gray-800 flex items-center gap-1"><Package className="w-3 h-3 text-gray-400" /> {t("farmer.product.fullBatchQty", { qty: currentProduct?.quantity })}</p>
                     </div>
                   </div>
                 </div>
@@ -465,23 +483,23 @@ export default function FarmerProductPage({ onLogout }) {
               <div className="relative pl-8">
                 <div className="absolute -left-2.5 bg-emerald-500 w-5 h-5 rounded-full border-4 border-white shadow-sm" />
                 <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-                  <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full border border-emerald-100">Origin / Harvest</span>
+                  <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full border border-emerald-100">{t("farmer.product.originHarvest")}</span>
                   <div className="mt-3 grid grid-cols-2 gap-4">
                     <div>
-                      <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Stakeholder</p>
-                      <p className="text-sm font-semibold text-gray-800">{currentProduct?.farmerEmail || "You (Farmer)"}</p>
+                      <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">{t("farmer.product.stakeholder")}</p>
+                      <p className="text-sm font-semibold text-gray-800">{currentProduct?.farmerEmail || t("farmer.product.youFarmer")}</p>
                     </div>
                     <div>
-                      <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Location</p>
+                      <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">{t("farmer.product.location")}</p>
                       <p className="text-sm font-semibold text-gray-800 flex items-center gap-1"><MapPin className="w-3 h-3 text-gray-400" /> {currentProduct?.locality}</p>
                     </div>
                     <div>
-                      <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Base Asking Price</p>
+                      <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">{t("farmer.product.baseAskingPrice")}</p>
                       <p className="text-sm font-bold text-emerald-600 flex items-center gap-1"><IndianRupee className="w-3 h-3" />{currentProduct?.basePrice}/kg</p>
                     </div>
                     <div>
-                      <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Quantity Harvested</p>
-                      <p className="text-sm font-semibold text-gray-800 flex items-center gap-1"><Package className="w-3 h-3 text-gray-400" /> {currentProduct?.quantity} kg</p>
+                      <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">{t("farmer.product.quantityHarvested")}</p>
+                      <p className="text-sm font-semibold text-gray-800 flex items-center gap-1"><Package className="w-3 h-3 text-gray-400" /> {t("farmer.product.qtyKg", { qty: currentProduct?.quantity })}</p>
                     </div>
                   </div>
                 </div>
@@ -497,5 +515,13 @@ export default function FarmerProductPage({ onLogout }) {
       <Footer />
       <Notification message={notification} />
     </div>
+  );
+}
+
+export default function FarmerProductPage({ onLogout }) {
+  return (
+    <LanguageProvider>
+      <FarmerProductPageContent onLogout={onLogout} />
+    </LanguageProvider>
   );
 }

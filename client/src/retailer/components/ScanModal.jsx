@@ -2,8 +2,10 @@ import React, { useState, useEffect, useRef } from "react";
 import { Camera, Upload, X } from "lucide-react";
 import { Html5Qrcode } from "html5-qrcode";
 import QrScanner from "qr-scanner";
+import { useTranslation } from "../../consumer/i18n/config.jsx";
 
 export default function ScanModal({ isVisible, onClose, onScan }) {
+  const { t } = useTranslation();
   const [mode, setMode] = useState(null);
   const scannerRef = useRef(null);
 
@@ -24,7 +26,7 @@ export default function ScanModal({ isVisible, onClose, onScan }) {
         )
         .catch((err) => {
           console.error("Failed to start camera:", err);
-          alert("Unable to access camera. Please check permissions.");
+          alert(t("qr.cameraError"));
           setMode(null);
         });
 
@@ -47,11 +49,11 @@ export default function ScanModal({ isVisible, onClose, onScan }) {
       if (qrResult?.data) {
         onScan(qrResult.data);
       } else {
-        alert("No QR code found in the image.");
+        alert(t("qr.noCodeImage"));
       }
     } catch (err) {
       console.error("QR scan error:", err);
-      alert("No QR code found in the image.");
+      alert(t("qr.noCodeImage"));
     }
   };
 
@@ -62,7 +64,7 @@ export default function ScanModal({ isVisible, onClose, onScan }) {
       <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl relative">
         <div className="flex justify-between items-center p-6 border-b">
           <h3 className="text-xl font-bold text-gray-900">
-            Product QR Scanner
+            {t("qr.modalTitle")}
           </h3>
           <button
             onClick={onClose}
@@ -80,11 +82,11 @@ export default function ScanModal({ isVisible, onClose, onScan }) {
                 className="w-full bg-green-600 text-white py-4 rounded-xl font-semibold hover:bg-green-700 transition-colors flex items-center justify-center"
               >
                 <Camera className="mr-3 h-5 w-5" />
-                Scan with Camera
+                {t("qr.scanWithCamera")}
               </button>
               <label className="w-full border-2 border-green-300 text-green-700 py-4 rounded-xl font-semibold hover:bg-green-50 transition-colors flex items-center justify-center cursor-pointer">
                 <Upload className="mr-3 h-5 w-5" />
-                Upload QR Image
+                {t("qr.uploadImage")}
                 <input
                   type="file"
                   accept="image/*"
@@ -105,7 +107,7 @@ export default function ScanModal({ isVisible, onClose, onScan }) {
                 onClick={() => setMode(null)}
                 className="mt-4 w-full py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
               >
-                Cancel
+                {t("qr.cancel")}
               </button>
             </div>
           )}
@@ -113,9 +115,7 @@ export default function ScanModal({ isVisible, onClose, onScan }) {
 
         <div className="px-6 pb-6">
           <p className="text-sm text-gray-500 text-center">
-            {mode
-              ? "Scanning for QR code..."
-              : "Choose a method to scan product QR code"}
+            {mode ? t("qr.scanning") : t("qr.chooseMethod")}
           </p>
         </div>
       </div>

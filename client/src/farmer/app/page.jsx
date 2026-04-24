@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { LanguageProvider } from "../../consumer/i18n/config.jsx";
+import {
+  LanguageProvider,
+  useTranslation,
+} from "../../consumer/i18n/config.jsx";
 import LanguageDropdown from "../../consumer/components/LanguageDropdown.jsx";
 import Notification from "../../product/components/Notification.jsx";
 import ProfileModal from "../components/ProfileModal";
@@ -43,45 +46,46 @@ import {
 const NAV_ITEMS = [
   {
     id: "marketplace",
-    label: "Input Market",
+    labelKey: "farmer.nav.marketplace",
     icon: ShoppingCart,
     color: "text-emerald-600",
   },
   {
     id: "produce",
-    label: "My Produce",
+    labelKey: "farmer.nav.produce",
     icon: Warehouse,
     color: "text-emerald-600",
   },
   {
     id: "workforce",
-    label: "Workforce",
+    labelKey: "farmer.nav.workforce",
     icon: Users,
     color: "text-orange-600",
   },
   {
     id: "scanner",
-    label: "QR Scanner",
+    labelKey: "farmer.nav.scanner",
     icon: QrCode,
     color: "text-emerald-600",
   },
-  { id: "map", label: "Price Map", icon: Map, color: "text-emerald-600" },
-  { id: "credit", label: "Credit Score", icon: Award, color: "text-amber-600" },
+  { id: "map", labelKey: "farmer.nav.map", icon: Map, color: "text-emerald-600" },
+  { id: "credit", labelKey: "farmer.nav.credit", icon: Award, color: "text-amber-600" },
   {
     id: "loans",
-    label: "Loan Requests",
+    labelKey: "farmer.nav.loans",
     icon: DollarSign,
     color: "text-blue-600",
   },
   {
     id: "schemes",
-    label: "Govt Schemes",
+    labelKey: "farmer.nav.schemes",
     icon: Landmark,
     color: "text-indigo-600",
   },
 ];
 
-export default function FarmerPage({ onLogout }) {
+function FarmerPageContent({ onLogout }) {
+  const { t } = useTranslation();
   const [activeSection, setActiveSection] = useState("marketplace");
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -94,19 +98,29 @@ export default function FarmerPage({ onLogout }) {
       id: 1,
       type: "order_request",
       retailerName: "FreshMart",
-      topic: "Requesting to buy 500kg of Organic Tomatoes",
+      topic: t("notifications.topic.orderRequest", {
+        qty: 500,
+        unit: "kg",
+        product: "Organic Tomatoes",
+      }),
     },
     {
       id: 2,
       type: "job_applicant",
       applicantName: "Sunita Pawar",
-      topic: "Applied for Onion Harvest Job",
+      topic: t("notifications.topic.jobApplicant", {
+        job: "Onion Harvest Job",
+      }),
     },
     {
       id: 3,
       type: "order_request",
       retailerName: "Reliance Fresh",
-      topic: "Requesting to buy 1000kg of Sona Masuri Rice",
+      topic: t("notifications.topic.orderRequest", {
+        qty: 1000,
+        unit: "kg",
+        product: "Sona Masuri Rice",
+      }),
     },
   ]);
 
@@ -124,7 +138,7 @@ export default function FarmerPage({ onLogout }) {
     }
     setNotifications((prev) => prev.filter((n) => n.id !== notif.id));
     setShowNotifications(false);
-    showNotificationToast("Connected!");
+    showNotificationToast(t("farmer.notifications.connected"));
     goTo("chat");
   };
 
@@ -220,7 +234,6 @@ export default function FarmerPage({ onLogout }) {
   };
 
   return (
-    <LanguageProvider>
       <div className="min-h-screen bg-gray-50 flex">
         {/* Sidebar Overlay (mobile) */}
         {sidebarOpen && (
@@ -245,7 +258,7 @@ export default function FarmerPage({ onLogout }) {
               <div>
                 <h1 className="text-xl font-black text-gray-900">GramOS</h1>
                 <p className="text-[10px] text-gray-400 uppercase font-semibold">
-                  Rural Economic OS
+                  {t("farmer.brand.subtitle")}
                 </p>
               </div>
             </div>
@@ -271,7 +284,7 @@ export default function FarmerPage({ onLogout }) {
                     <Icon
                       className={`w-6 h-6 ${isActive ? "text-white" : item.color || "text-gray-500"}`}
                     />
-                    <span className="truncate">{item.label}</span>
+                    <span className="truncate">{t(item.labelKey)}</span>
                   </button>
                 );
               })}
@@ -285,7 +298,7 @@ export default function FarmerPage({ onLogout }) {
               className="w-full flex items-center gap-4 px-4 py-3 rounded-2xl text-base font-medium text-gray-700 hover:bg-gray-50 transition-all"
             >
               <User className="w-6 h-6 text-gray-500" />
-              <span className="truncate">{userData.name || "Farmer"}</span>
+              <span className="truncate">{userData.name || t("farmer.profile.nameFallback")}</span>
             </button>
 
             <button
@@ -293,7 +306,7 @@ export default function FarmerPage({ onLogout }) {
               className="w-full flex items-center gap-4 px-4 py-3 mt-2 rounded-2xl text-base font-medium text-red-600 hover:bg-red-50 transition-all"
             >
               <LogOut className="w-6 h-6 text-red-500" />
-              <span>Logout</span>
+              <span>{t("header.logout")}</span>
             </button>
           </div>
         </aside>
@@ -310,7 +323,7 @@ export default function FarmerPage({ onLogout }) {
             </button>
 
             <h2 className="text-xl font-bold text-gray-800">
-              {NAV_ITEMS.find((n) => n.id === activeSection)?.label}
+              {t(NAV_ITEMS.find((n) => n.id === activeSection)?.labelKey)}
             </h2>
 
             <div className="flex items-center gap-3">
@@ -337,17 +350,17 @@ export default function FarmerPage({ onLogout }) {
                 {showNotifications && (
                   <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] border border-gray-100 overflow-hidden z-50">
                     <div className="p-4 border-b border-gray-50 flex justify-between items-center bg-gray-50/50">
-                      <h3 className="font-bold text-gray-900">Notifications</h3>
+                      <h3 className="font-bold text-gray-900">{t("farmer.notifications.title")}</h3>
                       {notifications.length > 0 && (
                         <span className="bg-red-100 text-red-600 text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full">
-                          {notifications.length} New
+                          {notifications.length} {t("farmer.notifications.new")}
                         </span>
                       )}
                     </div>
                     <div className="max-h-96 overflow-y-auto">
                       {notifications.length === 0 && (
                         <div className="p-6 text-center text-gray-500 text-sm font-medium">
-                          No new notifications
+                          {t("farmer.notifications.none")}
                         </div>
                       )}
                       {notifications.map((notif) => (
@@ -369,18 +382,18 @@ export default function FarmerPage({ onLogout }) {
                               <p className="text-sm font-medium text-gray-900">
                                 {notif.type === "order_request" ? (
                                   <>
-                                    Retailer{" "}
+                                    {t("farmer.notifications.retailer")}{" "}
                                     <span className="font-bold text-emerald-700">
                                       {notif.retailerName}
                                     </span>{" "}
-                                    wants to buy
+                                    {t("farmer.notifications.wantsToBuy")}
                                   </>
                                 ) : (
                                   <>
                                     <span className="font-bold text-blue-700">
                                       {notif.applicantName}
                                     </span>{" "}
-                                    applied for a job
+                                    {t("farmer.notifications.appliedForJob")}
                                   </>
                                 )}
                               </p>
@@ -397,7 +410,7 @@ export default function FarmerPage({ onLogout }) {
                                     }}
                                     className="text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-1.5 rounded-lg shadow-sm font-semibold transition-colors cursor-pointer"
                                   >
-                                    Accept Order
+                                    {t("farmer.notifications.acceptOrder")}
                                   </button>
                                 ) : (
                                   <button
@@ -409,7 +422,7 @@ export default function FarmerPage({ onLogout }) {
                                     }}
                                     className="text-xs bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-lg shadow-sm font-semibold transition-colors cursor-pointer"
                                   >
-                                    View Applicant
+                                    {t("farmer.notifications.viewApplicant")}
                                   </button>
                                 )}
                               </div>
@@ -438,6 +451,13 @@ export default function FarmerPage({ onLogout }) {
           onClose={() => setShowProfileModal(false)}
         />
       </div>
+  );
+}
+
+export default function FarmerPage({ onLogout }) {
+  return (
+    <LanguageProvider>
+      <FarmerPageContent onLogout={onLogout} />
     </LanguageProvider>
   );
 }

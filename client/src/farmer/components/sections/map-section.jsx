@@ -9,6 +9,7 @@ import {
   ArrowUpRight, ArrowDownRight, BarChart3, MapPin, Zap,
   ChevronDown, ChevronUp, Info, IndianRupee, Eye
 } from "lucide-react"
+import { useTranslation } from "../../../consumer/i18n/config.jsx"
 
 // ── Mock Data ─────────────────────────────────────────────────────────────────
 const PRICE_DATA = [
@@ -170,7 +171,7 @@ function getMargin(from, to) {
   return ((to - from) / from * 100).toFixed(1)
 }
 
-function TrendBadge({ trend, change }) {
+function TrendBadge({ trend, change, t }) {
   if (trend === "up") return (
     <span className="flex items-center gap-1 text-red-600 text-xs font-bold">
       <ArrowUpRight className="w-3.5 h-3.5" /> +{change}%
@@ -181,7 +182,7 @@ function TrendBadge({ trend, change }) {
       <ArrowDownRight className="w-3.5 h-3.5" /> {change}%
     </span>
   )
-  return <span className="flex items-center gap-1 text-gray-400 text-xs font-bold"><Minus className="w-3.5 h-3.5" /> Stable</span>
+  return <span className="flex items-center gap-1 text-gray-400 text-xs font-bold"><Minus className="w-3.5 h-3.5" /> {t("map.stable")}</span>
 }
 
 // ── PriceOverlay ──────────────────────────────────────────────────────────────
@@ -247,14 +248,14 @@ function PriceOverlay({ map, priceData, selectedProduce, onLocationSelect }) {
 }
 
 // ── AI Market Insight Panel ───────────────────────────────────────────────────
-function AIMarketInsight({ insight }) {
+function AIMarketInsight({ insight, t }) {
   const [expanded, setExpanded] = useState(true)
   if (!insight) return null
 
   const signalConfig = {
-    sell_now: { label: "Sell Now", color: "bg-emerald-600", bg: "bg-emerald-50 border-emerald-200" },
-    hold:     { label: "Hold Stock", color: "bg-amber-500",   bg: "bg-amber-50 border-amber-200" },
-    neutral:  { label: "Monitor",   color: "bg-blue-500",    bg: "bg-blue-50 border-blue-200" },
+    sell_now: { label: t("map.signal.sellNow"), color: "bg-emerald-600", bg: "bg-emerald-50 border-emerald-200" },
+    hold:     { label: t("map.signal.holdStock"), color: "bg-amber-500",   bg: "bg-amber-50 border-amber-200" },
+    neutral:  { label: t("map.signal.monitor"),   color: "bg-blue-500",    bg: "bg-blue-50 border-blue-200" },
   }
   const cfg = signalConfig[insight.signal]
 
@@ -271,8 +272,8 @@ function AIMarketInsight({ insight }) {
               <Brain className="w-4 h-4 text-purple-600" />
             </div>
             <div>
-              <span className="text-sm font-bold text-gray-800">AI Market Analysis</span>
-              <span className="text-xs text-gray-400 ml-2">Updated 15 min ago</span>
+              <span className="text-sm font-bold text-gray-800">{t("map.aiMarketAnalysis")}</span>
+              <span className="text-xs text-gray-400 ml-2">{t("map.updated15Min")}</span>
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
@@ -290,7 +291,7 @@ function AIMarketInsight({ insight }) {
           <div className="space-y-4 mt-4">
             {/* Signal breakdown */}
             <div>
-              <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Why AI says this</p>
+              <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">{t("map.whyAiSaysThis")}</p>
               <div className="space-y-2">
                 {insight.signals.map((s, i) => (
                   <div key={i} className={`flex items-start gap-2.5 rounded-xl p-3 text-xs ${
@@ -313,13 +314,13 @@ function AIMarketInsight({ insight }) {
             {/* Best / Worst market */}
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-emerald-50 rounded-xl p-3 text-center">
-                <div className="text-xs text-gray-500 mb-1">Best Market</div>
+                <div className="text-xs text-gray-500 mb-1">{t("map.bestMarket")}</div>
                 <div className="font-bold text-emerald-700 flex items-center justify-center gap-1">
                   <MapPin className="w-3 h-3" /> {insight.bestCity}
                 </div>
               </div>
               <div className="bg-red-50 rounded-xl p-3 text-center">
-                <div className="text-xs text-gray-500 mb-1">Lowest Rates</div>
+                <div className="text-xs text-gray-500 mb-1">{t("map.lowestRates")}</div>
                 <div className="font-bold text-red-600 flex items-center justify-center gap-1">
                   <MapPin className="w-3 h-3" /> {insight.worstCity}
                 </div>
@@ -330,7 +331,7 @@ function AIMarketInsight({ insight }) {
             <div className="bg-gray-900 rounded-xl p-4">
               <div className="flex items-center gap-1.5 mb-2">
                 <Zap className="w-3.5 h-3.5 text-yellow-400" />
-                <span className="text-xs font-bold text-yellow-400 uppercase tracking-wide">AI Recommendation</span>
+                <span className="text-xs font-bold text-yellow-400 uppercase tracking-wide">{t("map.aiRecommendation")}</span>
               </div>
               <p className="text-sm text-white leading-relaxed">{insight.recommendation}</p>
               <div className="mt-2 text-xs text-gray-400">{insight.priceOutlook}</div>
@@ -343,7 +344,7 @@ function AIMarketInsight({ insight }) {
 }
 
 // ── Location Detail Card ──────────────────────────────────────────────────────
-function PriceInfoCard({ location, selectedProduce, onClose }) {
+function PriceInfoCard({ location, selectedProduce, onClose, t }) {
   const priceInfo = location.prices[selectedProduce]
 
   return (
@@ -353,7 +354,7 @@ function PriceInfoCard({ location, selectedProduce, onClose }) {
           <div className="flex items-center gap-2">
             <MapPin className="w-4 h-4 text-emerald-600" />
             <h3 className="font-bold text-gray-900">{location.city}, {location.state}</h3>
-            <TrendBadge trend={priceInfo?.trend} change={priceInfo?.weekChange} />
+            <TrendBadge trend={priceInfo?.trend} change={priceInfo?.weekChange} t={t} />
           </div>
           <button onClick={onClose} className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 cursor-pointer">
             <X className="w-3.5 h-3.5 text-gray-600" />
@@ -363,16 +364,16 @@ function PriceInfoCard({ location, selectedProduce, onClose }) {
         {/* Price chain */}
         <div className="grid grid-cols-3 gap-3 mb-4">
           {[
-            { label: "Farmer Gets", value: priceInfo?.farmer, color: "text-emerald-700", bg: "bg-emerald-50" },
-            { label: "Wholesale", value: priceInfo?.wholesale, color: "text-amber-700", bg: "bg-amber-50" },
-            { label: "Retail", value: priceInfo?.retail, color: "text-red-700", bg: "bg-red-50" },
+            { label: t("map.price.farmerGets"), value: priceInfo?.farmer, color: "text-emerald-700", bg: "bg-emerald-50" },
+            { label: t("map.price.wholesale"), value: priceInfo?.wholesale, color: "text-amber-700", bg: "bg-amber-50" },
+            { label: t("map.price.retail"), value: priceInfo?.retail, color: "text-red-700", bg: "bg-red-50" },
           ].map((p, i) => (
             <div key={i} className={`${p.bg} rounded-xl p-3 text-center`}>
               <div className={`text-xl font-black ${p.color}`}>₹{p.value}</div>
               <div className="text-[10px] text-gray-500 uppercase font-semibold mt-0.5">{p.label}</div>
               {i > 0 && (
                 <div className="text-[10px] text-gray-400 mt-1">
-                  +{getMargin(i === 1 ? priceInfo?.farmer : priceInfo?.wholesale, p.value)}% markup
+                  +{getMargin(i === 1 ? priceInfo?.farmer : priceInfo?.wholesale, p.value)}% {t("map.markup")}
                 </div>
               )}
             </div>
@@ -384,7 +385,7 @@ function PriceInfoCard({ location, selectedProduce, onClose }) {
           <div className="flex items-start gap-2 bg-red-50 border border-red-100 rounded-xl p-3">
             <AlertTriangle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
             <p className="text-xs text-red-700">
-              <span className="font-bold">High middleman margin detected.</span> Farmer receives only {(100 / (1 + parseFloat(getMargin(priceInfo?.farmer, priceInfo?.retail)) / 100)).toFixed(0)}% of retail price. Consider direct-to-market or FPO channels.
+              <span className="font-bold">{t("map.highMiddlemanMargin")}</span> {t("map.farmerReceivesOnly", { percent: (100 / (1 + parseFloat(getMargin(priceInfo?.farmer, priceInfo?.retail)) / 100)).toFixed(0) })}
             </p>
           </div>
         )}
@@ -394,7 +395,7 @@ function PriceInfoCard({ location, selectedProduce, onClose }) {
 }
 
 // ── National Price Table ──────────────────────────────────────────────────────
-function NationalPriceTable({ priceData, produce }) {
+function NationalPriceTable({ priceData, produce, t }) {
   const sorted = [...priceData].sort((a, b) =>
     (b.prices[produce]?.retail || 0) - (a.prices[produce]?.retail || 0)
   )
@@ -404,7 +405,7 @@ function NationalPriceTable({ priceData, produce }) {
       <CardContent className="p-5">
         <div className="flex items-center gap-2 mb-4">
           <BarChart3 className="w-4 h-4 text-blue-600" />
-          <h4 className="font-bold text-gray-800 text-sm">National Price Comparison</h4>
+          <h4 className="font-bold text-gray-800 text-sm">{t("map.nationalPriceComparison")}</h4>
         </div>
         <div className="space-y-2">
           {sorted.map((loc, i) => {
@@ -419,7 +420,7 @@ function NationalPriceTable({ priceData, produce }) {
                     <span className="text-gray-400">F: ₹{p.farmer}</span>
                     <span className="text-gray-400">W: ₹{p.wholesale}</span>
                     <span className="font-bold text-gray-800">R: ₹{p.retail}</span>
-                    <TrendBadge trend={p.trend} change={p.weekChange} />
+                    <TrendBadge trend={p.trend} change={p.weekChange} t={t} />
                   </div>
                 </div>
                 <div className="w-full bg-gray-100 rounded-full h-1.5">
@@ -433,7 +434,7 @@ function NationalPriceTable({ priceData, produce }) {
           })}
         </div>
         <div className="flex items-center gap-4 mt-4 pt-3 border-t text-xs text-gray-400">
-          <span>F = Farmer &nbsp; W = Wholesale &nbsp; R = Retail</span>
+          <span>{t("map.legend.fwr")}</span>
         </div>
       </CardContent>
     </Card>
@@ -442,7 +443,7 @@ function NationalPriceTable({ priceData, produce }) {
 
 // ── Sidebar Controls ──────────────────────────────────────────────────────────
 // ── Sidebar Controls ──────────────────────────────────────────────────────────
-function MapSidebar({ selectedProduce, onProduceChange, priceData, produceOptions }) {
+function MapSidebar({ selectedProduce, onProduceChange, priceData, produceOptions, t }) {
   const stats = getPriceStats(priceData, selectedProduce)
 
   return (
@@ -450,7 +451,7 @@ function MapSidebar({ selectedProduce, onProduceChange, priceData, produceOption
       {/* Produce Selector */}
       <Card className="border-0 shadow-md">
         <CardContent className="p-4 space-y-3">
-          <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">Select Produce</p>
+          <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">{t("map.selectProduce")}</p>
           <div className="grid grid-cols-2 gap-2">
             {produceOptions.map(opt => (
               <button
@@ -472,11 +473,11 @@ function MapSidebar({ selectedProduce, onProduceChange, priceData, produceOption
       {/* Price Stats */}
       <Card className="border-0 shadow-md">
         <CardContent className="p-4 space-y-3">
-          <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">National Price Stats</p>
+          <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">{t("map.nationalPriceStats")}</p>
           {[
-            { label: "Lowest Retail", value: `₹${stats.min}/kg`, color: "text-emerald-700", bg: "bg-emerald-50" },
-            { label: "Highest Retail", value: `₹${stats.max}/kg`, color: "text-red-700", bg: "bg-red-50" },
-            { label: "National Avg", value: `₹${stats.avg}/kg`, color: "text-blue-700", bg: "bg-blue-50" },
+            { label: t("map.lowestRetail"), value: `₹${stats.min}/kg`, color: "text-emerald-700", bg: "bg-emerald-50" },
+            { label: t("map.highestRetail"), value: `₹${stats.max}/kg`, color: "text-red-700", bg: "bg-red-50" },
+            { label: t("map.nationalAvg"), value: `₹${stats.avg}/kg`, color: "text-blue-700", bg: "bg-blue-50" },
           ].map((s, i) => (
             <div key={i} className={`flex items-center justify-between ${s.bg} rounded-xl px-3 py-2.5`}>
               <span className="text-xs text-gray-600">{s.label}</span>
@@ -489,11 +490,11 @@ function MapSidebar({ selectedProduce, onProduceChange, priceData, produceOption
       {/* Legend */}
       <Card className="border-0 shadow-md">
         <CardContent className="p-4 space-y-2">
-          <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">Map Legend</p>
+          <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">{t("map.mapLegend")}</p>
           {[
-            { color: "bg-emerald-500", label: "Low Price (≤₹35/kg)" },
-            { color: "bg-amber-400", label: "Average (₹36–43/kg)" },
-            { color: "bg-red-500", label: "High Price (≥₹44/kg)" },
+            { color: "bg-emerald-500", label: t("map.legend.lowPrice") },
+            { color: "bg-amber-400", label: t("map.legend.averagePrice") },
+            { color: "bg-red-500", label: t("map.legend.highPrice") },
           ].map((l, i) => (
             <div key={i} className="flex items-center gap-2">
               <div className={`w-3.5 h-3.5 rounded-full shrink-0 ${l.color}`} />
@@ -508,6 +509,7 @@ function MapSidebar({ selectedProduce, onProduceChange, priceData, produceOption
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function MapSection() {
+  const { t } = useTranslation()
   const mapRef = useRef(null)
   const [map, setMap] = useState(null)
   const [selectedLocation, setSelectedLocation] = useState(null)
@@ -561,15 +563,15 @@ export default function MapSection() {
             <div className="p-2 bg-blue-100 rounded-xl">
               <BarChart3 className="w-5 h-5 text-blue-700" />
             </div>
-            Regional Price Intelligence
+            {t("map.title")}
           </h2>
           <p className="text-gray-500 mt-1 text-sm">
-            AI-analysed mandi prices across India · Live Contextual Data
+            {t("map.subtitle")}
           </p>
         </div>
         {/* View toggle */}
         <div className="flex gap-2 bg-gray-100 rounded-xl p-1">
-          {[{ id: "map", label: "🗺️ Map" }, { id: "table", label: "📊 Compare" }].map(v => (
+          {[{ id: "map", label: t("map.view.map") }, { id: "table", label: t("map.view.compare") }].map(v => (
             <button
               key={v.id}
               onClick={() => setActiveView(v.id)}
@@ -584,7 +586,7 @@ export default function MapSection() {
       </div>
 
       {/* AI Market Insight — always on top */}
-      <AIMarketInsight insight={insight} />
+      <AIMarketInsight insight={insight} t={t} />
 
       {/* Main content */}
       <div className="grid lg:grid-cols-4 gap-5">
@@ -595,6 +597,7 @@ export default function MapSection() {
             onProduceChange={setSelectedProduce}
             priceData={priceData}
             produceOptions={produceOptions}
+            t={t}
           />
         </div>
 
@@ -608,7 +611,7 @@ export default function MapSection() {
                     {currentProduce?.icon} {currentProduce?.label} Prices Across India
                   </h3>
                   <Badge className="bg-blue-50 text-blue-700 border-blue-200 text-xs">
-                    {priceData.length} markets
+                    {t("map.marketsCount", { count: priceData.length })}
                   </Badge>
                 </div>
                 <div className="relative">
@@ -625,16 +628,16 @@ export default function MapSection() {
                     <div className="absolute inset-0 flex items-center justify-center bg-white/80 rounded-xl">
                       <div className="text-center">
                         <div className="animate-spin rounded-full h-8 w-8 border-2 border-emerald-600 border-t-transparent mx-auto mb-2" />
-                        <p className="text-sm text-gray-400">Loading AI market data…</p>
+                        <p className="text-sm text-gray-400">{t("map.loadingAiData")}</p>
                       </div>
                     </div>
                   )}
                 </div>
-                <p className="text-xs text-gray-400 mt-2 text-center">Click any marker to see detailed price breakdown</p>
+                <p className="text-xs text-gray-400 mt-2 text-center">{t("map.clickMarkerHint")}</p>
               </CardContent>
             </Card>
           ) : (
-            <NationalPriceTable priceData={priceData} produce={selectedProduce} />
+            <NationalPriceTable priceData={priceData} produce={selectedProduce} t={t} />
           )}
 
           {/* Location Detail */}
@@ -643,6 +646,7 @@ export default function MapSection() {
               location={selectedLocation}
               selectedProduce={selectedProduce}
               onClose={() => setSelectedLocation(null)}
+              t={t}
             />
           )}
         </div>

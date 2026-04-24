@@ -56,45 +56,45 @@ import LanguageDropdown from "../../consumer/components/LanguageDropdown.jsx";
 const NAV_ITEMS = [
   {
     id: "jobs",
-    label: "Jobs Market",
+    labelKey: "villager.nav.jobs",
     icon: Briefcase,
     color: "text-emerald-600",
   },
   {
     id: "academy",
-    label: "Skills Academy",
+    labelKey: "villager.nav.academy",
     icon: BookOpen,
     color: "text-blue-600",
   },
   {
     id: "nptel",
-    label: "NPTEL Courses",
+    labelKey: "villager.nav.nptel",
     icon: GraduationCap,
     color: "text-indigo-600",
   },
   {
     id: "earnings",
-    label: "Earnings",
+    labelKey: "villager.nav.earnings",
     icon: IndianRupee,
     color: "text-amber-600",
   },
-  { id: "credit", label: "Trust Score", icon: Award, color: "text-amber-600" },
+  { id: "credit", labelKey: "villager.nav.credit", icon: Award, color: "text-amber-600" },
   {
     id: "loans",
-    label: "Bank Loans",
+    labelKey: "villager.nav.loans",
     icon: DollarSign,
     color: "text-blue-600",
   },
   {
     id: "schemes",
-    label: "Govt Schemes",
+    labelKey: "villager.nav.schemes",
     icon: Landmark,
     color: "text-emerald-700",
   },
 ];
 
 function VillagerContent() {
-  const { currentLanguage } = useTranslation();
+  const { currentLanguage, t } = useTranslation();
   const [notification, setNotification] = useState("");
   const [activeSection, setActiveSection] = useState("jobs");
   const [showProfileModal, setShowProfileModal] = useState(false);
@@ -104,14 +104,14 @@ function VillagerContent() {
     {
       id: 1,
       type: "new_job",
-      title: "New Job: Tractor Driver",
+      titleKey: "villager.notifications.newJobTractorDriver",
       farmerName: "Patil Farms",
       location: "Phaltan",
     },
     {
       id: 2,
       type: "job_status",
-      title: "Application Accepted",
+      titleKey: "villager.notifications.applicationAccepted",
       farmerName: "Deshmukh Agro",
       location: "Lonand",
     },
@@ -164,7 +164,7 @@ function VillagerContent() {
     const mapped = LANG_MAP[currentLanguage];
     if (mapped && mapped !== villagerProfile.language) {
       setVillagerProfile((prev) => ({ ...prev, language: mapped }));
-      showNotification("Language updated");
+      showNotification(t("villager.toast.languageUpdated"));
     }
   }, [currentLanguage]);
 
@@ -233,8 +233,8 @@ function VillagerContent() {
       const next = Math.min(100, current + 20);
       showNotification(
         next === 100
-          ? "Module complete! Badge earned."
-          : `Progress saved: ${next}%`,
+          ? t("villager.toast.moduleComplete")
+          : t("villager.toast.progressSaved", { progress: next }),
       );
       return { ...prev, [id]: next };
     });
@@ -243,7 +243,7 @@ function VillagerContent() {
   function toggleVoice() {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) {
-      showNotification("Voice not supported on this browser");
+      showNotification(t("villager.toast.voiceUnsupported"));
       return;
     }
     if (isListening) {
@@ -262,12 +262,12 @@ function VillagerContent() {
     rec.onend = () => setIsListening(false);
     rec.onerror = () => {
       setIsListening(false);
-      showNotification("Could not hear — try again");
+      showNotification(t("villager.toast.voiceTryAgain"));
     };
     rec.onresult = (e) => {
       const text = e.results[0][0].transcript;
       setVoiceQuery(text);
-      showNotification(`Searching: "${text}"`);
+      showNotification(t("villager.toast.searching", { text }));
     };
     rec.start();
   }
@@ -364,7 +364,7 @@ function VillagerContent() {
             <div>
               <h1 className="text-xl font-black text-gray-900">GramOS</h1>
               <p className="text-[10px] text-gray-400 uppercase font-semibold">
-                Villager Dashboard
+                {t("villager.brand.subtitle")}
               </p>
             </div>
           </div>
@@ -390,7 +390,7 @@ function VillagerContent() {
                   <Icon
                     className={`w-6 h-6 ${isActive ? "text-white" : item.color || "text-gray-500"}`}
                   />
-                  <span className="truncate">{item.label}</span>
+                  <span className="truncate">{t(item.labelKey)}</span>
                 </button>
               );
             })}
@@ -404,7 +404,7 @@ function VillagerContent() {
             className="w-full flex items-center gap-4 px-4 py-3 rounded-2xl text-base font-medium text-gray-700 hover:bg-gray-50 transition-all"
           >
             <User className="w-6 h-6 text-gray-500" />
-            <span className="truncate">Profile</span>
+            <span className="truncate">{t("villager.profile.button")}</span>
           </button>
 
           <button
@@ -412,7 +412,7 @@ function VillagerContent() {
             className="w-full flex items-center gap-4 px-4 py-3 mt-2 rounded-2xl text-base font-medium text-red-600 hover:bg-red-50 transition-all"
           >
             <LogOut className="w-6 h-6 text-red-500" />
-            <span>Logout</span>
+            <span>{t("header.logout")}</span>
           </button>
         </div>
       </aside>
@@ -429,8 +429,10 @@ function VillagerContent() {
           </button>
 
           <h2 className="text-xl font-bold text-gray-800">
-            {NAV_ITEMS.find((n) => n.id === activeSection)?.label ||
-              "Dashboard"}
+            {t(
+              NAV_ITEMS.find((n) => n.id === activeSection)?.labelKey ||
+                "villager.nav.dashboard",
+            )}
           </h2>
 
           <div className="flex items-center gap-3">
@@ -455,17 +457,17 @@ function VillagerContent() {
               {showNotifications && (
                 <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] border border-gray-100 overflow-hidden z-50">
                   <div className="p-4 border-b border-gray-50 flex justify-between items-center bg-gray-50/50">
-                    <h3 className="font-bold text-gray-900">Notifications</h3>
+                    <h3 className="font-bold text-gray-900">{t("villager.notifications.title")}</h3>
                     {notifications.length > 0 && (
                       <span className="bg-red-100 text-red-600 text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full">
-                        {notifications.length} New
+                        {notifications.length} {t("villager.notifications.new")}
                       </span>
                     )}
                   </div>
                   <div className="max-h-96 overflow-y-auto">
                     {notifications.length === 0 ? (
                       <div className="p-6 text-center text-gray-500 text-sm font-medium">
-                        No new notifications
+                        {t("villager.notifications.none")}
                       </div>
                     ) : (
                       notifications.map((notif) => (
@@ -485,16 +487,16 @@ function VillagerContent() {
                               <p className="text-sm font-medium text-gray-900">
                                 {notif.type === "new_job" ? (
                                   <>
-                                    Urgent:{" "}
+                                    {t("villager.notifications.urgent")}{" "}
                                     <span className="font-bold text-amber-700">
-                                      {notif.title}
+                                      {t(notif.titleKey)}
                                     </span>
                                   </>
                                 ) : (
                                   <>
-                                    Status:{" "}
+                                    {t("villager.notifications.status")}{" "}
                                     <span className="font-bold text-emerald-700">
-                                      {notif.title}
+                                      {t(notif.titleKey)}
                                     </span>
                                   </>
                                 )}
@@ -507,8 +509,8 @@ function VillagerContent() {
                                   onClick={() => {
                                     showNotification(
                                       notif.type === "new_job"
-                                        ? "Applied to job!"
-                                        : "Status reviewed",
+                                        ? t("villager.toast.appliedToJob")
+                                        : t("villager.toast.statusReviewed"),
                                     );
                                     setNotifications((prev) =>
                                       prev.filter((n) => n.id !== notif.id),
@@ -518,8 +520,8 @@ function VillagerContent() {
                                   className={`text-xs text-white px-4 py-1.5 rounded-lg shadow-sm font-semibold transition-colors cursor-pointer ${notif.type === "new_job" ? "bg-amber-600 hover:bg-amber-700" : "bg-emerald-600 hover:bg-emerald-700"}`}
                                 >
                                   {notif.type === "new_job"
-                                    ? "Apply Now"
-                                    : "View Status"}
+                                    ? t("villager.notifications.applyNow")
+                                    : t("villager.notifications.viewStatus")}
                                 </button>
                               </div>
                             </div>
