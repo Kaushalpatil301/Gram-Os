@@ -1,13 +1,42 @@
 import { useState } from "react";
-import { User, Mail, Lock, CheckCircle, Store, Wheat, Users, Home } from "lucide-react";
+import {
+  User,
+  Mail,
+  Lock,
+  CheckCircle,
+  Store,
+  Wheat,
+  Users,
+  Home,
+} from "lucide-react";
 import { apiFetch } from "../../../lib/api.js";
 import axios from "axios";
 
 const ROLES = [
-  { id: "farmer", label: "Farmer", icon: "🌾", description: "Grow and sell produce" },
-  { id: "retailer", label: "Retailer", icon: "🏪", description: "Buy and sell products" },
-  { id: "consumer", label: "Consumer", icon: "🛒", description: "Track and buy products" },
-  { id: "villager", label: "Villager", icon: "🏡", description: "Find rural gig work" },
+  {
+    id: "farmer",
+    label: "Farmer",
+    icon: "🌾",
+    description: "Grow and sell produce",
+  },
+  {
+    id: "retailer",
+    label: "Retailer",
+    icon: "🏪",
+    description: "Buy and sell products",
+  },
+  {
+    id: "consumer",
+    label: "Consumer",
+    icon: "🛒",
+    description: "Track and buy products",
+  },
+  {
+    id: "villager",
+    label: "Villager",
+    icon: "🏡",
+    description: "Find rural gig work",
+  },
 ];
 
 export default function SignupForm({ onSuccess }) {
@@ -76,11 +105,13 @@ export default function SignupForm({ onSuccess }) {
           username: form.email.split("@")[0],
           password: form.password,
           role: form.role,
-        })
+        }),
       });
 
       // Success - notify parent with role
-      onSuccess({ ...response.data.user, role: form.role });
+      await Promise.resolve(
+        onSuccess({ ...response.data.user, role: form.role }),
+      );
     } catch (error) {
       console.error("Signup failed:", error);
       const errorMessage = error.message || "Signup failed. Please try again.";
@@ -198,7 +229,9 @@ export default function SignupForm({ onSuccess }) {
                 disabled={isSubmitting}
               >
                 <div className="text-2xl mb-1">{role.icon}</div>
-                <div className="text-xs font-medium text-gray-700">{role.label}</div>
+                <div className="text-xs font-medium text-gray-700">
+                  {role.label}
+                </div>
               </button>
             ))}
           </div>

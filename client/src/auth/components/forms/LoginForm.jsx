@@ -14,14 +14,12 @@ export default function LoginForm({ onSuccess }) {
   const [showPassword, setShowPassword] = useState(false);
   const [locationStatus, setLocationStatus] = useState(""); // For showing location fetch status
 
-  
   const handleChange = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
 
     if (errors[field]) setErrors((prev) => ({ ...prev, [field]: "" }));
     if (apiError) setApiError("");
   };
-
 
   const validateLogin = () => {
     const newErrors = {};
@@ -54,13 +52,15 @@ export default function LoginForm({ onSuccess }) {
     try {
       // First, get user location
       let locationData = null;
-      
+
       try {
         locationData = await getUserLocation();
         setLocationStatus("Location retrieved successfully");
       } catch (locationError) {
-        console.warn('Location access denied or unavailable:', locationError);
-        setLocationStatus("Location access denied - continuing without location");
+        console.warn("Location access denied or unavailable:", locationError);
+        setLocationStatus(
+          "Location access denied - continuing without location",
+        );
         // Continue with login even if location fails
       }
 
@@ -70,16 +70,17 @@ export default function LoginForm({ onSuccess }) {
         body: JSON.stringify({
           email: form.email,
           password: form.password,
-          location: locationData // Send location data if available
-        })
+          location: locationData, // Send location data if available
+        }),
       });
 
       // Success - pass user data to parent
       setLocationStatus("");
-      onSuccess(response.data.user);
+      await Promise.resolve(onSuccess(response.data.user));
     } catch (error) {
       console.error(error);
-      const errorMessage = error.message || "Login failed. Please check your credentials.";
+      const errorMessage =
+        error.message || "Login failed. Please check your credentials.";
       setApiError(errorMessage);
       setLocationStatus("");
     } finally {

@@ -3,9 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, Award, Target, ArrowUp, ArrowDown, Info } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from "recharts";
-import { calculateCreditScore, generateCreditHistory, fetchAICreditScore } from "../../lib/creditEngine";
+import { generateCreditHistory } from "../../lib/creditEngine";
 import { useProfile } from "../../../contexts/useProfile";
 import { Loader2 } from "lucide-react";
+import { getCachedTrustLoanData, prefetchTrustLoanData } from "../../../lib/trustLoanCache";
 
 export default function CreditSection() {
   const { user, profile } = useProfile();
@@ -15,14 +16,29 @@ export default function CreditSection() {
   const history = useMemo(() => generateCreditHistory(), []);
 
   useEffect(() => {
+    let cancelled = false;
+
     async function getScore() {
       setLoading(true);
-      const role = user?.role || "farmer";
-      const data = await fetchAICreditScore(role, profile || {});
-      setCredit(data);
-      setLoading(false);
+      try {
+        const cached = getCachedTrustLoanData(user);
+        if (cached?.credit) {
+          if (!cancelled) setCredit(cached.credit);
+          return;
+        }
+
+        const prefetched = await prefetchTrustLoanData({ user, profile });
+        if (!cancelled) setCredit(prefetched?.credit || null);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
     }
+
     getScore();
+
+    return () => {
+      cancelled = true;
+    };
   }, [user, profile]);
 
   if (loading || !credit) {
