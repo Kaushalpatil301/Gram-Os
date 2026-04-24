@@ -7,6 +7,7 @@ import loanRouter from "./routes/loan.routes.js";
 import profileRouter from "./routes/profile.routes.js";
 import jobRouter from "./routes/job.routes.js";
 import marketplaceRouter from "./routes/marketplace.routes.js";
+import marketRouter from "./routes/market.routes.js";
 import cookieParser from "cookie-parser";
 
 const app = express();
@@ -20,8 +21,8 @@ app.use(
   }),
 );
 
-app.use(express.json({ limit: "16kb" }));
-app.use(express.urlencoded({ extended: true, limit: "16kb" }));
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(express.static("public"));
 app.use(cookieParser());
 
@@ -32,6 +33,7 @@ app.use("/api/v1/loans", loanRouter);
 app.use("/api/v1/profile", profileRouter);
 app.use("/api/v1/jobs", jobRouter);
 app.use("/api/v1/marketplace", marketplaceRouter);
+app.use("/api/v1/market", marketRouter);
 
 import twilio from "twilio";
 

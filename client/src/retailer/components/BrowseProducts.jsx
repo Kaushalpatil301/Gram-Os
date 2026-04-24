@@ -128,6 +128,20 @@ const mockProducts = [
 const categories = ["All", "Vegetables", "Fruits", "Grains"];
 
 const getAiInsight = (product) => {
+  // Use backend AI predicted price if available
+  if (product.aiPredictedPrice && product.basePrice) {
+    const margin = ((product.aiPredictedPrice - product.basePrice) / product.basePrice) * 100;
+    let reason = "Solid wholesale margin based on AI projection";
+    if (margin > 30) reason = "Exceptional profit margin projected based on market scarcity";
+    else if (margin < 10) reason = "Tight margin, high volume required to yield profit";
+
+    return {
+      margin: Math.max(0, Math.round(margin)),
+      reason
+    };
+  }
+
+  // Fallback for mock data
   const hash = (product.name || "").length + (product.price || product.basePrice || 10);
   const profitMargin = (hash % 35) + 15; // 15% to 50%
   const reasons = [

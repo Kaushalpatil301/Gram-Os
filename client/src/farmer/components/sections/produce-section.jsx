@@ -107,25 +107,46 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
     setSelectedImage(e.target.files[0]);
   };
 
-  const handlePredictPriceForAdd = () => {
+  const handlePredictPriceForAdd = async () => {
     if (!form.name || !form.type || !form.quantity) {
       toast.error("Please fill in basic crop details first (Name, Type, Quantity).");
       return;
     }
     setIsAiPredictingAdd(true);
-    setTimeout(() => {
-      // Mock AI prediction based on inputs safely
-      const nameStr = form.name ? String(form.name) : "";
-      const locStr = form.locality ? String(form.locality) : "Local";
-      const qtyNum = Number(form.quantity) || 10;
-      
-      const hash = nameStr.length + locStr.length + qtyNum;
-      const predicted = 20 + (hash % 80); // between 20 and 100
-      setForm(f => ({ ...f, basePrice: predicted }));
-      setHasPredictedPrice(true);
+    
+    try {
+      let imageBase64 = null;
+      if (selectedImage) {
+        imageBase64 = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(selectedImage);
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = (error) => reject(error);
+        });
+      }
+
+      const response = await axios.post(`${API_URL}/predict-price-add`, {
+        name: form.name,
+        type: form.type,
+        locality: form.locality || "Local",
+        soil: user?.soilType || "",
+        imageBase64
+      });
+
+      const predicted = response.data?.data?.predictedPrice;
+      if (predicted) {
+        setForm(f => ({ ...f, basePrice: predicted }));
+        setHasPredictedPrice(true);
+        toast.success(`AI Predicted an optimal price of ₹${predicted}/kg`);
+      } else {
+        toast.error("AI couldn't predict the price. Try entering it manually.");
+      }
+    } catch (error) {
+      console.error("AI Prediction Error:", error);
+      toast.error(error.response?.data?.message || "Failed to predict price.");
+    } finally {
       setIsAiPredictingAdd(false);
-      toast.success(`AI Predicted an optimal price of ₹${predicted}/kg`);
-    }, 1500);
+    }
   };
 
   // Fetch all products from database (for demo)
