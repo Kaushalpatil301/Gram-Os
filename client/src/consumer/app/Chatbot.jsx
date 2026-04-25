@@ -10,87 +10,58 @@ const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY;
 const MODEL = "openai/gpt-4o-mini";
 
 // ─── LANGUAGES ───────────────────────────────────────────────────────────────
-const LANGUAGES = [
-  {
+// Maps i18n language codes to chatbot language config (voice + AI instruction)
+const LANGUAGES_MAP = {
+  en: {
     code: "en-US",
     name: "English",
     flag: "🇺🇸",
     voiceLang: "en-US",
-    instruction:
-      "You MUST reply strictly in English only. Do not use any other language.",
+    instruction: "You MUST reply strictly in English only. Do not use any other language.",
   },
-  {
+  hi: {
     code: "hi-IN",
     name: "हिन्दी",
     flag: "🇮🇳",
     voiceLang: "hi-IN",
-    instruction:
-      "आपको केवल और केवल हिंदी में जवाब देना है। कोई भी अंग्रेजी शब्द या वाक्य मत लिखो।",
+    instruction: "आपको केवल और केवल हिंदी में जवाब देना है। कोई भी अंग्रेजी शब्द या वाक्य मत लिखो।",
   },
-  {
+  mr: {
     code: "mr-IN",
     name: "मराठी",
     flag: "🇮🇳",
     voiceLang: "mr-IN",
-    instruction:
-      "तुम्ही फक्त मराठीत उत्तर द्यायला हवे. एकही इंग्रजी शब्द वापरू नका.",
+    instruction: "तुम्ही फक्त मराठीत उत्तर द्यायला हवे. एकही इंग्रजी शब्द वापरू नका.",
   },
-  {
+  ta: {
     code: "ta-IN",
     name: "தமிழ்",
     flag: "🇮🇳",
     voiceLang: "ta-IN",
-    instruction:
-      "நீங்கள் கண்டிப்பாக தமிழில் மட்டும் பதில் சொல்லவேண்டும். ஆங்கிலம் பயன்படுத்தாதீர்கள்.",
+    instruction: "நீங்கள் கண்டிப்பாக தமிழில் மட்டும் பதில் சொல்லவேண்டும். ஆங்கிலம் பயன்படுத்தாதீர்கள்.",
   },
-  {
+  te: {
     code: "te-IN",
     name: "తెలుగు",
     flag: "🇮🇳",
     voiceLang: "te-IN",
-    instruction:
-      "మీరు తప్పనిసరిగా తెలుగులో మాత్రమే సమాధానం ఇవ్వాలి. ఆంగ్లం వాడకూడదు.",
+    instruction: "మీరు తప్పనిసరిగా తెలుగులో మాత్రమే సమాధానం ఇవ్వాలి. ఆంగ్లం వాడకూడదు.",
   },
-  {
+  bn: {
     code: "bn-BD",
     name: "বাংলা",
     flag: "🇧🇩",
     voiceLang: "bn-BD",
-    instruction:
-      "আপনাকে অবশ্যই শুধুমাত্র বাংলায় উত্তর দিতে হবে। ইংরেজি ব্যবহার করা যাবে না।",
+    instruction: "আপনাকে অবশ্যই শুধুমাত্র বাংলায় উত্তর দিতে হবে। ইংরেজি ব্যবহার করা যাবে না।",
   },
-  {
-    code: "kn-IN",
-    name: "ಕನ್ನಡ",
+  gu: {
+    code: "gu-IN",
+    name: "ગુજરાતી",
     flag: "🇮🇳",
-    voiceLang: "kn-IN",
-    instruction:
-      "ನೀವು ಕಡ್ಡಾಯವಾಗಿ ಕನ್ನಡದಲ್ಲಿ ಮಾತ್ರ ಉತ್ತರ ನೀಡಬೇಕು. ಇಂಗ್ಲಿಷ್ ಬಳಸಬಾರದು.",
+    voiceLang: "gu-IN",
+    instruction: "તમારે ફક્ત ગુજરાતીમાં જ જવાબ આપવાનો છે. અંગ્રજીમાં નહીં.",
   },
-  {
-    code: "pa-IN",
-    name: "ਪੰਜਾਬੀ",
-    flag: "🇮🇳",
-    voiceLang: "pa-IN",
-    instruction: "ਤੁਹਾਨੂੰ ਸਿਰਫ਼ ਪੰਜਾਬੀ ਵਿੱਚ ਜਵਾਬ ਦੇਣਾ ਹੈ। ਕੋਈ ਅੰਗਰੇਜ਼ੀ ਨਹੀਂ।",
-  },
-  {
-    code: "es-ES",
-    name: "Español",
-    flag: "🇪🇸",
-    voiceLang: "es-ES",
-    instruction:
-      "DEBES responder ÚNICAMENTE en español. Ninguna palabra en inglés.",
-  },
-  {
-    code: "fr-FR",
-    name: "Français",
-    flag: "🇫🇷",
-    voiceLang: "fr-FR",
-    instruction:
-      "Tu DOIS répondre UNIQUEMENT en français. Aucun mot en anglais.",
-  },
-];
+};
 
 // ─── ROLE SYSTEM PROMPTS ─────────────────────────────────────────────────────
 const ROLE_PROMPTS = {
@@ -362,34 +333,91 @@ const ROLE_META = {
 };
 
 // ─── VOICE SYNTHESIS ──────────────────────────────────────────────────────────
-function speakText(text, langCode, onEnd) {
-  if (!window.speechSynthesis) {
+// Sarvam AI TTS language code mapping (BCP-47 format, India-focused)
+// Only languages supported by Sarvam: en-IN, hi-IN, mr-IN, ta-IN, te-IN, bn-IN, gu-IN, kn-IN, ml-IN, od-IN, pa-IN
+const SARVAM_LANG_CODES = {
+  "en-US": "en-IN",
+  "en": "en-IN",
+  "hi-IN": "hi-IN",
+  "hi": "hi-IN",
+  "mr-IN": "mr-IN",
+  "mr": "mr-IN",
+  "ta-IN": "ta-IN",
+  "ta": "ta-IN",
+  "te-IN": "te-IN",
+  "te": "te-IN",
+  "bn-BD": "bn-IN",
+  "bn": "bn-IN",
+  "gu-IN": "gu-IN",
+  "gu": "gu-IN",
+};
+
+async function speakText(text, langCode, onEnd, audioRef) {
+  const apiKey = import.meta.env.VITE_SARVAM_API_KEY;
+  if (!apiKey) {
+    console.warn("VITE_SARVAM_API_KEY not set — skipping TTS");
     onEnd?.();
     return;
   }
-  window.speechSynthesis.cancel();
+
   const clean = text
     .replace(/[*_~`#•\-]/g, " ")
     .replace(/\s+/g, " ")
-    .substring(0, 500);
-  const utter = new SpeechSynthesisUtterance(clean);
-  utter.lang = langCode;
-  utter.rate = 0.95;
-  utter.pitch = 1.05;
-  utter.onend = () => onEnd?.();
-  utter.onerror = () => onEnd?.();
-  const setVoice = () => {
-    const voices = window.speechSynthesis.getVoices();
-    const langPrefix = langCode.split("-")[0];
-    const match =
-      voices.find((v) => v.lang === langCode) ||
-      voices.find((v) => v.lang.startsWith(langPrefix));
-    if (match) utter.voice = match;
-    window.speechSynthesis.speak(utter);
-  };
-  if (window.speechSynthesis.getVoices().length) setVoice();
-  else {
-    window.speechSynthesis.onvoiceschanged = setVoice;
+    .trim()
+    .substring(0, 2500); // bulbul:v3 limit
+
+  if (!clean) {
+    onEnd?.();
+    return;
+  }
+
+  // Map to Sarvam language code; if unsupported, fall back to English
+  const sarvamLang = SARVAM_LANG_CODES[langCode] || "en-IN";
+
+  try {
+    const res = await fetch("https://api.sarvam.ai/text-to-speech", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "api-subscription-key": apiKey,
+      },
+      body: JSON.stringify({
+        text: clean,
+        target_language_code: sarvamLang,
+        model: "bulbul:v3",
+      }),
+    });
+
+    if (!res.ok) {
+      const errBody = await res.text();
+      console.error("Sarvam API error:", res.status, errBody);
+      throw new Error(`Sarvam TTS error: ${res.status}`);
+    }
+
+    const data = await res.json();
+    const audioBase64 = data.audios?.[0];
+    if (!audioBase64) throw new Error("No audio in response");
+
+    const audioSrc = `data:audio/mp3;base64,${audioBase64}`;
+    const audio = new Audio(audioSrc);
+
+    if (audioRef) {
+      audioRef.current = audio;
+    }
+
+    audio.onended = () => {
+      if (audioRef) audioRef.current = null;
+      onEnd?.();
+    };
+    audio.onerror = () => {
+      if (audioRef) audioRef.current = null;
+      onEnd?.();
+    };
+
+    audio.play();
+  } catch (err) {
+    console.error("Sarvam TTS failed:", err);
+    onEnd?.();
   }
 }
 
@@ -397,27 +425,29 @@ function speakText(text, langCode, onEnd) {
 const socket = io("http://localhost:8000");
 
 export default function Chatbot() {
-  const { t } = useTranslation();
+  const { t, currentLanguage: pageLang } = useTranslation();
   const navigate = useNavigate();
   const [userRole, setUserRole] = useState("consumer");
-  const [lang, setLang] = useState(LANGUAGES[0]);
+  const [lang, setLang] = useState(LANGUAGES_MAP[pageLang] || LANGUAGES_MAP["en"]);
   const [messages, setMessages] = useState([]);
   const [history, setHistory] = useState([]);
   const [input, setInput] = useState("");
-  const [minimized, setMinimized] = useState(true);
-  const [typing, setTyping] = useState(false);
-  const [listening, setListening] = useState(false);
-  const [voiceOn, setVoiceOn] = useState(false);
-  const [speaking, setSpeaking] = useState(false);
-  const [chatImage, setChatImage] = useState(null);
+   const [minimized, setMinimized] = useState(true);
+   const [typing, setTyping] = useState(false);
+   const [listening, setListening] = useState(false);
+   const [muted, setMuted] = useState(false);
+   const [chatImage, setChatImage] = useState(null);
+   const audioRef = useRef(null);
+   const playCounter = useRef(0);
 
-  const chatRef = useRef(null);
-  const recogRef = useRef(null);
-  const textareaRef = useRef(null);
-  const lastAttachedImage = useRef(null);
-  const activeCallSid = useRef(null);
+   const chatRef = useRef(null);
+   const recogRef = useRef(null);
+   const textareaRef = useRef(null);
+    const lastAttachedImage = useRef(null);
+    const activeCallSid = useRef(null);
+    const sendMessageFnRef = useRef(null);
 
-  // removed twilio socket link from here  // load role from localStorage
+   // removed twilio socket link from here  // load role from localStorage
   useEffect(() => {
     try {
       const u = JSON.parse(localStorage.getItem("user") || "{}");
@@ -440,6 +470,14 @@ export default function Chatbot() {
     }
   }, [minimized]);
 
+  // sync chatbot language with page language
+  useEffect(() => {
+    const matched = LANGUAGES_MAP[pageLang];
+    if (matched) {
+      setLang(matched);
+    }
+  }, [pageLang]);
+
   // re-greet if role changes while open
   useEffect(() => {
     if (!minimized) {
@@ -459,392 +497,498 @@ export default function Chatbot() {
   useEffect(() => {
     if (chatRef.current)
       chatRef.current.scrollTop = chatRef.current.scrollHeight;
-  }, [messages, typing]);
+   }, [messages, typing]);
 
-  // voices
-  useEffect(() => {
-    window.speechSynthesis?.getVoices();
-  }, []);
-
-  // speech recognition
-  useEffect(() => {
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR) return;
-    const r = new SR();
-    r.continuous = false;
-    r.interimResults = false;
-    r.lang = lang.code;
-    r.onresult = (e) => {
-      const t = e.results[0][0].transcript;
-      setListening(false);
-      sendMessageFn(t);
-    };
-    r.onerror = () => setListening(false);
-    r.onend = () => setListening(false);
-    recogRef.current = r;
-  }, [lang]);
-
-  const toggleMic = () => {
-    if (!recogRef.current) return;
-    if (listening) {
-      recogRef.current.stop();
-      return;
-    }
-    recogRef.current.lang = lang.code;
-    try {
-      recogRef.current.start();
-      setListening(true);
-    } catch {}
-  };
-
-  const stopSpeaking = () => {
-    window.speechSynthesis?.cancel();
-    setSpeaking(false);
-  };
-
-  const sendMessageFn = useCallback(
-    async (voiceText) => {
-      const text = (voiceText !== undefined ? voiceText : input).trim();
-      const currentImage = chatImage; // Capture immediately
-
-      // Allow sending if there's either text or an uploaded image
-      if ((!text && !currentImage) || typing) return;
-
-      if (voiceText === undefined) setInput("");
-
-      // Update persistent ref
-      if (currentImage) {
-        lastAttachedImage.current = currentImage;
-      }
-      setChatImage(null); // Clear from UI immediately
-
-      // Add user message to UI
-      const userMsg = {
-        role: "user",
-        text: text || t("chatbot.uploadedImage"),
-        id: Date.now(),
+    // speech recognition
+    useEffect(() => {
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SR) return;
+      const r = new SR();
+      r.continuous = false;
+      r.interimResults = false;
+      r.lang = lang.code;
+      r.onresult = (e) => {
+        const t = e.results[0][0].transcript;
+        setListening(false);
+        sendMessageFnRef.current?.(t);
       };
-      if (currentImage) {
-        userMsg.image = URL.createObjectURL(currentImage);
-      }
-      setMessages((prev) => [...prev, userMsg]);
-      setTyping(true);
-      stopSpeaking();
+      r.onerror = () => setListening(false);
+      r.onend = () => setListening(false);
+      recogRef.current = r;
 
-      const basePrompt = (ROLE_PROMPTS[userRole] || ROLE_PROMPTS.consumer)(
-        lang.instruction,
-      );
-      const systemPrompt =
-        basePrompt +
-        "\n\n🚨 AGENTIC CAPABILITIES 🚨\nYou are now a FULLY AGENTIC AI. You have tools available to control the GramOS platform UI. If the user asks to navigate somewhere, view something, open their profile, logout, or check a specific dashboard section, you MUST use the `execute_platform_action` tool to do it for them! When you execute an action using the tool, also provide a helpful natural language response. NEVER say you can't do it, just use the tool!";
-      const updatedHistory = [...history, { role: "user", content: text }];
+      return () => {
+        r.stop();
+      };
+    }, [lang]);
 
+    const startListening = () => {
+      if (!recogRef.current) return;
+      if (listening) return;
+      stopSpeaking(); // stop any playing TTS
+      recogRef.current.lang = lang.code;
       try {
-        const res = await fetch(
-          "https://openrouter.ai/api/v1/chat/completions",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${OPENROUTER_API_KEY}`,
-              "HTTP-Referer": window.location.origin,
-              "X-Title": "GramOS AgriBot",
-            },
-            body: JSON.stringify({
-              model: MODEL,
-              temperature: 0.7,
-              max_tokens: 400,
-              messages: [
-                { role: "system", content: systemPrompt },
-                ...updatedHistory,
-              ],
-              tools: [
-                {
-                  type: "function",
-                  function: {
-                    name: "execute_platform_action",
-                    description:
-                      "Execute a platform UI interaction like navigating to a dashboard page, opening a modal, or logging out. Use this proactively when the user tells you to do something in the UI, such as viewing schemes, logging out, checking produce, exploring markets, or adding a product. Provide a response back to the user indicating you are taking action.",
-                    parameters: {
-                      type: "object",
-                      properties: {
-                        actionType: {
-                          type: "string",
-                          description:
-                            "The type of action to perform. Allowed values: 'navigate_section', 'navigate_url', 'open_modal', 'logout'.",
-                        },
-                        target: {
-                          type: "string",
-                          description:
-                            "The parameter for the action. For 'navigate_section', MUST be one of: 'marketplace', 'produce', 'workforce', 'scanner', 'map', 'credit', 'schemes' (for Farmers), OR 'jobs', 'academy', 'nptel', 'earnings', 'alert' (for Villagers), OR 'browse', 'analytics', 'network', 'contracts', 'qr' (for Retailers). For 'navigate_url', provide an app path such as '/dashboard/farmer', '/dashboard/villager', '/dashboard/consumer', '/dashboard/retailer', '/farmer/product/:id', '/retailer/product/:id', '/consumer/product/:id'. For 'open_modal', MUST be one of: 'profile', 'scan', 'add_produce'.",
-                        },
-                      },
-                      required: ["actionType"],
-                    },
-                  },
-                },
-                {
-                  type: "function",
-                  function: {
-                    name: "add_farmer_produce",
-                    description:
-                      "Automatically add a new product or crop to the farmer's inventory on their behalf. ONLY call this when the user explicitly provides crop name, quantity (in kg), base price (in rs), and locality/city.",
-                    parameters: {
-                      type: "object",
-                      properties: {
-                        name: {
-                          type: "string",
-                          description:
-                            "Name of the produce/crop (e.g. Tomato, Onions)",
-                        },
-                        type: {
-                          type: "string",
-                          description:
-                            "Must be exactly one of: 'Vegetable', 'Fruit', 'Grain', 'Leafy Greens', 'Pulse', 'Spice', 'Dairy', 'Other'. Default to 'Other' if unsure.",
-                        },
-                        quantity: {
-                          type: "number",
-                          description: "Quantity in kg",
-                        },
-                        basePrice: {
-                          type: "number",
-                          description: "Base price per kg in Indian Rupees",
-                        },
-                        locality: {
-                          type: "string",
-                          description: "City or location of harvest",
-                        },
-                      },
-                      required: [
-                        "name",
-                        "type",
-                        "quantity",
-                        "basePrice",
-                        "locality",
-                      ],
-                    },
-                  },
-                },
-                {
-                  type: "function",
-                  function: {
-                    name: "update_user_profile",
-                    description:
-                      "Automatically update the user's profile settings (Farmer or Villager). Use this when the user asks to change their location, name, phone, bio, crops, or language.",
-                    parameters: {
-                      type: "object",
-                      properties: {
-                        updates: {
-                          type: "object",
-                          description:
-                            "Key-value pairs of the fields to update. Valid keys: 'name', 'phone', 'location', 'bio', 'language', 'crops', 'specialization', 'village'.",
-                          additionalProperties: { type: "string" },
-                        },
-                      },
-                      required: ["updates"],
-                    },
-                  },
-                },
-              ],
-            }),
-          },
+        recogRef.current.start();
+        setListening(true);
+      } catch {}
+    };
+
+    const stopListening = () => {
+      if (!recogRef.current || !listening) return;
+      recogRef.current.stop();
+      setListening(false);
+    };
+
+   const stopSpeaking = useCallback(() => {
+     if (audioRef.current) {
+       audioRef.current.pause();
+       audioRef.current = null;
+     }
+     // Invalidate any pending TTS requests
+     playCounter.current += 1;
+   }, []);
+
+   const playMessageAudio = useCallback(
+     async (msg) => {
+       const text = msg.text;
+       if (!text) return;
+
+       // Stop any currently playing audio
+       stopSpeaking();
+
+       // Assign a unique playback ID for this request (cancels previous pending fetches)
+       const thisPlayId = ++playCounter.current;
+
+       const clean = text
+         .replace(/[*_~`#•\-]/g, " ")
+         .replace(/\s+/g, " ")
+         .trim()
+         .substring(0, 2500);
+
+       if (!clean) return;
+
+       const sarvamLang = SARVAM_LANG_CODES[lang.code] || "en-IN";
+       const apiKey = import.meta.env.VITE_SARVAM_API_KEY;
+
+       if (!apiKey) {
+         console.warn("VITE_SARVAM_API_KEY not set — skipping TTS");
+         return;
+       }
+
+       try {
+         const res = await fetch("https://api.sarvam.ai/text-to-speech", {
+           method: "POST",
+           headers: {
+             "Content-Type": "application/json",
+             "api-subscription-key": apiKey,
+           },
+           body: JSON.stringify({
+             text: clean,
+             target_language_code: sarvamLang,
+             model: "bulbul:v3",
+           }),
+         });
+
+         // If a newer playback started while fetching, discard this result
+         if (playCounter.current !== thisPlayId) return;
+
+         if (!res.ok) {
+           const errBody = await res.text();
+           console.error("Sarvam API error:", res.status, errBody);
+           return;
+         }
+
+         const data = await res.json();
+
+         // Another playback may have started while awaiting JSON
+         if (playCounter.current !== thisPlayId) return;
+
+         const audioBase64 = data.audios?.[0];
+         if (!audioBase64) return;
+
+         const audioSrc = `data:audio/mp3;base64,${audioBase64}`;
+         const audio = new Audio(audioSrc);
+         audioRef.current = audio;
+
+         audio.onended = () => {
+           audioRef.current = null;
+         };
+         audio.onerror = () => {
+           audioRef.current = null;
+         };
+
+         audio.play();
+       } catch (err) {
+         console.error("Sarvam TTS failed:", err);
+       }
+     },
+     [lang, stopSpeaking],
+   );
+
+   const toggleMute = () => {
+     setMuted((prev) => !prev);
+     // If currently playing, stop it
+     if (audioRef.current) {
+       audioRef.current.pause();
+       audioRef.current = null;
+     }
+    };
+
+    const sendMessageFn = useCallback(
+      async (voiceText) => {
+        const text = (voiceText !== undefined ? voiceText : input).trim();
+        const currentImage = chatImage;
+
+        if ((!text && !currentImage) || typing) return;
+
+        if (voiceText === undefined) setInput("");
+
+        if (currentImage) {
+          lastAttachedImage.current = currentImage;
+        }
+        setChatImage(null);
+
+        const userMsg = {
+          role: "user",
+          text: text || t("chatbot.uploadedImage"),
+          id: Date.now(),
+        };
+        if (currentImage) {
+          userMsg.image = URL.createObjectURL(currentImage);
+        }
+        setMessages((prev) => [...prev, userMsg]);
+        setTyping(true);
+        stopSpeaking();
+
+        const basePrompt = (ROLE_PROMPTS[userRole] || ROLE_PROMPTS.consumer)(
+          lang.instruction,
         );
+        const systemPrompt =
+          basePrompt +
+          "\n\n🚨 AGENTIC CAPABILITIES 🚨\nYou are now a FULLY AGENTIC AI. You have tools available to control the GramOS platform UI. If the user asks to navigate somewhere, view something, open their profile, logout, or check a specific dashboard section, you MUST use the `execute_platform_action` tool to do it for them! When you execute an action using the tool, also provide a helpful natural language response. NEVER say you can't do it, just use the tool!";
+        const updatedHistory = [...history, { role: "user", content: text }];
 
-        const data = await res.json();
-        const message = data.choices?.[0]?.message;
+        try {
+          const res = await fetch(
+            "https://openrouter.ai/api/v1/chat/completions",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${OPENROUTER_API_KEY}`,
+                "HTTP-Referer": window.location.origin,
+                "X-Title": "GramOS AgriBot",
+              },
+              body: JSON.stringify({
+                model: MODEL,
+                temperature: 0.7,
+                max_tokens: 400,
+                messages: [
+                  { role: "system", content: systemPrompt },
+                  ...updatedHistory,
+                ],
+                tools: [
+                  {
+                    type: "function",
+                    function: {
+                      name: "execute_platform_action",
+                      description:
+                        "Execute a platform UI interaction like navigating to a dashboard page, opening a modal, or logging out. Use this proactively when the user tells you to do something in the UI, such as viewing schemes, logging out, checking produce, exploring markets, or adding a product. Provide a response back to the user indicating you are taking action.",
+                      parameters: {
+                        type: "object",
+                        properties: {
+                          actionType: {
+                            type: "string",
+                            description:
+                              "The type of action to perform. Allowed values: 'navigate_section', 'navigate_url', 'open_modal', 'logout'.",
+                          },
+                          target: {
+                            type: "string",
+                            description:
+                              "The parameter for the action. For 'navigate_section', MUST be one of: 'marketplace', 'produce', 'workforce', 'scanner', 'map', 'credit', 'schemes' (for Farmers), OR 'jobs', 'academy', 'nptel', 'earnings', 'alert' (for Villagers), OR 'browse', 'analytics', 'network', 'contracts', 'qr' (for Retailers). For 'navigate_url', provide an app path such as '/dashboard/farmer', '/dashboard/villager', '/dashboard/consumer', '/dashboard/retailer', '/farmer/product/:id', '/retailer/product/:id', '/consumer/product/:id'. For 'open_modal', MUST be one of: 'profile', 'scan', 'add_produce'.",
+                          },
+                        },
+                        required: ["actionType"],
+                      },
+                    },
+                  },
+                  {
+                    type: "function",
+                    function: {
+                      name: "add_farmer_produce",
+                      description:
+                        "Automatically add a new product or crop to the farmer's inventory on their behalf. ONLY call this when the user explicitly provides crop name, quantity (in kg), base price (in rs), and locality/city.",
+                      parameters: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                            description:
+                              "Name of the produce/crop (e.g. Tomato, Onions)",
+                          },
+                          type: {
+                            type: "string",
+                            description:
+                              "Must be exactly one of: 'Vegetable', 'Fruit', 'Grain', 'Leafy Greens', 'Pulse', 'Spice', 'Dairy', 'Other'. Default to 'Other' if unsure.",
+                          },
+                          quantity: {
+                            type: "number",
+                            description: "Quantity in kg",
+                          },
+                          basePrice: {
+                            type: "number",
+                            description: "Base price per kg in Indian Rupees",
+                          },
+                          locality: {
+                            type: "string",
+                            description: "City or location of harvest",
+                          },
+                        },
+                        required: [
+                          "name",
+                          "type",
+                          "quantity",
+                          "basePrice",
+                          "locality",
+                        ],
+                      },
+                    },
+                  },
+                  {
+                    type: "function",
+                    function: {
+                      name: "update_user_profile",
+                      description:
+                        "Automatically update the user's profile settings (Farmer or Villager). Use this when the user asks to change their location, name, phone, bio, crops, or language.",
+                      parameters: {
+                        type: "object",
+                        properties: {
+                          updates: {
+                            type: "object",
+                            description:
+                              "Key-value pairs of the fields to update. Valid keys: 'name', 'phone', 'location', 'bio', 'language', 'crops', 'specialization', 'village'.",
+                            additionalProperties: { type: "string" },
+                          },
+                        },
+                        required: ["updates"],
+                      },
+                    },
+                  },
+                ],
+              }),
+            },
+          );
 
-        let reply = message?.content || "";
+          const data = await res.json();
+          const message = data.choices?.[0]?.message;
 
-        // Handle Agentic Tool Calls
-        if (message?.tool_calls && message.tool_calls.length > 0) {
-          for (const toolCall of message.tool_calls) {
-            if (toolCall.function.name === "execute_platform_action") {
-              try {
-                const args = JSON.parse(toolCall.function.arguments);
-                console.log("Agent Executing Tool:", args);
+          let reply = message?.content || "";
 
-                if (args.actionType === "navigate_section") {
-                  window.dispatchEvent(
-                    new CustomEvent("AGRIBOT_NAVIGATE", {
-                      detail: { section: args.target },
-                    }),
-                  );
-                  reply +=
-                    (reply ? "\n\n" : "") +
-                    `Navigating to ${args.target} section...`;
-                } else if (args.actionType === "open_modal") {
-                  window.dispatchEvent(
-                    new CustomEvent("AGRIBOT_MODAL", {
-                      detail: { modal: args.target },
-                    }),
-                  );
-                  reply += (reply ? "\n\n" : "") + `Opening ${args.target}...`;
-                } else if (args.actionType === "navigate_url") {
-                  navigate(args.target);
-                  reply +=
-                    (reply ? "\n\n" : "") + `Navigating to ${args.target}...`;
-                } else if (args.actionType === "logout") {
-                  window.dispatchEvent(
-                    new CustomEvent("AGRIBOT_ACTION", {
-                      detail: { action: "logout" },
-                    }),
-                  );
-                  reply += (reply ? "\n\n" : "") + `Logging out...`;
-                }
-              } catch (e) {
-                console.error("Failed to parse tool call args", e);
-              }
-            } else if (toolCall.function.name === "add_farmer_produce") {
-              try {
-                const args = JSON.parse(toolCall.function.arguments);
-                console.log("Agent Executing Tool:", args);
-                const user = JSON.parse(localStorage.getItem("user") || "{}");
+          // Handle Agentic Tool Calls
+          if (message?.tool_calls && message.tool_calls.length > 0) {
+            for (const toolCall of message.tool_calls) {
+              if (toolCall.function.name === "execute_platform_action") {
+                try {
+                  const args = JSON.parse(toolCall.function.arguments);
+                  console.log("Agent Executing Tool:", args);
 
-                if (user?.email) {
-                  let safeType = (args.type || "Other").trim();
-                  if (safeType === "Vegetables") safeType = "Vegetable";
-                  if (safeType === "Fruits") safeType = "Fruit";
-                  if (safeType === "Grains") safeType = "Grain";
-                  if (safeType === "Pulses") safeType = "Pulse";
-                  if (safeType === "Spices") safeType = "Spice";
-
-                  const validatedName = (args.name || "").trim();
-                  const validatedLocality = (args.locality || "").trim();
-                  const validatedQty = Number(args.quantity) || 0;
-                  const validatedPrice = Number(args.basePrice) || 0;
-
-                  if (
-                    !validatedName ||
-                    !validatedLocality ||
-                    validatedQty <= 0 ||
-                    validatedPrice <= 0
-                  ) {
-                    reply +=
-                      (reply ? "\n\n" : "") +
-                      `⚠️ I couldn't add the crop because I need more details. Please ensure you provide the **crop name, quantity, price**, and **locality**!`;
-                    throw new Error("Validation skipped");
-                  }
-
-                  const formData = new FormData();
-                  formData.append("name", validatedName);
-                  formData.append("type", safeType);
-                  formData.append("quantity", validatedQty);
-                  formData.append("basePrice", validatedPrice);
-                  formData.append("locality", validatedLocality);
-                  formData.append("farmerEmail", user.email);
-
-                  // Inject image if one was attached in the current or previous message!
-                  if (lastAttachedImage.current) {
-                    formData.append("image", lastAttachedImage.current);
-                    lastAttachedImage.current = null; // Consume it
-                  }
-
-                  try {
-                    await axios.post(
-                      "http://localhost:8000/api/v1/products",
-                      formData,
-                    );
+                  if (args.actionType === "navigate_section") {
                     window.dispatchEvent(
-                      new CustomEvent("AGRIBOT_PRODUCE_ADDED"),
+                      new CustomEvent("AGRIBOT_NAVIGATE", {
+                        detail: { section: args.target },
+                      }),
                     );
                     reply +=
                       (reply ? "\n\n" : "") +
-                      `✅ I have automatically added ${validatedQty}kg of ${validatedName} from ${validatedLocality} at ₹${validatedPrice}/kg to your inventory!`;
-                  } catch (err) {
-                    if (err.message !== "Validation skipped") {
+                      `Navigating to ${args.target} section...`;
+                  } else if (args.actionType === "open_modal") {
+                    window.dispatchEvent(
+                      new CustomEvent("AGRIBOT_MODAL", {
+                        detail: { modal: args.target },
+                      }),
+                    );
+                    reply += (reply ? "\n\n" : "") + `Opening ${args.target}...`;
+                  } else if (args.actionType === "navigate_url") {
+                    navigate(args.target);
+                    reply +=
+                      (reply ? "\n\n" : "") + `Navigating to ${args.target}...`;
+                  } else if (args.actionType === "logout") {
+                    window.dispatchEvent(
+                      new CustomEvent("AGRIBOT_ACTION", {
+                        detail: { action: "logout" },
+                      }),
+                    );
+                    reply += (reply ? "\n\n" : "") + `Logging out...`;
+                  }
+                } catch (e) {
+                  console.error("Failed to parse tool call args", e);
+                }
+              } else if (toolCall.function.name === "add_farmer_produce") {
+                try {
+                  const args = JSON.parse(toolCall.function.arguments);
+                  console.log("Agent Executing Tool:", args);
+                  const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+                  if (user?.email) {
+                    let safeType = (args.type || "Other").trim();
+                    if (safeType === "Vegetables") safeType = "Vegetable";
+                    if (safeType === "Fruits") safeType = "Fruit";
+                    if (safeType === "Grains") safeType = "Grain";
+                    if (safeType === "Pulses") safeType = "Pulse";
+                    if (safeType === "Spices") safeType = "Spice";
+
+                    const validatedName = (args.name || "").trim();
+                    const validatedLocality = (args.locality || "").trim();
+                    const validatedQty = Number(args.quantity) || 0;
+                    const validatedPrice = Number(args.basePrice) || 0;
+
+                    if (
+                      !validatedName ||
+                      !validatedLocality ||
+                      validatedQty <= 0 ||
+                      validatedPrice <= 0
+                    ) {
                       reply +=
                         (reply ? "\n\n" : "") +
-                        `❌ I tried to add your produce, but encountered a system error. Please check your connection.`;
+                        `⚠️ I couldn't add the crop because I need more details. Please ensure you provide the **crop name, quantity, price**, and **locality**!`;
+                      throw new Error("Validation skipped");
                     }
+
+                    const formData = new FormData();
+                    formData.append("name", validatedName);
+                    formData.append("type", safeType);
+                    formData.append("quantity", validatedQty);
+                    formData.append("basePrice", validatedPrice);
+                    formData.append("locality", validatedLocality);
+                    formData.append("farmerEmail", user.email);
+
+                    if (lastAttachedImage.current) {
+                      formData.append("image", lastAttachedImage.current);
+                      lastAttachedImage.current = null;
+                    }
+
+                    try {
+                      await axios.post(
+                        "http://localhost:8000/api/v1/products",
+                        formData,
+                      );
+                      window.dispatchEvent(
+                        new CustomEvent("AGRIBOT_PRODUCE_ADDED"),
+                      );
+                      reply +=
+                        (reply ? "\n\n" : "") +
+                        `✅ I have automatically added ${validatedQty}kg of ${validatedName} from ${validatedLocality} at ₹${validatedPrice}/kg to your inventory!`;
+                    } catch (err) {
+                      if (err.message !== "Validation skipped") {
+                        reply +=
+                          (reply ? "\n\n" : "") +
+                          `❌ I tried to add your crop, but encountered a system error. Please check your connection.`;
+                      }
+                    }
+                  } else {
+                    reply +=
+                      (reply ? "\n\n" : "") +
+                      `⚠️ I couldn't automatically add the crop. Please log in first.`;
                   }
-                } else {
+                } catch (e) {
+                  console.error("Failed to parse add_farmer_produce args", e);
+                }
+              } else if (toolCall.function.name === "update_user_profile") {
+                try {
+                  const args = JSON.parse(toolCall.function.arguments);
+                  window.dispatchEvent(
+                    new CustomEvent("AGRIBOT_UPDATE_PROFILE", {
+                      detail: args.updates,
+                    }),
+                  );
                   reply +=
                     (reply ? "\n\n" : "") +
-                    `⚠️ I couldn't automatically add the crop. Please log in first.`;
+                    `✅ I've updated your profile settings with the new details!`;
+                } catch (e) {
+                  console.error("Failed to parse update_user_profile args", e);
                 }
-              } catch (e) {
-                console.error("Failed to parse add_farmer_produce args", e);
-              }
-            } else if (toolCall.function.name === "update_user_profile") {
-              try {
-                const args = JSON.parse(toolCall.function.arguments);
-                window.dispatchEvent(
-                  new CustomEvent("AGRIBOT_UPDATE_PROFILE", {
-                    detail: args.updates,
-                  }),
-                );
-                reply +=
-                  (reply ? "\n\n" : "") +
-                  `✅ I've updated your profile settings with the new details!`;
-              } catch (e) {
-                console.error("Failed to parse update_user_profile args", e);
               }
             }
           }
+
+          if (!reply) {
+            reply = t("chatbot.actionExecuted");
+          }
+
+          const botMsgId = Date.now() + 1;
+          setMessages((prev) => [
+            ...prev,
+            { role: "bot", text: reply, id: botMsgId },
+          ]);
+          setHistory([...updatedHistory, { role: "assistant", content: reply }]);
+
+          // Auto-play TTS if not muted
+          if (!muted) {
+            playMessageAudio({ id: botMsgId, text: reply });
+          }
+
+          // Reply to Twilio phone caller
+          if (activeCallSid.current) {
+            axios
+              .post("http://localhost:8000/api/v1/voice/reply", {
+                callSid: activeCallSid.current,
+                text: reply.substring(0, 1000),
+              })
+              .catch((err) => console.error("Twilio reply error:", err));
+            activeCallSid.current = null;
+          }
+        } catch {
+          setMessages((prev) => [
+            ...prev,
+            {
+              role: "bot",
+              text: t("chatbot.connectionError"),
+              id: Date.now() + 1,
+            },
+          ]);
+        } finally {
+          setTyping(false);
         }
+       },
+       [input, typing, history, lang, userRole, chatImage, muted, playMessageAudio, stopSpeaking],
+     );
 
-        if (!reply) {
-          reply = t("chatbot.actionExecuted");
+     // Keep a ref of the latest sendMessageFn for speech recognition
+     useEffect(() => {
+       sendMessageFnRef.current = sendMessageFn;
+     }, [sendMessageFn]);
+
+    // twilio socket link
+    useEffect(() => {
+      const handleTwilioSpeech = ({ callSid, text }) => {
+        console.log("Receiving twilio speech:", text, "callSid:", callSid);
+        if (!minimized) {
+          // Auto-open if minimized could be done, but let's just ensure it's logged
+        } else {
+          setMinimized(false);
         }
+        activeCallSid.current = callSid;
+        // Wrap in setTimeout to ensure state is clean and minimized=false applies
+        setTimeout(() => {
+          sendMessageFnRef.current?.(text);
+        }, 100);
+      };
 
-        setMessages((prev) => [
-          ...prev,
-          { role: "bot", text: reply, id: Date.now() + 1 },
-        ]);
-        setHistory([...updatedHistory, { role: "assistant", content: reply }]);
+      socket.on("twilio_speech", handleTwilioSpeech);
+      return () => {
+        socket.off("twilio_speech", handleTwilioSpeech);
+      };
+    }, [minimized]);
 
-        // Reply to Twilio phone caller if this was triggered by a voice call
-        if (activeCallSid.current) {
-          axios
-            .post("http://localhost:8000/api/v1/voice/reply", {
-              callSid: activeCallSid.current,
-              text: reply.substring(0, 1000), // Keep it short enough for TwiML
-            })
-            .catch((err) => console.error("Twilio reply error:", err));
-          activeCallSid.current = null;
+    // Cleanup any playing audio on unmount
+    useEffect(() => {
+      return () => {
+        if (audioRef.current) {
+          audioRef.current.pause();
         }
+      };
+    }, []);
 
-        if (voiceOn) {
-          setSpeaking(true);
-          speakText(reply, lang.voiceLang, () => setSpeaking(false));
-        }
-      } catch {
-        setMessages((prev) => [
-          ...prev,
-          {
-            role: "bot",
-            text: t("chatbot.connectionError"),
-            id: Date.now() + 1,
-          },
-        ]);
-      } finally {
-        setTyping(false);
-      }
-    },
-    [input, typing, history, lang, userRole, voiceOn, chatImage],
-  );
-
-  // twilio socket link
-  useEffect(() => {
-    const handleTwilioSpeech = ({ callSid, text }) => {
-      console.log("Receiving twilio speech:", text, "callSid:", callSid);
-      if (!minimized) {
-        // Auto-open if minimized could be done, but let's just ensure it's logged
-      } else {
-        setMinimized(false);
-      }
-      activeCallSid.current = callSid;
-      // Wrap in setTimeout to ensure state is clean and minimized=false applies
-      setTimeout(() => sendMessageFn(text), 100);
-    };
-
-    socket.on("twilio_speech", handleTwilioSpeech);
-    return () => {
-      socket.off("twilio_speech", handleTwilioSpeech);
-    };
-  }, [minimized, sendMessageFn]);
-
-  const clearChat = () => {
+   const clearChat = () => {
     stopSpeaking();
     setHistory([]);
     const meta = ROLE_META[userRole] || ROLE_META.consumer;
@@ -864,32 +1008,9 @@ export default function Chatbot() {
     }
   };
 
-  const meta = ROLE_META[userRole] || ROLE_META.consumer;
+   const meta = ROLE_META[userRole] || ROLE_META.consumer;
 
-  const QUICK = {
-    farmer: [
-      t("chatbot.quick.farmer.crop"),
-      t("chatbot.quick.farmer.mandi"),
-      t("chatbot.quick.farmer.pmkisan"),
-    ],
-    retailer: [
-      t("chatbot.quick.retailer.suppliers"),
-      t("chatbot.quick.retailer.trend"),
-      t("chatbot.quick.retailer.qr"),
-    ],
-    villager: [
-      t("chatbot.quick.villager.jobs"),
-      t("chatbot.quick.villager.badges"),
-      t("chatbot.quick.villager.income"),
-    ],
-    consumer: [
-      t("chatbot.quick.consumer.seasonal"),
-      t("chatbot.quick.consumer.localFarmers"),
-      t("chatbot.quick.consumer.qr"),
-    ],
-  };
-
-  // ── MINIMIZED ────────────────────────────────────────────────────────────────
+   // ── MINIMIZED ────────────────────────────────────────────────────────────────
   if (minimized) {
     return (
       <>
@@ -1078,81 +1199,63 @@ export default function Chatbot() {
                 }}
               >
                 <GiWheat style={{ fontSize: 24, color: "#fff" }} />
-              </div>
-              <div>
-                <div
-                  style={{
-                    color: "#fff",
-                    fontWeight: 700,
-                    fontSize: 16,
-                    letterSpacing: 0.2,
-                  }}
-                >
-                  AgriBot
-                </div>
-                <div style={{ color: "#86efac", fontSize: 11 }}>
-                  GramOS · Rural Economic OS
-                </div>
-              </div>
-            </div>
+               </div>
+             </div>
 
-            <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-              {speaking && (
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 3,
-                    marginRight: 2,
-                  }}
-                >
-                  {[0, 0.12, 0.24, 0.12, 0].map((d, i) => (
-                    <div
-                      key={i}
+              <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                {/* Listening indicator */}
+                {listening && (
+                  <span
+                    style={{
+                      fontSize: 10,
+                      color: "#fca5a5",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 3,
+                      fontWeight: 600,
+                    }}
+                  >
+                    <span
                       style={{
-                        width: 3,
-                        height: 14,
-                        background: "#4ade80",
-                        borderRadius: 3,
-                        animation: `agri-wave 0.65s ${d}s ease-in-out infinite`,
+                        width: 6,
+                        height: 6,
+                        borderRadius: "50%",
+                        background: "#f87171",
+                        animation: "agri-blink 0.7s infinite",
                       }}
                     />
-                  ))}
-                </div>
-              )}
+                    {t("chatbot.listening")}
+                  </span>
+                )}
 
-              {/* Voice toggle */}
-              <button
-                onClick={() => {
-                  const next = !voiceOn;
-                  setVoiceOn(next);
-                  if (!next) stopSpeaking();
-                }}
-                className="agri-icon-btn"
-                title={voiceOn ? t("chatbot.voiceOn") : t("chatbot.voiceOff")}
-                style={{
-                  width: 30,
-                  height: 30,
-                  borderRadius: 8,
-                  border: "none",
-                  background: voiceOn
-                    ? "rgba(74,222,128,0.22)"
-                    : "rgba(255,255,255,0.1)",
-                  outline: voiceOn
-                    ? "1.5px solid #4ade80"
-                    : "1px solid rgba(255,255,255,0.18)",
-                  cursor: "pointer",
-                  fontSize: 15,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  transition: "all 0.2s",
-                }}
-              >
-                {voiceOn ? "🔊" : "🔇"}
-              </button>
+                {/* Mute/Unmute Toggle */}
+                <button
+                  onClick={toggleMute}
+                  className="agri-icon-btn"
+                  title={muted ? t("chatbot.voiceOn") : t("chatbot.voiceOff")}
+                  style={{
+                    width: 30,
+                    height: 30,
+                    borderRadius: 8,
+                    border: "none",
+                    background: muted
+                      ? "rgba(239,68,68,0.2)"
+                      : "rgba(74,222,128,0.2)",
+                    outline: muted
+                      ? "1px solid #ef4444"
+                      : "1px solid #4ade80",
+                    cursor: "pointer",
+                    fontSize: 14,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    transition: "all 0.2s",
+                  }}
+                >
+                  {muted ? "🔇" : "🔊"}
+                </button>
 
-              {/* Clear */}
+                {/* Clear */}
               <button
                 onClick={clearChat}
                 className="agri-icon-btn"
@@ -1198,90 +1301,9 @@ export default function Chatbot() {
               </button>
             </div>
           </div>
-
-          {/* Role + Language row */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              marginTop: 9,
-              position: "relative",
-            }}
-          >
-            <span
-              style={{
-                background: meta.bg,
-                color: meta.color,
-                fontSize: 11,
-                fontWeight: 700,
-                padding: "3px 10px",
-                borderRadius: 20,
-                border: `1px solid ${meta.color}35`,
-                letterSpacing: 0.2,
-              }}
-            >
-              {meta.emoji} {meta.label}
-            </span>
-
-            <select
-              value={lang.code}
-              onChange={(e) => {
-                const l = LANGUAGES.find((x) => x.code === e.target.value);
-                if (l) setLang(l);
-              }}
-              disabled={listening}
-              style={{
-                fontSize: 11,
-                fontWeight: 600,
-                background: "rgba(255,255,255,0.12)",
-                border: "1px solid rgba(255,255,255,0.22)",
-                borderRadius: 20,
-                padding: "3px 10px",
-                color: "#fff",
-                cursor: "pointer",
-                outline: "none",
-              }}
-            >
-              {LANGUAGES.map((l) => (
-                <option
-                  key={l.code}
-                  value={l.code}
-                  style={{ color: "#111", background: "#fff" }}
-                >
-                  {l.flag} {l.name}
-                </option>
-              ))}
-            </select>
-
-            {listening && (
-              <span
-                style={{
-                  marginLeft: "auto",
-                  fontSize: 11,
-                  color: "#fca5a5",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 5,
-                  fontWeight: 600,
-                }}
-              >
-                <span
-                  style={{
-                    width: 7,
-                    height: 7,
-                    borderRadius: "50%",
-                    background: "#f87171",
-                    animation: "agri-blink 0.7s infinite",
-                  }}
-                />
-                {t("chatbot.listening")}
-              </span>
-            )}
-          </div>
         </div>
 
-        {/* ─ MESSAGES ─ */}
+          {/* ─ MESSAGES ─ */}
         <div
           ref={chatRef}
           className="agri-scrollbar"
@@ -1325,7 +1347,7 @@ export default function Chatbot() {
               <div
                 style={{
                   maxWidth: "78%",
-                  padding: "9px 13px",
+                  padding: msg.role === "user" ? "9px 13px" : "9px 28px 9px 13px",
                   borderRadius:
                     msg.role === "user"
                       ? "18px 18px 4px 18px"
@@ -1344,8 +1366,39 @@ export default function Chatbot() {
                     msg.role === "bot"
                       ? "0 1px 5px rgba(0,0,0,0.05)"
                       : "0 2px 10px rgba(22,163,74,0.22)",
+                  position: "relative",
                 }}
               >
+                {msg.role === "bot" && (
+                  <button
+                    onClick={() => playMessageAudio(msg)}
+                    style={{
+                      position: "absolute",
+                      top: 2,
+                      right: 2,
+                      width: 22,
+                      height: 22,
+                      borderRadius: "50%",
+                      border: "none",
+                      background: "#f0fdf4",
+                      cursor: "pointer",
+                      fontSize: 11,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      padding: 0,
+                      opacity: 0.6,
+                      transition: "opacity 0.2s",
+                      boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                      zIndex: 1,
+                    }}
+                    onMouseOver={(e) => e.currentTarget.style.opacity = 0.9}
+                    onMouseOut={(e) => e.currentTarget.style.opacity = 0.6}
+                    title="Listen"
+                  >
+                    🔊
+                  </button>
+                )}
                 {msg.image && (
                   <img
                     src={msg.image}
@@ -1419,40 +1472,7 @@ export default function Chatbot() {
             background: "#fff",
             flexShrink: 0,
           }}
-        >
-          {/* Quick chips */}
-          <div
-            style={{
-              display: "flex",
-              gap: 5,
-              marginBottom: 8,
-              overflowX: "auto",
-              paddingBottom: 1,
-            }}
-          >
-            {(QUICK[userRole] || QUICK.consumer).map((q) => (
-              <button
-                key={q}
-                onClick={() => sendMessageFn(q)}
-                className="agri-chip"
-                style={{
-                  whiteSpace: "nowrap",
-                  fontSize: 11,
-                  fontWeight: 500,
-                  padding: "4px 10px",
-                  borderRadius: 20,
-                  border: "1px solid #bbf7d0",
-                  background: "#f0fdf4",
-                  color: "#15803d",
-                  cursor: "pointer",
-                  flexShrink: 0,
-                  transition: "background 0.15s",
-                }}
-              >
-                {q}
-              </button>
-            ))}
-          </div>
+         >
 
           {/* Image Attachment Preview */}
           {chatImage && (
@@ -1531,38 +1551,44 @@ export default function Chatbot() {
               }}
             />
 
-            {/* Mic */}
-            <button
-              onClick={toggleMic}
-              disabled={typing}
-              title={
-                listening
-                  ? t("chatbot.stop")
-                  : t("chatbot.voiceWithLanguage", { language: lang.name })
-              }
-              style={{
-                width: 40,
-                height: 40,
-                borderRadius: 12,
-                flexShrink: 0,
-                border: "none",
-                background: listening ? "#ef4444" : "#f0fdf4",
-                outline: listening ? "none" : "1.5px solid #bbf7d0",
-                cursor: "pointer",
-                fontSize: 17,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                transition: "all 0.2s",
-                animation: listening ? "agri-blink 0.7s infinite" : "none",
-                boxShadow: listening
-                  ? "0 2px 10px rgba(239,68,68,0.35)"
-                  : "none",
-                color: "#16a34a",
-              }}
-            >
-              🎤
-            </button>
+             {/* Mic - click to start, auto-sends when speech ends */}
+             <button
+               onClick={() => {
+                 if (listening) {
+                   stopListening();
+                 } else {
+                   startListening();
+                 }
+               }}
+               disabled={typing}
+               title={
+                 listening
+                   ? t("chatbot.stop")
+                   : t("chatbot.voiceWithLanguage", { language: lang.name })
+               }
+               style={{
+                 width: 40,
+                 height: 40,
+                 borderRadius: 12,
+                 flexShrink: 0,
+                 border: "none",
+                 background: listening ? "#ef4444" : "#f0fdf4",
+                 outline: listening ? "none" : "1.5px solid #bbf7d0",
+                 cursor: "pointer",
+                 fontSize: 17,
+                 display: "flex",
+                 alignItems: "center",
+                 justifyContent: "center",
+                 transition: "all 0.2s",
+                 animation: listening ? "agri-blink 0.7s infinite" : "none",
+                 boxShadow: listening
+                   ? "0 2px 10px rgba(239,68,68,0.35)"
+                   : "none",
+                 color: "#16a34a",
+               }}
+             >
+               🎤
+             </button>
 
             {/* Attachment */}
             <label
@@ -1627,17 +1653,7 @@ export default function Chatbot() {
             </button>
           </div>
 
-          <div
-            style={{
-              textAlign: "center",
-              fontSize: 10,
-              color: "#9ca3af",
-              marginTop: 6,
-            }}
-          >
-            {t("chatbot.footer", { language: lang.name })}
-          </div>
-        </div>
+         </div>
       </div>
     </>
   );
