@@ -12,14 +12,41 @@ import cookieParser from "cookie-parser";
 
 const app = express();
 
-app.use(
-  cors({
-    origin: process.env.CORS_ORIGIN?.split(",") || "http://localhost:5173",
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Authorization", "Content-Type", "X-Requested-With"],
-  }),
-);
+// CORS configuration
+const corsOrigins = process.env.CORS_ORIGIN?.split(",").map(o => o.trim()) || [];
+const devOrigins = ["http://localhost:5173", "http://localhost:3000", "http://localhost:8000"];
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+    
+    // Check if origin matches any allowed pattern
+    const isAllowed = corsOrigins.some(allowedOrigin => {
+      if (allowedOrigin === "*") return true;
+      if (allowedOrigin.endsWith("/*")) {
+        // Wildcard subdomain matching (e.g., https://*.vercel.app)
+        const pattern = allowedOrigin.replace("/*", ".*");
+        const regex = new RegExp(`^${pattern}$`);
+        return regex.test(origin);
+      }
+      // Exact match
+      return origin === allowedOrigin;
+    });
+
+    if (isAllowed || process.env.NODE_ENV !== "production") {
+      callback(null, true);
+    } else {
+      console.warn(`CORS blocked origin: ${origin}`);
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Authorization", "Content-Type", "X-Requested-With"],
+};
+
+app.use(cors(corsOptions));
 
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
