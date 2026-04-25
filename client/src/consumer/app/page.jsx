@@ -19,6 +19,7 @@ import {
   Shield,
   Sprout,
 } from "lucide-react";
+import { apiLogout } from "../../lib/api.js";
 
 import ScanSection from "../components/ScanSection";
 import InfoSection from "../components/InfoSection";
@@ -99,10 +100,11 @@ function ConsumerContent() {
     window.location.href = decodedText;
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     localStorage.removeItem("scanHistory");
     localStorage.removeItem("userSession");
     localStorage.removeItem("issueReports");
+    await apiLogout();
     navigate("/");
   };
 

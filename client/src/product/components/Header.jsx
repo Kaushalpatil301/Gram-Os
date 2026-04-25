@@ -4,6 +4,27 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { User, LogOut, Leaf, ArrowLeft } from "lucide-react";
 import Notification from "./Notification.jsx";
+import { apiLogout } from "../../lib/api.js";
+
+const getCurrentUser = () => {
+  try {
+    const userStr = localStorage.getItem("user");
+    return userStr ? JSON.parse(userStr) : {};
+  } catch {
+    return {};
+  }
+};
+
+const getPortalLabel = (role) => {
+  switch (role) {
+    case "farmer":   return "Farmer Portal";
+    case "retailer": return "Retailer Portal";
+    case "consumer": return "Consumer Portal";
+    case "villager": return "Villager Portal";
+    case "admin":    return "Admin Portal";
+    default:         return "Portal";
+  }
+};
 
 export default function Header({
   onLogout,
@@ -15,13 +36,21 @@ export default function Header({
   const navigate = useNavigate();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [notification, setNotification] = useState("");
+  const user = getCurrentUser();
 
-  const handleLogout = () => {
+  const portalLabel = getPortalLabel(user.role);
+  const userEmail = user.email || "demo@agricchain.com";
+
+  const handleLogout = async () => {
     localStorage.removeItem("scanHistory");
     localStorage.removeItem("userSession");
     localStorage.removeItem("issueReports");
     setShowUserMenu(false);
     setNotification("Logged out successfully ✅");
+    
+    // Call backend logout to clear HTTP-only cookies
+    await apiLogout();
+    
     setTimeout(() => {
       if (onLogout) onLogout();
       window.location.href = "/";
@@ -32,7 +61,8 @@ export default function Header({
     if (window.history.length > 1) {
       navigate(-1);
     } else {
-      navigate("/dashboard/consumer");
+      const role = user?.role || "consumer";
+      navigate(`/dashboard/${role}`);
     }
   };
 
@@ -76,14 +106,14 @@ export default function Header({
                 <User className="h-6 w-6" />
               </button>
 
-              {showUserMenu && (
+               {showUserMenu && (
                 <div className="absolute right-0 mt-3 w-56 bg-white rounded-xl shadow-2xl border border-gray-100 py-2 z-50 animate-in slide-in-from-top-2">
                   <div className="px-4 py-3 border-b border-gray-100">
                     <p className="font-semibold text-gray-900">
-                      Consumer Portal
+                      {portalLabel}
                     </p>
                     <p className="text-sm text-gray-500 mt-1">
-                      demo@agricchain.com
+                      {userEmail}
                     </p>
                   </div>
                   <button

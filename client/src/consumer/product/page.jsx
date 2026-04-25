@@ -15,6 +15,7 @@ import {
   getTimelineData,
   getReviewsData,
 } from "../../product/lib/data.js";
+import { apiLogout } from "../../lib/api.js";
 
 const API_URL = "http://localhost:8000/api/v1/products";
 
@@ -57,8 +58,9 @@ export default function ConsumerProductPage({ onLogout }) {
     fetchProduct();
   }, [id]);
 
-  const handleLogoutWithNotification = () => {
+  const handleLogoutWithNotification = async () => {
     setNotification("Logged out successfully ✅");
+    await apiLogout();
     if (onLogout) onLogout();
   };
 

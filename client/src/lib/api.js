@@ -31,3 +31,24 @@ export async function apiFetch(path, opts = {}) {
   }
   return data;
 }
+
+/**
+ * Logout helper - calls backend to clear HTTP-only cookies and clears localStorage
+ */
+export async function apiLogout() {
+  try {
+    await apiFetch("/auth/logout", { method: "POST" });
+  } catch (error) {
+    console.warn("Logout API call failed (ignoring):", error);
+  } finally {
+    // Always clear localStorage regardless of API success
+    localStorage.removeItem("user");
+    localStorage.removeItem("userSession");
+    localStorage.removeItem("userProfile");
+    localStorage.removeItem("villagerProfile");
+    localStorage.removeItem("villagerScanHistory");
+    localStorage.removeItem("villagerModuleProgress");
+    localStorage.removeItem("scanHistory");
+    localStorage.removeItem("issueReports");
+  }
+}

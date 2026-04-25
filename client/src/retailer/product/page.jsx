@@ -9,6 +9,7 @@ import Footer from "../../product/components/Footer.jsx";
 import Notification from "../../product/components/Notification.jsx";
 import Chatbot from "../../consumer/app/Chatbot.jsx";
 import { LanguageProvider, useTranslation } from "../../consumer/i18n/config.jsx";
+import { apiLogout } from "../../lib/api.js";
 
 const API_URL = "http://localhost:8000/api/v1/products";
 const ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
@@ -236,8 +237,9 @@ function RetailerProductPageInner({ onLogout }) {
     setNotification(`✅ ${purchaseQty} kg ${currentProduct?.name} added to inventory!`);
   };
 
-  const handleLogoutWithNotification = () => {
+  const handleLogoutWithNotification = async () => {
     setNotification("Logged out successfully ✅");
+    await apiLogout();
     if (onLogout) onLogout();
   };
 

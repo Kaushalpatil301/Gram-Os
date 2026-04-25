@@ -1,112 +1,30 @@
-const GEMINI_API_KEY = "AIzaSyC9Ca4JQEJNW5fPQueqn9gTt5d1nSNurbk";
+const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:8000';
 
-// Function to get available models
-async function getAvailableModels() {
+export async function callGeminiViaServer(prompt, useJson = false) {
   try {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`
-    );
-    
-    if (response.ok) {
-      const data = await response.json();
-      const generateModels = data.models?.filter(m => 
-        m.supportedGenerationMethods?.includes('generateContent')
-      ).map(m => m.name);
-      
-      console.log("Available models with generateContent:", generateModels);
-      return generateModels || [];
+    const endpoint = useJson ? '/api/gemini/generate-json' : '/api/gemini/generate';
+    const response = await fetch(`${SERVER_URL}${endpoint}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt })
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || `Server error: ${response.status}`);
     }
+
+    const data = await response.json();
+    return data.text;
   } catch (error) {
-    console.error("Failed to fetch available models:", error);
+    console.error("Gemini server proxy error:", error);
+    throw error;
   }
-  return [];
-}
-
-// Try multiple models as fallback
-const GEMINI_MODELS = [
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=",
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=",
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=",
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent?key=",
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.0-pro:generateContent?key=",
-  "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=",
-];
-
-async function callGeminiAPI(prompt) {
-  let lastError = null;
-  
-  // First, try to get available models
-  const availableModels = await getAvailableModels();
-  
-  // If we found available models, try them first
-  if (availableModels.length > 0) {
-    for (const modelName of availableModels) {
-      // Extract just the model name (e.g., "models/gemini-1.5-flash" -> "gemini-1.5-flash")
-      const shortName = modelName.replace('models/', '');
-      const url = `https://generativelanguage.googleapis.com/v1beta/${modelName}:generateContent?key=${GEMINI_API_KEY}`;
-      
-      try {
-        console.log("Trying available model:", shortName);
-        
-        const res = await fetch(url, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }]
-          })
-        });
-
-        if (res.ok) {
-          console.log("✅ Model worked:", shortName);
-          return await res.json();
-        } else {
-          console.log("❌ Model failed:", shortName, "Status:", res.status);
-          lastError = await res.json().catch(() => ({ error: { message: `Status ${res.status}` } }));
-        }
-      } catch (error) {
-        console.log("❌ Model error:", shortName, error.message);
-        lastError = error;
-      }
-    }
-  }
-  
-  // Fallback: Try predefined models
-  console.log("Trying fallback models...");
-  
-  // Try each model until one works
-  for (const modelUrl of GEMINI_MODELS) {
-    const url = modelUrl + GEMINI_API_KEY;
-    try {
-      console.log("Trying model:", modelUrl.split("/models/")[1].split(":")[0]);
-      
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }]
-        })
-      });
-
-      if (res.ok) {
-        console.log("✅ Model worked!");
-        return await res.json();
-      } else {
-        console.log("❌ Model failed with status:", res.status);
-        lastError = await res.json().catch(() => ({ error: { message: `Status ${res.status}` } }));
-      }
-    } catch (error) {
-      console.log("❌ Model error:", error.message);
-      lastError = error;
-    }
-  }
-  
-  // If all models failed, throw error
-  throw new Error(lastError?.error?.message || "All models failed. Please check your API key.");
 }
 
 export async function voiceToProduce() {
   const R = window.SpeechRecognition || window.webkitSpeechRecognition;
-  
+
   if (!R) {
     throw new Error("Speech recognition is not supported in this browser");
   }
@@ -153,22 +71,10 @@ Other Rules:
 - Return ONLY the JSON object, no additional text or explanation
 `;
 
-        // Use the new helper function that tries multiple models
-        const responseData = await callGeminiAPI(prompt);
-        console.log("API Response:", responseData);
-        
-        // Check if response has the expected structure
-        if (!responseData.candidates || !responseData.candidates[0] || 
-            !responseData.candidates[0].content || 
-            !responseData.candidates[0].content.parts || 
-            !responseData.candidates[0].content.parts[0]) {
-          console.error("Unexpected API response structure:", responseData);
-          throw new Error("Invalid response from AI");
-        }
-        
-        const aiResponse = responseData.candidates[0].content.parts[0].text;
+        // Use the JSON endpoint for structured data
+        const aiResponse = await callGeminiViaServer(prompt, true);
         console.log("AI Response Text:", aiResponse);
-        
+
         // Clean up the response to extract JSON
         let jsonText = aiResponse.trim();
         if (jsonText.startsWith("```json")) {
@@ -176,13 +82,13 @@ Other Rules:
         } else if (jsonText.startsWith("```")) {
           jsonText = jsonText.replace(/```\n?/g, "");
         }
-        
+
         // Remove any leading/trailing whitespace or newlines
         jsonText = jsonText.trim();
         console.log("Cleaned JSON Text:", jsonText);
-        
+
         const json = JSON.parse(jsonText);
-        
+
         resolve({
           success: true,
           data: json,

@@ -44,9 +44,39 @@ import { useTranslation } from "../../../consumer/i18n/config.jsx";
 const API_URL = "http://localhost:8000/api/v1/products";
 
 const PAST_PRODUCE = [
-  { _id: 'past-1', name: 'Wheat (Sharbati)', type: 'Grain', quantity: 1500, basePrice: 25, locality: 'Koregaon, Pune', harvestDate: 'March 2025', image: 'https://images.unsplash.com/photo-1574323347407-285b73641ea5?q=80&w=500&auto=format&fit=crop' },
-  { _id: 'past-2', name: 'Sugarcane', type: 'Cash Crop', quantity: 8000, basePrice: 3, locality: 'Koregaon, Pune', harvestDate: 'November 2024', image: 'https://images.unsplash.com/photo-1590499256956-6134b2238c35?q=80&w=500&auto=format&fit=crop' },
-  { _id: 'past-3', name: 'Onion', type: 'Vegetable', quantity: 2000, basePrice: 18, locality: 'Koregaon, Pune', harvestDate: 'August 2024', image: 'https://images.unsplash.com/photo-1618512496248-a07fe83aa8cb?q=80&w=500&auto=format&fit=crop' }
+  {
+    _id: "past-1",
+    name: "Wheat (Sharbati)",
+    type: "Grain",
+    quantity: 1500,
+    basePrice: 25,
+    locality: "Koregaon, Pune",
+    harvestDate: "March 2025",
+    image:
+      "https://images.unsplash.com/photo-1574323347407-285b73641ea5?q=80&w=500&auto=format&fit=crop",
+  },
+  {
+    _id: "past-2",
+    name: "Sugarcane",
+    type: "Cash Crop",
+    quantity: 8000,
+    basePrice: 3,
+    locality: "Koregaon, Pune",
+    harvestDate: "November 2024",
+    image:
+      "https://images.unsplash.com/photo-1590499256956-6134b2238c35?q=80&w=500&auto=format&fit=crop",
+  },
+  {
+    _id: "past-3",
+    name: "Onion",
+    type: "Vegetable",
+    quantity: 2000,
+    basePrice: 18,
+    locality: "Koregaon, Pune",
+    harvestDate: "August 2024",
+    image:
+      "https://images.unsplash.com/photo-1618512496248-a07fe83aa8cb?q=80&w=500&auto=format&fit=crop",
+  },
 ];
 
 export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
@@ -72,14 +102,18 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
 
   const startAdd = () => {
     setEditing(null);
-    
+
     // Safely extract a string locality from the user object
     let userLocality = t("produce.form.defaultLocality");
     if (user.location) {
       if (typeof user.location === "string") {
         userLocality = user.location;
       } else if (typeof user.location === "object") {
-        userLocality = user.location.city || user.location.address || user.location.state || t("produce.form.defaultLocality");
+        userLocality =
+          user.location.city ||
+          user.location.address ||
+          user.location.state ||
+          t("produce.form.defaultLocality");
       }
     } else if (user.village) {
       userLocality = user.village;
@@ -115,7 +149,7 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
       return;
     }
     setIsAiPredictingAdd(true);
-    
+
     try {
       let imageBase64 = null;
       if (selectedImage) {
@@ -132,12 +166,12 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
         type: form.type,
         locality: form.locality || "Local",
         soil: user?.soilType || "",
-        imageBase64
+        imageBase64,
       });
 
       const predicted = response.data?.data?.predictedPrice;
       if (predicted) {
-        setForm(f => ({ ...f, basePrice: predicted }));
+        setForm((f) => ({ ...f, basePrice: predicted }));
         setHasPredictedPrice(true);
         toast.success(t("produce.toast.aiPredicted", { price: predicted }));
       } else {
@@ -145,7 +179,9 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
       }
     } catch (error) {
       console.error("AI Prediction Error:", error);
-      toast.error(error.response?.data?.message || t("produce.toast.predictFailed"));
+      toast.error(
+        error.response?.data?.message || t("produce.toast.predictFailed"),
+      );
     } finally {
       setIsAiPredictingAdd(false);
     }
@@ -200,7 +236,7 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
   const saveProduct = async () => {
     try {
       setIsUploading(true);
-      
+
       // Validate required fields
       if (
         !form.name ||
@@ -228,15 +264,19 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
       formData.append("type", String(form.type).trim());
       formData.append("quantity", Number(form.quantity));
       formData.append("basePrice", Number(form.basePrice));
-      
-       let locStr = t("produce.form.defaultLocality");
-       if (typeof form.locality === "string") {
-         locStr = form.locality;
-       } else if (form.locality && typeof form.locality === "object") {
-         locStr = form.locality.city || form.locality.address || form.locality.state || t("produce.form.defaultLocality");
-       } else if (form.locality) {
-         locStr = String(form.locality);
-       }
+
+      let locStr = t("produce.form.defaultLocality");
+      if (typeof form.locality === "string") {
+        locStr = form.locality;
+      } else if (form.locality && typeof form.locality === "object") {
+        locStr =
+          form.locality.city ||
+          form.locality.address ||
+          form.locality.state ||
+          t("produce.form.defaultLocality");
+      } else if (form.locality) {
+        locStr = String(form.locality);
+      }
       formData.append("locality", locStr.trim());
       formData.append("farmerEmail", user.email);
       // Note: Don't send farmerId - backend looks it up from email
@@ -254,14 +294,14 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
         basePrice: Number(form.basePrice),
         locality: form.locality,
         farmerEmail: user.email,
-        hasImage: !!selectedImage
+        hasImage: !!selectedImage,
       });
 
       if (editing) {
         // Update existing product
         const response = await axios.patch(
           `${API_URL}/${editing._id}`,
-          formData
+          formData,
         );
         toast.success(t("produce.toast.updated"));
       } else {
@@ -276,10 +316,11 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
       console.error("Upload error:", error);
       console.error("Error response:", error.response?.data);
       console.error("Error status:", error.response?.status);
-      
-      const errorMessage = error.response?.data?.message || 
-                          error.response?.data?.error || 
-                          error.message;
+
+      const errorMessage =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message;
       toast.error(t("produce.toast.uploadFailed", { message: errorMessage }));
     } finally {
       setIsUploading(false);
@@ -292,8 +333,7 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
 
   // Delete product from database
   const handleDeleteProduct = async (productId) => {
-    if (!window.confirm(t("produce.confirmDelete")))
-      return;
+    if (!window.confirm(t("produce.confirmDelete"))) return;
 
     try {
       await axios.delete(`${API_URL}/${productId}`);
@@ -324,9 +364,7 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
       <div className="flex items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold">{t("produce.title")}</h2>
-          <p className="text-muted-foreground">
-            {t("produce.subtitle")}
-          </p>
+          <p className="text-muted-foreground">{t("produce.subtitle")}</p>
         </div>
         <div className="flex gap-2">
           <Button
@@ -337,7 +375,6 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
           </Button>
         </div>
       </div>
-
 
       {/* Views */}
       <Tabs defaultValue="cards" className="mt-6">
@@ -376,18 +413,29 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
                     )}
                     <div className="space-y-1 text-sm">
                       <div>
-                        <span className="font-medium">{t("produce.field.quantity")}:</span>{" "}
+                        <span className="font-medium">
+                          {t("produce.field.quantity")}:
+                        </span>{" "}
                         {p.quantity} {t("common.units.kg")}
                       </div>
                       <div>
-                        <span className="font-medium">{t("produce.field.price")}:</span> {t("common.currency.rupee")}{p.basePrice}/{t("common.units.kg")}
+                        <span className="font-medium">
+                          {t("produce.field.price")}:
+                        </span>{" "}
+                        {t("common.currency.rupee")}
+                        {p.basePrice}/{t("common.units.kg")}
                       </div>
                       <div>
-                        <span className="font-medium">{t("produce.field.locality")}:</span>{" "}
+                        <span className="font-medium">
+                          {t("produce.field.locality")}:
+                        </span>{" "}
                         {p.locality}
                       </div>
                       <div>
-                        <span className="font-medium">{t("produce.field.farmId")}:</span> {p.farmId}
+                        <span className="font-medium">
+                          {t("produce.field.farmId")}:
+                        </span>{" "}
+                        {p.farmId}
                       </div>
                     </div>
                   </CardContent>
@@ -435,7 +483,9 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
                   <TableHead>{t("produce.field.price")}</TableHead>
                   <TableHead>{t("produce.field.locality")}</TableHead>
                   <TableHead>{t("produce.field.farmId")}</TableHead>
-                  <TableHead className="text-right">{t("produce.field.actions")}</TableHead>
+                  <TableHead className="text-right">
+                    {t("produce.field.actions")}
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -455,9 +505,14 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
                   products.map((p) => (
                     <TableRow key={p._id}>
                       <TableCell>{p.name}</TableCell>
-                       <TableCell>{p.type}</TableCell>
-                       <TableCell>{p.quantity} {t("common.units.kg")}</TableCell>
-                       <TableCell>{t("common.currency.rupee")}{p.basePrice}/{t("common.units.kg")}</TableCell>
+                      <TableCell>{p.type}</TableCell>
+                      <TableCell>
+                        {p.quantity} {t("common.units.kg")}
+                      </TableCell>
+                      <TableCell>
+                        {t("common.currency.rupee")}
+                        {p.basePrice}/{t("common.units.kg")}
+                      </TableCell>
                       <TableCell>{p.locality}</TableCell>
                       <TableCell className="font-mono text-xs">
                         {p.farmId}
@@ -465,10 +520,7 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
                           <Link to={`/farmer/product/${p._id}`}>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                            >
+                            <Button size="sm" variant="outline">
                               {t("produce.action.viewMore")}
                             </Button>
                           </Link>
@@ -508,7 +560,9 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
               <CardHeader className="pb-3">
                 <CardTitle className="flex justify-between items-center text-gray-700">
                   <span>{p.name}</span>
-                  <Badge variant="secondary" className="bg-gray-100">{p.type}</Badge>
+                  <Badge variant="secondary" className="bg-gray-100">
+                    {p.type}
+                  </Badge>
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -517,20 +571,32 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
                   alt={p.name}
                   className="w-full h-32 object-cover rounded-lg border mb-3 grayscale-[20%]"
                 />
-                 <div className="space-y-1 text-sm text-gray-500">
-                   <div>
-                     <span className="font-medium text-gray-600">{t("produce.past.totalYield")}:</span> {p.quantity} {t("common.units.kg")}
-                   </div>
-                   <div>
-                     <span className="font-medium text-gray-600">{t("produce.past.avgPrice")}:</span> {t("common.currency.rupee")}{p.basePrice}/{t("common.units.kg")}
-                   </div>
+                <div className="space-y-1 text-sm text-gray-500">
                   <div>
-                    <span className="font-medium text-gray-600">{t("produce.past.harvested")}:</span> {p.harvestDate}
+                    <span className="font-medium text-gray-600">
+                      {t("produce.past.totalYield")}:
+                    </span>{" "}
+                    {p.quantity} {t("common.units.kg")}
+                  </div>
+                  <div>
+                    <span className="font-medium text-gray-600">
+                      {t("produce.past.avgPrice")}:
+                    </span>{" "}
+                    {t("common.currency.rupee")}
+                    {p.basePrice}/{t("common.units.kg")}
+                  </div>
+                  <div>
+                    <span className="font-medium text-gray-600">
+                      {t("produce.past.harvested")}:
+                    </span>{" "}
+                    {p.harvestDate}
                   </div>
                 </div>
               </CardContent>
               <CardFooter className="bg-gray-50 rounded-b-2xl py-3 border-t">
-                <p className="text-xs text-gray-500 font-semibold w-full text-center">✓ {t("produce.past.seasonCompleted")}</p>
+                <p className="text-xs text-gray-500 font-semibold w-full text-center">
+                  ✓ {t("produce.past.seasonCompleted")}
+                </p>
               </CardFooter>
             </Card>
           ))}
@@ -542,7 +608,9 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
         <DialogContent className="flex flex-col items-center gap-4">
           <DialogHeader>
             <DialogTitle>{t("produce.qr.title")}</DialogTitle>
-            <DialogDescription className="sr-only">{t("produce.qr.description")}</DialogDescription>
+            <DialogDescription className="sr-only">
+              {t("produce.qr.description")}
+            </DialogDescription>
           </DialogHeader>
           {qrProduct && (
             <>
@@ -571,9 +639,13 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>
-              {editing ? t("produce.dialog.editTitle") : t("produce.dialog.addTitle")}
+              {editing
+                ? t("produce.dialog.editTitle")
+                : t("produce.dialog.addTitle")}
             </DialogTitle>
-            <DialogDescription className="sr-only">{t("produce.dialog.description")}</DialogDescription>
+            <DialogDescription className="sr-only">
+              {t("produce.dialog.description")}
+            </DialogDescription>
           </DialogHeader>
           <div className="grid gap-3">
             <LabeledInput label={t("produce.field.nameRequired")}>
@@ -586,27 +658,35 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
               />
             </LabeledInput>
             <LabeledInput label={t("produce.field.cropCategoryRequired")}>
-                <select
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  value={form.type}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, type: e.target.value }))
-                  }
-                >
-                  <option value="">{t("produce.placeholder.selectCategory")}</option>
-                  {produceTypes.map((type) => (
-                    <option key={type} value={type}>
-                      {t("produce.types." + type.toLowerCase().replace(/\s+/g, ""))}
-                    </option>
-                  ))}
-                </select>
+              <select
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                value={form.type}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, type: e.target.value }))
+                }
+              >
+                <option value="">
+                  {t("produce.placeholder.selectCategory")}
+                </option>
+                {produceTypes.map((type) => (
+                  <option key={type} value={type}>
+                    {t(
+                      "produce.types." + type.toLowerCase().replace(/\s+/g, ""),
+                    )}
+                  </option>
+                ))}
+              </select>
             </LabeledInput>
             <LabeledInput label={t("produce.field.quantityLabel")}>
               <Input
                 type="number"
                 value={form.quantity || ""}
                 onChange={(e) =>
-                  setForm((f) => ({ ...f, quantity: e.target.value === "" ? "" : Number(e.target.value) }))
+                  setForm((f) => ({
+                    ...f,
+                    quantity:
+                      e.target.value === "" ? "" : Number(e.target.value),
+                  }))
                 }
               />
             </LabeledInput>
@@ -617,13 +697,15 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
 
             {!hasPredictedPrice ? (
               <div className="pt-2">
-                <Button 
+                <Button
                   onClick={handlePredictPriceForAdd}
                   disabled={isAiPredictingAdd}
                   className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold transition-all shadow-md"
                 >
                   <Sparkles className="w-4 h-4 mr-2" />
-                  {isAiPredictingAdd ? t("produce.button.aiAnalyzing") : t("produce.button.predictPrice")}
+                  {isAiPredictingAdd
+                    ? t("produce.button.aiAnalyzing")
+                    : t("produce.button.predictPrice")}
                 </Button>
               </div>
             ) : (
@@ -632,7 +714,11 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
                   type="number"
                   value={form.basePrice || ""}
                   onChange={(e) =>
-                    setForm((f) => ({ ...f, basePrice: e.target.value === "" ? "" : Number(e.target.value) }))
+                    setForm((f) => ({
+                      ...f,
+                      basePrice:
+                        e.target.value === "" ? "" : Number(e.target.value),
+                    }))
                   }
                   className="border-purple-300 focus-visible:ring-purple-500 bg-purple-50"
                 />

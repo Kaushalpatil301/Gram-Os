@@ -132,11 +132,11 @@ export default function Farmers() {
                 <SelectValue placeholder={t("farmers.allProduceTypes")} />
               </SelectTrigger>
               <SelectContent>
-                 {filterOptions.produceTypes.map((option) => (
-                   <SelectItem key={option.value} value={option.value}>
-                     {t(option.label)}
-                   </SelectItem>
-                 ))}
+                {filterOptions.produceTypes.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {t(option.label)}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
 

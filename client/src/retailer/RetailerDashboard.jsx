@@ -32,6 +32,7 @@ import {
   Bell,
   DollarSign,
 } from "lucide-react";
+import { apiLogout } from "../lib/api.js";
 
 const NAV_ITEMS = [
   {
@@ -140,10 +141,11 @@ function RetailerDashboardContent() {
 
   const navigate = useNavigate();
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     localStorage.removeItem("scanHistory");
     localStorage.removeItem("userSession");
     localStorage.removeItem("issueReports");
+    await apiLogout();
     navigate("/");
   };
 

@@ -6,6 +6,7 @@ import {
   IndianRupee, QrCode, FileText,
 } from "lucide-react";
 import { navItems } from "../lib/data";
+import { apiLogout } from "../../lib/api.js";
 
 export default function Navigation({
   activeSection,
@@ -81,12 +82,14 @@ export default function Navigation({
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    localStorage.removeItem("user");
+    localStorage.removeItem("userSession");
     localStorage.removeItem("villagerProfile");
     localStorage.removeItem("villagerScanHistory");
     localStorage.removeItem("villagerModuleProgress");
-    localStorage.removeItem("userSession");
     setShowUserMenu(false);
+    await apiLogout();
     setTimeout(() => {
       window.location.href = "/";
     }, 500);

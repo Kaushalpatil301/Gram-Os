@@ -17,34 +17,81 @@ import "react-toastify/dist/ReactToastify.css";
 import VillagerPage from "./worker/app/page.jsx";
 import PhoneSimulation from "./phone/app/page.jsx";
 
+// Route guards
+import ProtectedRoute from "./components/ProtectedRoute";
+import PublicRoute from "./components/PublicRoute";
+
 function App() {
   return (
     <>
       <Router>
         <Routes>
-          {/* Landing Page */}
-          <Route path="/" element={<LandingPage />} />
+          {/* Landing Page - accessible only to unauthenticated users */}
+          <Route path="/" element={
+            <PublicRoute>
+              <LandingPage />
+            </PublicRoute>
+          } />
 
-          {/* Auth Page */}
-          <Route path="/auth" element={<AuthPage />} />
+          {/* Auth Page - accessible only to unauthenticated users */}
+          <Route path="/auth" element={
+            <PublicRoute>
+              <AuthPage />
+            </PublicRoute>
+          } />
 
-          {/* Dashboards */}
-          <Route path="/dashboard/farmer" element={<FarmerPage />} />
-          <Route path="/dashboard/retailer" element={<RetailerPage />} />
-          <Route path="/dashboard/consumer" element={<ConsumerHomePage />} />
-          <Route path="/dashboard/worker" element={<VillagerPage />} />
-          <Route path="/dashboard/villager" element={<VillagerPage />} />
+          {/* Dashboards - role protected */}
+          <Route path="/dashboard/farmer" element={
+            <ProtectedRoute allowedRoles={['farmer']}>
+              <FarmerPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/dashboard/retailer" element={
+            <ProtectedRoute allowedRoles={['retailer']}>
+              <RetailerPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/dashboard/consumer" element={
+            <ProtectedRoute allowedRoles={['consumer']}>
+              <ConsumerHomePage />
+            </ProtectedRoute>
+          } />
+          <Route path="/dashboard/worker" element={
+            <ProtectedRoute allowedRoles={['villager']}>
+              <VillagerPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/dashboard/villager" element={
+            <ProtectedRoute allowedRoles={['villager']}>
+              <VillagerPage />
+            </ProtectedRoute>
+          } />
 
           {/* User-Specific Product Routes */}
           <Route
             path="/consumer/product/:id"
-            element={<ConsumerProductPage />}
+            element={
+              <ProtectedRoute allowedRoles={['consumer']}>
+                <ConsumerProductPage />
+              </ProtectedRoute>
+            }
           />
           <Route
             path="/retailer/product/:id"
-            element={<RetailerProductPage />}
+            element={
+              <ProtectedRoute allowedRoles={['retailer']}>
+                <RetailerProductPage />
+              </ProtectedRoute>
+            }
           />
-          <Route path="/farmer/product/:id" element={<FarmerProductPage />} />
+          <Route
+            path="/farmer/product/:id"
+            element={
+              <ProtectedRoute allowedRoles={['farmer']}>
+                <FarmerProductPage />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Generic Product Routes (fallback to consumer) */}
           <Route path="/product/:id" element={<ProductPage />} />

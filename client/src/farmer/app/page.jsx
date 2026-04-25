@@ -42,6 +42,7 @@ import {
   MessageSquare,
   DollarSign,
 } from "lucide-react";
+import { apiLogout } from "../../lib/api.js";
 
 const NAV_ITEMS = [
   {
@@ -151,10 +152,10 @@ function FarmerPageContent({ onLogout }) {
   const navigate = useNavigate();
   const userData = JSON.parse(localStorage.getItem("user") || "{}");
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     localStorage.removeItem("user");
     localStorage.removeItem("userSession");
-    if (onLogout) onLogout();
+    await apiLogout();
     navigate("/");
   };
 

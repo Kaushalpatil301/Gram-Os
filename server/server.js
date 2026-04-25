@@ -609,6 +609,57 @@ app.post("/chat", async (req, res) => {
   }
 });
 
+// 🔹 Gemini proxy endpoint for client-side calls
+app.post("/api/gemini/generate", async (req, res) => {
+  if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY === 'your-gemini-api-key-here') {
+    return res.status(503).json({ error: "Gemini API not configured on server" });
+  }
+
+  try {
+    const { prompt } = req.body;
+    if (!prompt || typeof prompt !== 'string') {
+      return res.status(400).json({ error: "Prompt is required" });
+    }
+
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text().trim();
+
+    res.json({ text });
+  } catch (error) {
+    console.error("Gemini proxy error:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 🔹 Gemini JSON mode endpoint
+app.post("/api/gemini/generate-json", async (req, res) => {
+  if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY === 'your-gemini-api-key-here') {
+    return res.status(503).json({ error: "Gemini API not configured on server" });
+  }
+
+  try {
+    const { prompt } = req.body;
+    if (!prompt || typeof prompt !== 'string') {
+      return res.status(400).json({ error: "Prompt is required" });
+    }
+
+    const model = genAI.getGenerativeModel({
+      model: "gemini-2.5-flash",
+      generationConfig: { responseMimeType: "application/json" }
+    });
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text().trim();
+
+    res.json({ text });
+  } catch (error) {
+    console.error("Gemini JSON proxy error:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // 🔹 Health check endpoint
 app.get("/health", (req, res) => {
   res.json({

@@ -17,6 +17,7 @@ import {
   QrCode,
 } from "lucide-react";
 import { useTranslation } from "../../consumer/i18n/config.jsx";
+import { apiLogout } from "../../lib/api.js";
 
 export default function Navbar({
   onNavigate,
@@ -69,10 +70,11 @@ export default function Navbar({
     setIsMobileMenuOpen(false); // Close mobile menu on navigation
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     localStorage.removeItem("user");
     localStorage.removeItem("userSession");
     setShowUserMenu(false);
+    await apiLogout();
     setTimeout(() => {
       if (onLogout) onLogout();
     }, 500);

@@ -10,13 +10,14 @@ import Timeline from "../components/Timeline.jsx";
 import Reviews from "../components/Reviews.jsx";
 import Actions from "../components/Actions.jsx";
 import Notification from "../components/Notification.jsx";
-import Chatbot from "../../consumer/app/Chatbot.jsx"
+import Chatbot from "../../consumer/app/Chatbot.jsx";
 import {
   timelineData,
   reviewsData,
   getTimelineData,
   getReviewsData,
 } from "../lib/data.js";
+import { apiLogout } from "../../lib/api.js";
 
 const API_URL = "http://localhost:8000/api/v1/products";
 
@@ -60,8 +61,9 @@ export default function ProductPage({ onLogout }) {
     fetchProduct();
   }, [id]);
 
-  const handleLogoutWithNotification = () => {
+  const handleLogoutWithNotification = async () => {
     setNotification("Logged out successfully ✅");
+    await apiLogout();
     if (onLogout) onLogout();
   };
 
@@ -91,9 +93,11 @@ export default function ProductPage({ onLogout }) {
           <h3 className="text-xl font-semibold text-red-600 mb-2">
             {error || "Product not found"}
           </h3>
-          <p className="text-gray-600 mb-4">Please check the product ID and try again.</p>
-          <button 
-            onClick={() => navigate(-1)} 
+          <p className="text-gray-600 mb-4">
+            Please check the product ID and try again.
+          </p>
+          <button
+            onClick={() => navigate(-1)}
             className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
           >
             Go Back

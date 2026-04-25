@@ -52,6 +52,7 @@ import {
   DollarSign,
 } from "lucide-react";
 import LanguageDropdown from "../../consumer/components/LanguageDropdown.jsx";
+import { apiLogout } from "../../lib/api.js";
 
 const NAV_ITEMS = [
   {
@@ -272,9 +273,10 @@ function VillagerContent() {
     rec.start();
   }
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     localStorage.removeItem("user");
     localStorage.removeItem("userSession");
+    await apiLogout();
     navigate("/");
   };
 

@@ -143,10 +143,8 @@ const getAiInsight = (product) => {
       ((product.aiPredictedPrice - product.basePrice) / product.basePrice) *
       100;
     let reasonKey = "browse.aiReason.solid";
-    if (margin > 30)
-      reasonKey = "browse.aiReason.exceptional";
-    else if (margin < 10)
-      reasonKey = "browse.aiReason.tight";
+    if (margin > 30) reasonKey = "browse.aiReason.exceptional";
+    else if (margin < 10) reasonKey = "browse.aiReason.tight";
 
     return {
       margin: Math.max(0, Math.round(margin)),
@@ -215,14 +213,19 @@ export default function BrowseProducts() {
 
     const loadDynamicCache = (lang) => {
       try {
-        return JSON.parse(localStorage.getItem(`dynamic_translations_${lang}`) || "{}");
+        return JSON.parse(
+          localStorage.getItem(`dynamic_translations_${lang}`) || "{}",
+        );
       } catch {
         return {};
       }
     };
     const saveDynamicCache = (lang, cache) => {
       try {
-        localStorage.setItem(`dynamic_translations_${lang}`, JSON.stringify(cache));
+        localStorage.setItem(
+          `dynamic_translations_${lang}`,
+          JSON.stringify(cache),
+        );
       } catch {
         // ignore storage failures
       }
@@ -283,7 +286,9 @@ export default function BrowseProducts() {
   }, [products, currentLanguage]);
 
   // Filter logic
-  const sourceProducts = translatedProducts?.length ? translatedProducts : products;
+  const sourceProducts = translatedProducts?.length
+    ? translatedProducts
+    : products;
   let filteredProducts = sourceProducts.filter((product) => {
     const matchesSearch =
       product.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -365,7 +370,9 @@ export default function BrowseProducts() {
         {loading ? (
           <div className="flex flex-col items-center justify-center py-12 md:py-20">
             <div className="animate-spin w-10 h-10 md:w-12 md:h-12 border-4 border-emerald-200 border-t-emerald-600 rounded-full mb-3 md:mb-4"></div>
-            <p className="text-gray-500 font-medium text-sm md:text-base">{t("browse.loading")}</p>
+            <p className="text-gray-500 font-medium text-sm md:text-base">
+              {t("browse.loading")}
+            </p>
           </div>
         ) : filteredProducts.length === 0 ? (
           <div className="text-center py-12 md:py-20 bg-gray-50 rounded-2xl border border-dashed border-gray-300">
@@ -373,7 +380,9 @@ export default function BrowseProducts() {
             <h3 className="text-base md:text-lg font-semibold text-gray-900 mb-1">
               {t("browse.emptyTitle")}
             </h3>
-            <p className="text-gray-500 text-sm md:text-base">{t("browse.emptyDesc")}</p>
+            <p className="text-gray-500 text-sm md:text-base">
+              {t("browse.emptyDesc")}
+            </p>
             <Button
               variant="outline"
               className="mt-4 border-emerald-200 text-emerald-700 text-sm py-2"
@@ -464,7 +473,8 @@ export default function BrowseProducts() {
                         className="bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border-0 text-xs py-0.5"
                       >
                         <Package className="w-3 h-3 mr-1 inline" />
-                        {product.quantity || 0} {unitLabel(product.unit || "kg")}{" "}
+                        {product.quantity || 0}{" "}
+                        {unitLabel(product.unit || "kg")}{" "}
                         {t("browse.available")}
                       </Badge>
                     </div>
