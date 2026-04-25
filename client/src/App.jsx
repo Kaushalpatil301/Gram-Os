@@ -16,6 +16,7 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import VillagerPage from "./worker/app/page.jsx";
 import PhoneSimulation from "./phone/app/page.jsx";
+import NotFound from "./components/NotFound.jsx";
 
 // Route guards
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -98,8 +99,11 @@ function App() {
           <Route path="/product" element={<ProductPage />} />
           <Route path="/track/:batchId" element={<ProductPage />} />
 
-          <Route path="/cnn" element={<CropDetector />} />
-          <Route path="/phone" element={<PhoneSimulation />} />
+           <Route path="/cnn" element={<CropDetector />} />
+           <Route path="/phone" element={<PhoneSimulation />} />
+
+           {/* Catch-all 404 route */}
+           <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>
       <ToastContainer position="top-right" autoClose={3000} />
