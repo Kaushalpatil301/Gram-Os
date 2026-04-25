@@ -19,7 +19,7 @@ import ProductModal from "./ProductModal";
 import { useTranslation } from "../../consumer/i18n/config.jsx";
 import translationService from "../../consumer/i18n/translationService";
 
-const API_URL = "http://localhost:8000/api/v1/products";
+const API_URL = import.meta.env.VITE_API_BASE_URL + "/products";
 
 // High-quality mock data to ensure the marketplace always looks populated and premium
 const mockProducts = [

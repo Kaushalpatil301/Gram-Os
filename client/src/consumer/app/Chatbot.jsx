@@ -297,7 +297,7 @@ async function fetchTTSAudio(text, sarvamLang, apiKey, signal) {
 }
 
 // ─── SOCKET (singleton outside component) ────────────────────────────────────
-const socket = io("http://localhost:8000");
+const socket = io(import.meta.env.VITE_API_BASE_URL?.replace('/api/v1', '') || "http://localhost:8000");
 
 // ─── COMPONENT ───────────────────────────────────────────────────────────────
 export default function Chatbot() {
@@ -594,7 +594,7 @@ export default function Chatbot() {
               }
 
               try {
-                await axios.post("http://localhost:8000/api/v1/products", formData);
+                await axios.post(import.meta.env.VITE_API_BASE_URL + "/products", formData);
                 window.dispatchEvent(new CustomEvent("AGRIBOT_PRODUCE_ADDED"));
                 reply += (reply ? "\n\n" : "") + `✅ Added ${validatedQty}kg of ${validatedName} from ${validatedLoc} at ₹${validatedPrice}/kg to your inventory!`;
               } catch {
@@ -643,7 +643,7 @@ export default function Chatbot() {
 
       // Twilio reply
       if (activeCallSid.current) {
-        axios.post("http://localhost:8000/api/v1/voice/reply", {
+        axios.post(import.meta.env.VITE_API_BASE_URL + "/voice/reply", {
           callSid: activeCallSid.current,
           text: reply.substring(0, 1000),
         }).catch(err => console.error("Twilio reply:", err));

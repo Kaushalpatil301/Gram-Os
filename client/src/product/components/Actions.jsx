@@ -89,7 +89,7 @@ export default function Actions({ productId, product }) {
 
     try {
       // Create order on your server
-      const response = await fetch("http://localhost:5001/order", {
+      const response = await fetch(import.meta.env.VITE_API_BASE_URL + "/marketplace/create-order", {
         method: "POST",
         body: JSON.stringify({
           amount: amt * 100, // Convert to paisa
@@ -115,7 +115,7 @@ export default function Actions({ productId, product }) {
         handler: async function (response) {
           try {
             const validateRes = await fetch(
-              "http://localhost:5001/order/validate",
+              import.meta.env.VITE_API_BASE_URL + "/marketplace/verify-payment",
               {
                 method: "POST",
                 body: JSON.stringify(response),

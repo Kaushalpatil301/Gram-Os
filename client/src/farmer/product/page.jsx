@@ -33,7 +33,7 @@ import {
 } from "lucide-react";
 import { apiLogout } from "../../lib/api.js";
 
-const API_URL = "http://localhost:8000/api/v1/products";
+const API_URL = import.meta.env.VITE_API_BASE_URL + "/products";
 
 // ── Mini sparkline component ───────────────────────────────────────────────
 function Sparkline({ values }) {

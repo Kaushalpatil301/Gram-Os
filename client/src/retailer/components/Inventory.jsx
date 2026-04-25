@@ -52,7 +52,7 @@ ChartJS.register(
   ArcElement
 )
 
-const API_URL = "http://localhost:8000/api/v1"
+const API_URL = import.meta.env.VITE_API_BASE_URL;
 
 // ─── Shared chart defaults ───
 const chartFont = { family: "'Inter', sans-serif", size: 11 }

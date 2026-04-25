@@ -23,7 +23,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { useTranslation } from "../../consumer/i18n/config.jsx";
 
-const API_URL = "http://localhost:8000/api/v1";
+const API_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function Farmers() {
   const { t } = useTranslation();

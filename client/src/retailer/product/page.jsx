@@ -11,7 +11,7 @@ import Chatbot from "../../consumer/app/Chatbot.jsx";
 import { LanguageProvider, useTranslation } from "../../consumer/i18n/config.jsx";
 import { apiLogout } from "../../lib/api.js";
 
-const API_URL = "http://localhost:8000/api/v1/products";
+const API_URL = import.meta.env.VITE_API_BASE_URL + "/products";
 const ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
 
 // Razorpay loader is now handled via shared utility

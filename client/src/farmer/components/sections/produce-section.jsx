@@ -41,7 +41,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { emptyProduce, produceTypes } from "../../lib/data";
 import { useTranslation } from "../../../consumer/i18n/config.jsx";
 
-const API_URL = "http://localhost:8000/api/v1/products";
+const API_URL = import.meta.env.VITE_API_BASE_URL + "/products";
 
 const PAST_PRODUCE = [
   {
@@ -615,7 +615,7 @@ export default function ProduceSection({ produce, onAdd, onUpdate, onDelete }) {
           {qrProduct && (
             <>
               <QRCodeSVG
-                value={`http://localhost:5173/product/${qrProduct._id}`}
+                 value={`${window.location.origin}/product/${qrProduct._id}`}
                 size={220}
                 level="H"
                 includeMargin

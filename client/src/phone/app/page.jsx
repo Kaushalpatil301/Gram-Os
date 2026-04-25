@@ -98,7 +98,7 @@ export default function PhoneSimulation() {
 
     try {
         // Send request to backend simulating Twilio
-        const res = await axios.post("http://localhost:8000/voice/process", {
+        const res = await axios.post(import.meta.env.VITE_API_BASE_URL + "/voice/process", {
             SpeechResult: speech,
             CallSid: currentCallSid.current
         });

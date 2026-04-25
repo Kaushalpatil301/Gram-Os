@@ -57,7 +57,7 @@ ChartJS.register(
   ArcElement
 )
 
-const API_URL = "http://localhost:8000/api/v1"
+const API_URL = import.meta.env.VITE_API_BASE_URL;
 
 // ─── Static fallback data for AI smart inventory ───
 const FALLBACK_INSIGHTS = {

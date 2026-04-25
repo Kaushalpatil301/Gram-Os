@@ -405,7 +405,7 @@ export default function MarketplaceSection() {
       }
       setRazorpayLoaded(true);
 
-      const orderRes = await axios.post("http://localhost:8000/api/v1/marketplace/create-order", { amount });
+      const orderRes = await axios.post(import.meta.env.VITE_API_BASE_URL + "/marketplace/create-order", { amount });
       const order = orderRes.data.data;
 
       const options = {
@@ -417,7 +417,7 @@ export default function MarketplaceSection() {
         order_id: order.id,
         handler: async (response) => {
           try {
-            await axios.post("http://localhost:8000/api/v1/marketplace/verify-payment", response);
+            await axios.post(import.meta.env.VITE_API_BASE_URL + "/marketplace/verify-payment", response);
             setPaying(false);
             setPaymentModal({ status: "success", paymentId: response.razorpay_payment_id });
             setCartItems([]);

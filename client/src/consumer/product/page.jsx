@@ -17,7 +17,7 @@ import {
 } from "../../product/lib/data.js";
 import { apiLogout } from "../../lib/api.js";
 
-const API_URL = "http://localhost:8000/api/v1/products";
+const API_URL = import.meta.env.VITE_API_BASE_URL + "/products";
 
 export default function ConsumerProductPage({ onLogout }) {
   const { id } = useParams();
