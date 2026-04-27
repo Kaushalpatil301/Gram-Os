@@ -24,12 +24,16 @@ const corsOptions = {
     // Check if origin matches any allowed pattern
     const isAllowed = corsOrigins.some(allowedOrigin => {
       if (allowedOrigin === "*") return true;
-      if (allowedOrigin.endsWith("/*")) {
-        // Wildcard subdomain matching (e.g., https://*.vercel.app)
-        const pattern = allowedOrigin.replace("/*", ".*");
-        const regex = new RegExp(`^${pattern}$`);
+      
+      // Support wildcard '*' for subdomains (e.g., https://*.vercel.app)
+      if (allowedOrigin.includes("*")) {
+        // Escape regex special chars, then convert * to .*
+        const escaped = allowedOrigin.replace(/[.+?^${}()|[\]\\]/g, '\\$&');
+        const pattern = '^' + escaped.replace(/\\\*/g, '.*') + '$';
+        const regex = new RegExp(pattern);
         return regex.test(origin);
       }
+      
       // Exact match
       return origin === allowedOrigin;
     });

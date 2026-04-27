@@ -111,9 +111,14 @@ const registerUser = asyncHandler(async (req, res) => {
     console.warn("[auth] profile seed failed (non-fatal):", e.message);
   }
 
-  // ─── Auto-login: generate tokens and set cookies so the session is live ─────
-  const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id);
-  const cookieOptions = { httpOnly: true, secure: true };
+   // ─── Auto-login: generate tokens and set cookies so the session is live ─────
+   const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id);
+   const isProduction = process.env.NODE_ENV === 'production';
+   const cookieOptions = {
+     httpOnly: true,
+     secure: isProduction,
+     sameSite: isProduction ? 'none' : 'lax'
+   };
 
   return res
     .status(201)
@@ -170,10 +175,12 @@ const loginUser = asyncHandler(async (req, res) => {
     "-password -refreshToken -emailVerificationToken -emailVerificationExpiry",
   );
 
-  const option = {
-    httpOnly: true,
-    secure: true,
-  };
+   const isProduction = process.env.NODE_ENV === 'production';
+   const option = {
+     httpOnly: true,
+     secure: isProduction,
+     sameSite: isProduction ? 'none' : 'lax'
+   };
   return res
     .status(200)
     .cookie("accessToken", accessToken, option)
@@ -200,10 +207,12 @@ const logoutUser = asyncHandler(async (req, res) => {
     },
   );
 
-  const options = {
-    httpOnly: true,
-    secure: true,
-  };
+   const isProduction = process.env.NODE_ENV === 'production';
+   const options = {
+     httpOnly: true,
+     secure: isProduction,
+     sameSite: isProduction ? 'none' : 'lax'
+   };
   return res
     .status(200)
     .clearCookie("accessToken", options)
@@ -323,10 +332,12 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
       throw new ApiError(401, "Refresh token is expired. Please login again.");
     }
 
-    const options = {
-      httpOnly: true,
-      secure: true,
-    };
+     const isProduction = process.env.NODE_ENV === 'production';
+     const options = {
+       httpOnly: true,
+       secure: isProduction,
+       sameSite: isProduction ? 'none' : 'lax'
+     };
 
     const { accessToken, refreshToken: newRefreshToken } =
       await generateAccessAndRefreshToken(user._id);
